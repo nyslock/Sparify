@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { User, PiggyBank, ViewState, ThemeColor, VIPColor, Language, TRANSLATIONS, AVATARS, Transaction, Goal, AppMode } from './types';
+import { User, PiggyBank, ViewState, ThemeColor, Language, TRANSLATIONS, AVATARS, Transaction, Goal, AppMode } from './types';
 import { LoginScreen } from './components/LoginScreen';
 import { DashboardScreen } from './components/DashboardScreen';
 import { SettingsScreen } from './components/SettingsScreen';
@@ -9,9 +10,7 @@ import { QRScanner } from './components/QRScanner';
 import { PiggyDetailScreen } from './components/PiggyDetailScreen';
 import { LearnScreen } from './components/LearnScreen';
 import { ShopScreen } from './components/ShopScreen';
-import { AchievementsScreen } from './components/AchievementsScreen';
-import { CasinoScreen } from './components/CasinoScreen';
-import { Trophy, Loader2, RotateCcw, AlertTriangle, RefreshCw, PiggyBank as PigIcon, HelpCircle, BookOpen, Smartphone, Baby, Briefcase, RefreshCcw } from 'lucide-react';
+import { Trophy, Loader2, RotateCcw, AlertTriangle, RefreshCw, PiggyBank as PigIcon, HelpCircle, BookOpen, Smartphone, Baby, Briefcase } from 'lucide-react';
 import { supabase } from './lib/supabaseClient';
 import { decryptAmount, encryptAmount } from './lib/crypto';
 
@@ -26,7 +25,7 @@ export default function App() {
   const [userId, setUserId] = useState<string | null>(null);
   const [piggyBanks, setPiggyBanks] = useState<PiggyBank[]>([]);
   
-  const [accentColor, setAccentColor] = useState<ThemeColor | VIPColor>('orange');
+  const [accentColor, setAccentColor] = useState<ThemeColor>('orange');
   const [language, setLanguage] = useState<Language>('de');
   const [appMode, setAppMode] = useState<AppMode>('kids'); 
   const [selectedBankId, setSelectedBankId] = useState<string | null>(null);
@@ -39,6 +38,7 @@ export default function App() {
   const dataLoadedRef = useRef(false);
   const initHandledRef = useRef(false);
   const piggyBanksRef = useRef<PiggyBank[]>([]);
+  const isRefreshingRef = useRef(false);
 
   const tHelp = TRANSLATIONS[language].help;
   const tCommon = TRANSLATIONS[language].common;
@@ -47,6 +47,23 @@ export default function App() {
   useEffect(() => {
     piggyBanksRef.current = piggyBanks;
   }, [piggyBanks]);
+
+  // Mandatory 3-second background refresh to keep transactions and balance updated
+  useEffect(() => {
+    if (!userId || !user) return;
+
+    const interval = setInterval(async () => {
+      if (isRefreshingRef.current) return;
+      isRefreshingRef.current = true;
+      try {
+        await loadUserData(userId, user.email, false);
+      } finally {
+        isRefreshingRef.current = false;
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [userId, user?.email]);
 
   useEffect(() => {
     let mounted = true;
@@ -176,12 +193,10 @@ export default function App() {
 
         if (profileRes.data) {
             const p = profileRes.data;
-            if (p.language) setLanguage(p.language);
-            if (p.accent_color) setAccentColor(p.accent_color);
+            if (p.language) setLanguage(p.language); 
             if (p.age === null) setShowAgeSelection(true);
             else setAppMode(p.age > 14 ? 'adult' : 'kids');
 
-            // Lade die 'Neu'-Markierungen aus dem localStorage, da die DB-Spalte fehlt
             const localUnseenRaw = localStorage.getItem(`sparify_unseen_${uid}`);
             const localUnseen = localUnseenRaw ? JSON.parse(localUnseenRaw) : [];
 
@@ -192,7 +207,7 @@ export default function App() {
                 trophies: p.trophies || 0,
                 coins: p.coins || 0,
                 inventory: p.inventory || [],
-                unseenItems: localUnseen, // Verwende lokale Daten
+                unseenItems: localUnseen,
                 completedLevels: p.completed_levels || [],
                 claimedAchievements: p.claimed_achievements || [],
                 activeSpecials: p.active_specials || [],
@@ -200,7 +215,6 @@ export default function App() {
                 lastCompletedDate: p.last_completed_date,
                 streakFreezeUntil: p.streak_freeze_until,
                 language: p.language || 'de',
-                accentColor: p.accent_color || 'orange',
                 age: p.age,
                 hasSeenTutorial: p.has_seen_tutorial || false
             });
@@ -285,14 +299,12 @@ export default function App() {
   };
   
   const updateUserProfile = async (updatedUser: User) => {
-      // Optimistic UI: Erst lokal setzen
       setUser(updatedUser);
       setLanguage(updatedUser.language); 
       
       if (!userId) return;
       setIsSyncing(true);
 
-      // Speichere 'unseenItems' lokal, um SQL-Fehler zu vermeiden
       localStorage.setItem(`sparify_unseen_${userId}`, JSON.stringify(updatedUser.unseenItems));
       
       try {
@@ -301,13 +313,11 @@ export default function App() {
               avatar_id: updatedUser.avatarId,
               coins: updatedUser.coins,
               inventory: updatedUser.inventory,
-              // unseen_items entfernt, da Spalte in DB fehlt
               completed_levels: updatedUser.completedLevels,
               claimed_achievements: updatedUser.claimedAchievements,
               active_specials: updatedUser.activeSpecials,
               streak_freeze_until: updatedUser.streakFreezeUntil,
               language: updatedUser.language,
-              accent_color: updatedUser.accentColor || 'orange',
               age: updatedUser.age
           }).eq('id', userId);
 
@@ -407,11 +417,11 @@ export default function App() {
 
   return (
     <div className={`flex h-screen font-sans overflow-hidden ${appMode === 'adult' ? 'bg-slate-100 text-slate-900' : 'bg-slate-50 text-slate-900'}`}>
-        <Sidebar currentView={view === 'DETAIL' ? 'DASHBOARD' : view} onChangeView={(v) => { setView(v); setSelectedBankId(null); }} accentColor={accentColor} user={user} onLogout={async () => await (supabase.auth as any).signOut()} appMode={appMode} language={language} />
+        <Sidebar currentView={view === 'DETAIL' ? 'DASHBOARD' : view} onChangeView={(v) => { setView(v); setSelectedBankId(null); }} accentColor={accentColor} user={user} onLogout={async () => await (supabase.auth as any).signOut()} appMode={appMode} />
         
         {isSyncing && (
             <div className="fixed top-6 right-6 z-[999] bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-slate-100 flex items-center gap-2 animate-in slide-in-from-top-4 duration-300">
-                <RefreshCcw size={14} className="text-indigo-500 animate-spin" />
+                <RefreshCw size={14} className="text-indigo-500 animate-spin" />
                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Abgleich...</span>
             </div>
         )}
@@ -557,8 +567,6 @@ export default function App() {
                 updateUserProfile({ ...user, coins: newCoins, completedLevels: newLevels });
             }} onLevelStart={() => setIsLevelActive(true)} onLevelEnd={() => setIsLevelActive(false)} appMode={appMode} />}
             {view === 'SHOP' && <ShopScreen language={language} user={user} onUpdateUser={updateUserProfile} />}
-            {view === 'ACHIEVEMENTS' && <AchievementsScreen user={user} piggyBanks={piggyBanks} language={language} onUpdateUser={updateUserProfile} onClose={() => setView('DASHBOARD')} />}
-            {view === 'CASINO' && <CasinoScreen user={user} onUpdateUser={updateUserProfile} onClose={() => setView('DASHBOARD')} language={language} />}
             {view === 'SETTINGS' && <SettingsScreen user={user} onUpdateUser={updateUserProfile} accentColor={accentColor} onUpdateAccent={setAccentColor} onLogout={async () => await (supabase.auth as any).signOut()} language={language} setLanguage={setLanguage} appMode={appMode} isRecoveryMode={isRecoveryMode} onUpdatePassword={async (p) => { await (supabase.auth as any).updateUser({ password: p }); setIsRecoveryMode(false); }} />}
             {!isLevelActive && view !== 'DETAIL' && <BottomNav currentView={view} onChangeView={setView} accentColor={accentColor} />}
         </main>

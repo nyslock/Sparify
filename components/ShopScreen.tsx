@@ -109,7 +109,7 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ user, onUpdateUser, lang
       return hasDiscount ? Math.floor(basePrice * 0.5) : basePrice;
   };
 
-    const handleOpenLuckyBag = (baseUser?: UserType) => {
+  const handleOpenLuckyBag = () => {
       setOpeningBag(true);
       setBagReward(null);
       setIsBlankPhase(false);
@@ -180,10 +180,8 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ user, onUpdateUser, lang
       setTimeout(() => {
           setIsBlankPhase(false);
           setBagReward(finalReward);
-
-          // Use the provided baseUser (the user after purchase) if available,
-          // otherwise fall back to the current prop `user`.
-          let updatedUser = { ...(baseUser ?? user) } as UserType;
+          
+          let updatedUser = { ...user };
           if (finalReward.type === 'coins') {
               updatedUser.coins += (finalReward.value as number);
           } else if (finalReward.type === 'avatar' || finalReward.type === 'theme') {
@@ -219,7 +217,7 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ user, onUpdateUser, lang
       if (itemId === 'item_lucky_bag') {
           updatedUser.inventory = updatedUser.inventory.filter(id => id !== 'item_lucky_bag');
           onUpdateUser(updatedUser);
-          handleOpenLuckyBag(updatedUser);
+          handleOpenLuckyBag();
           return;
       }
       onUpdateUser(updatedUser);

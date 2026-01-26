@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Plus, PiggyBank as PigIcon, Eye, Lock, Megaphone, Trash2, Wallet, CreditCard, ChevronRight, TrendingUp, PieChart, ArrowUpRight, ArrowDownLeft, Snowflake, Target, Percent, Info, AlertCircle, Check } from 'lucide-react';
-import { PiggyBank, ThemeColor, VIPColor, THEME_COLORS, VIP_COLORS, getAccentColorClass, Language, TRANSLATIONS, CUSTOM_LOGO_URL, AppMode, User, Goal } from '../types';
+import { PiggyBank, ThemeColor, THEME_COLORS, Language, TRANSLATIONS, CUSTOM_LOGO_URL, AppMode, User, Goal } from '../types';
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 interface DashboardScreenProps {
@@ -9,7 +9,7 @@ interface DashboardScreenProps {
   onConnect: () => void;
   onSelectBank: (id: string) => void;
   onRemoveBank: (id: string) => void;
-  accentColor: ThemeColor | VIPColor;
+  accentColor: ThemeColor;
   language: Language;
   appMode?: AppMode;
   user: User;
@@ -294,7 +294,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-10">
-            <div className={`lg:col-span-2 rounded-[2.5rem] p-8 relative overflow-hidden shadow-2xl shadow-slate-300 ${getAccentColorClass(accentColor)} transition-colors duration-500`}>
+            <div className={`lg:col-span-2 rounded-[2.5rem] p-8 relative overflow-hidden shadow-2xl shadow-slate-300 ${THEME_COLORS[accentColor]} transition-colors duration-500`}>
                 <div className="absolute top-0 right-0 w-48 h-48 bg-white opacity-20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                 <div className="flex justify-between items-center relative z-10">
                     <div>
@@ -321,7 +321,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                         <Plus size={32} className="text-slate-400" />
                     </div>
                     <h3 className="font-bold text-slate-800 text-lg mb-2">{t.moreSavings}</h3>
-                    <button onClick={onConnect} className={`w-full py-3 rounded-xl font-bold text-white ${getAccentColorClass(accentColor)} shadow-md hover:opacity-90 active:scale-95 transition-all`}>
+                    <button onClick={onConnect} className={`w-full py-3 rounded-xl font-bold text-white ${THEME_COLORS[accentColor]} shadow-md hover:opacity-90 active:scale-95 transition-all`}>
                         + {t.newPig}
                     </button>
                 </div>

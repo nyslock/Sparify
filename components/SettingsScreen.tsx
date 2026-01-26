@@ -1,14 +1,13 @@
 
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { LogOut, Info, User as UserIcon, Palette, Globe, Lock, ToggleRight, Baby, Briefcase, KeyRound, Check, Sparkles, Crown } from 'lucide-react';
-import { ThemeColor, THEME_COLORS, VIP_COLORS, AVATARS, User, Language, TRANSLATIONS, AppMode, SPECIALS_DATABASE, VIPColor } from '../types';
+import { LogOut, Info, User as UserIcon, Palette, Globe, Lock, ToggleRight, Baby, Briefcase, KeyRound, Check, Sparkles } from 'lucide-react';
+import { ThemeColor, THEME_COLORS, AVATARS, User, Language, TRANSLATIONS, AppMode, SPECIALS_DATABASE } from '../types';
 
 interface SettingsScreenProps {
   user: User;
   onUpdateUser: (user: User) => void;
-  accentColor: ThemeColor | VIPColor;
-  onUpdateAccent: (color: ThemeColor | VIPColor) => void;
+  accentColor: ThemeColor;
+  onUpdateAccent: (color: ThemeColor) => void;
   onLogout: () => void;
   language: Language;
   setLanguage: (lang: Language) => void;
@@ -18,12 +17,10 @@ interface SettingsScreenProps {
 }
 
 const colors: ThemeColor[] = [
-    'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'teal', 'cyan', 'black'
-];
-
-const vipColors: VIPColor[] = [
-    'vip_sunset', 'vip_ocean', 'vip_forest', 'vip_galaxy', 'vip_candy',
-    'vip_fire', 'vip_emerald', 'vip_royal', 'vip_peach', 'vip_midnight'
+    'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'teal', 'cyan', 
+    'indigo', 'lime', 'rose', 'fuchsia', 'violet', 'sky', 'amber', 'zinc',
+    'mint', 'gold', 'black', 'slate', 'stone', 'emerald', 'cocoa', 'lilac', 
+    'salmon', 'ocean', 'forest', 'night', 'berry'
 ];
 
 const languages: { code: Language; label: string; flag: string }[] = [
@@ -55,8 +52,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [newPassword, setNewPassword] = useState('');
   const [passwordSaved, setPasswordSaved] = useState(false);
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
-  const [resetSent, setResetSent] = useState(false);
-  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   const t = TRANSLATIONS[language].settings;
   const tCommon = TRANSLATIONS[language].common;
@@ -71,10 +66,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       const freeColors = ['orange', 'yellow', 'green']; 
       if (freeColors.includes(c)) return true;
       return user.inventory.includes(`theme_${c}`);
-  };
-
-  const isVIPColorOwned = (c: VIPColor) => {
-      return user.inventory.includes(`vip_${c}`);
   };
 
   const isUnseen = (itemId: string) => {
@@ -93,12 +84,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       onUpdateUser({ ...user, avatarId: idx, unseenItems: (user.unseenItems || []).filter(uId => uId !== id) });
   };
 
-  const handleSelectColor = (c: ThemeColor | VIPColor) => {
-      const id = c.startsWith('vip_') ? `vip_${c}` : `theme_${c}`;
+  const handleSelectColor = (c: ThemeColor) => {
+      const id = `theme_${c}`;
       markAsSeen(id);
       onUpdateAccent(c);
-      // Update user profile with new accent color
-      onUpdateUser({ ...user, accentColor: c, unseenItems: (user.unseenItems || []).filter(uId => uId !== id) });
+      // Manuelles User Update falls wir unseenItems hier entfernen wollen direkt
+      const newUnseen = (user.unseenItems || []).filter(uId => uId !== id);
+      onUpdateUser({ ...user, unseenItems: newUnseen });
   };
 
   const ownedProfileSpecials = SPECIALS_DATABASE.filter(item => 
@@ -129,211 +121,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       setIsPasswordLoading(false);
   };
 
-  const handleResetPassword = async () => {
-      setIsResettingPassword(true);
-      try {
-          const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-              redirectTo: window.location.origin + '/auth/reset'
-          });
-          if (error) throw error;
-          setResetSent(true);
-          setTimeout(() => setResetSent(false), 5000);
-      } catch (err) {
-          console.error('Password reset error:', err);
-      }
-      setIsResettingPassword(false);
-  };
-
-  const displayedAvatars = showAllAvatars ? AVATARS : AVATARS.slice(0, 4); 
-
-    // Developer console state
-    const [devEmail, setDevEmail] = useState<string>('');
-    const [devAmount, setDevAmount] = useState<number>(0);
-    const [devMode, setDevMode] = useState<AppMode>('kids');
-    const [devStatus, setDevStatus] = useState<string | null>(null);
-    const [devLoading, setDevLoading] = useState(false);
-    const [devSetCoins, setDevSetCoins] = useState<number | null>(null);
-    const [devAvatarId, setDevAvatarId] = useState<number | null>(null);
-    const [devGiveItemId, setDevGiveItemId] = useState<string>('');
-    const [devGiveColor, setDevGiveColor] = useState<ThemeColor | ''>('');
-    const [devGiveVIPColor, setDevGiveVIPColor] = useState<VIPColor | ''>('');
-    const isDevVisible = (user.email === 'vlasdvoranov@gmail.com' || user.email === 'sparify.at@gmail.com' || window.location.hostname === 'localhost');
-
-    const findProfileByEmail = async (email: string) => {
-        const { data, error } = await supabase.from('profiles').select('*').eq('email', email).single();
-        if (error) throw error;
-        return data;
-    };
-
-    const handleDevAddCoins = async () => {
-        if (!devEmail || !devAmount) return setDevStatus('Please provide email and amount');
-        setDevLoading(true); setDevStatus(null);
-        try {
-            const profile: any = await findProfileByEmail(devEmail);
-            if (!profile) throw new Error('Profile not found');
-            const currentCoins = profile.coins || 0;
-            const newCoins = currentCoins + devAmount;
-            const { error } = await supabase.from('profiles').update({ coins: newCoins }).eq('id', profile.id);
-            if (error) throw error;
-            setDevStatus(`Updated ${devEmail}: +${devAmount} → ${newCoins}`);
-            // If we're editing the current user, reflect change locally
-            if (user.email === devEmail) onUpdateUser({ ...user, coins: newCoins });
-        } catch (e: any) {
-            console.error(e);
-            setDevStatus('Error: ' + (e.message || String(e)));
-        }
-        setDevLoading(false);
-    };
-
-    const handleDevSetMode = async () => {
-        if (!devEmail) return setDevStatus('Please provide email');
-        setDevLoading(true); setDevStatus(null);
-        try {
-            const profile: any = await findProfileByEmail(devEmail);
-            if (!profile) throw new Error('Profile not found');
-            const newAge = devMode === 'adult' ? 18 : 10;
-            const { error } = await supabase.from('profiles').update({ age: newAge }).eq('id', profile.id);
-            if (error) throw error;
-            setDevStatus(`Set ${devEmail} mode → ${devMode}`);
-            if (user.email === devEmail) onUpdateUser({ ...user, age: newAge });
-        } catch (e: any) {
-            console.error(e);
-            setDevStatus('Error: ' + (e.message || String(e)));
-        }
-        setDevLoading(false);
-    };
-
-    const handleDevSetCoins = async () => {
-        if (!devEmail || devSetCoins === null) return setDevStatus('Please provide email and coins');
-        setDevLoading(true); setDevStatus(null);
-        try {
-            const profile: any = await findProfileByEmail(devEmail);
-            if (!profile) throw new Error('Profile not found');
-            const { error } = await supabase.from('profiles').update({ coins: devSetCoins }).eq('id', profile.id);
-            if (error) throw error;
-            setDevStatus(`Set ${devEmail} coins → ${devSetCoins}`);
-            if (user.email === devEmail) onUpdateUser({ ...user, coins: devSetCoins });
-        } catch (e: any) {
-            console.error(e);
-            setDevStatus('Error: ' + (e.message || String(e)));
-        }
-        setDevLoading(false);
-    };
-
-    const handleDevSetAvatar = async () => {
-        if (!devEmail || devAvatarId === null) return setDevStatus('Please provide email and avatar id');
-        setDevLoading(true); setDevStatus(null);
-        try {
-            const profile: any = await findProfileByEmail(devEmail);
-            if (!profile) throw new Error('Profile not found');
-            const { error } = await supabase.from('profiles').update({ avatarId: devAvatarId }).eq('id', profile.id);
-            if (error) throw error;
-            setDevStatus(`Set ${devEmail} avatar → ${devAvatarId}`);
-            if (user.email === devEmail) onUpdateUser({ ...user, avatarId: devAvatarId });
-        } catch (e: any) {
-            console.error(e);
-            setDevStatus('Error: ' + (e.message || String(e)));
-        }
-        setDevLoading(false);
-    };
-
-    const handleDevGiveItem = async () => {
-        if (!devEmail || !devGiveItemId) return setDevStatus('Please provide email and item id');
-        setDevLoading(true); setDevStatus(null);
-        try {
-            const profile: any = await findProfileByEmail(devEmail);
-            if (!profile) throw new Error('Profile not found');
-            const inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
-            if (!inventory.includes(devGiveItemId)) inventory.push(devGiveItemId);
-            const { error } = await supabase.from('profiles').update({ inventory }).eq('id', profile.id);
-            if (error) throw error;
-            setDevStatus(`Gave ${devGiveItemId} to ${devEmail}`);
-            if (user.email === devEmail) onUpdateUser({ ...user, inventory });
-        } catch (e: any) {
-            console.error(e);
-            setDevStatus('Error: ' + (e.message || String(e)));
-        }
-        setDevLoading(false);
-    };
-
-    const handleDevGiveColor = async () => {
-        if (!devEmail || !devGiveColor) return setDevStatus('Please provide email and color');
-        setDevLoading(true); setDevStatus(null);
-        try {
-            const profile: any = await findProfileByEmail(devEmail);
-            if (!profile) throw new Error('Profile not found');
-            const inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
-            const id = `theme_${devGiveColor}`;
-            if (!inventory.includes(id)) inventory.push(id);
-            const { error } = await supabase.from('profiles').update({ inventory }).eq('id', profile.id);
-            if (error) throw error;
-            setDevStatus(`Gave color ${devGiveColor} to ${devEmail}`);
-            if (user.email === devEmail) onUpdateUser({ ...user, inventory });
-        } catch (e: any) {
-            console.error(e);
-            setDevStatus('Error: ' + (e.message || String(e)));
-        }
-        setDevLoading(false);
-    };
-
-    const handleDevGiveVIPColor = async () => {
-        if (!devEmail || !devGiveVIPColor) return setDevStatus('Please provide email and VIP color');
-        setDevLoading(true); setDevStatus(null);
-        try {
-            const profile: any = await findProfileByEmail(devEmail);
-            if (!profile) throw new Error('Profile not found');
-            const inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
-            const id = `vip_${devGiveVIPColor}`;
-            if (!inventory.includes(id)) inventory.push(id);
-            const { error } = await supabase.from('profiles').update({ inventory }).eq('id', profile.id);
-            if (error) throw error;
-            setDevStatus(`Gave VIP color ${devGiveVIPColor} to ${devEmail}`);
-            if (user.email === devEmail) onUpdateUser({ ...user, inventory });
-        } catch (e: any) {
-            console.error(e);
-            setDevStatus('Error: ' + (e.message || String(e)));
-        }
-        setDevLoading(false);
-    };
-
-    const handleDevGiveAllColors = async () => {
-        if (!devEmail) return setDevStatus('Please provide email');
-        setDevLoading(true); setDevStatus(null);
-        try {
-            const profile: any = await findProfileByEmail(devEmail);
-            if (!profile) throw new Error('Profile not found');
-            const inventory = Array.isArray(profile.inventory) ? profile.inventory : [];
-            colors.forEach((c) => {
-                const id = `theme_${c}`;
-                if (!inventory.includes(id)) inventory.push(id);
-            });
-            const { error } = await supabase.from('profiles').update({ inventory }).eq('id', profile.id);
-            if (error) throw error;
-            setDevStatus(`Gave all colors to ${devEmail}`);
-            if (user.email === devEmail) onUpdateUser({ ...user, inventory });
-        } catch (e: any) {
-            console.error(e);
-            setDevStatus('Error: ' + (e.message || String(e)));
-        }
-        setDevLoading(false);
-    };
-
-    const handleDevResetUnseen = async () => {
-        if (!devEmail) return setDevStatus('Please provide email');
-        setDevLoading(true); setDevStatus(null);
-        try {
-            const profile: any = await findProfileByEmail(devEmail);
-            if (!profile) throw new Error('Profile not found');
-            const { error } = await supabase.from('profiles').update({ unseenItems: [] }).eq('id', profile.id);
-            if (error) throw error;
-            setDevStatus(`Reset unseen items for ${devEmail}`);
-            if (user.email === devEmail) onUpdateUser({ ...user, unseenItems: [] });
-        } catch (e: any) {
-            console.error(e);
-            setDevStatus('Error: ' + (e.message || String(e)));
-        }
-        setDevLoading(false);
-    };
+  const displayedAvatars = showAllAvatars ? AVATARS : AVATARS.slice(0, 4);
+  const displayedColors = showAllColors ? colors : colors.slice(0, 10); 
 
   return (
     <div className={`flex-1 p-6 pb-32 overflow-y-auto no-scrollbar ${appMode === 'adult' ? 'text-slate-900 bg-slate-100' : ''}`}>
@@ -446,161 +235,43 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
              <div className="p-2 bg-orange-50 rounded-xl text-orange-500"><Palette size={20} /></div>
              <h3 className="font-bold text-slate-800">{t.design}</h3>
         </div>
-        
-        {/* Regular Colors */}
-        <div className="mb-6">
-          <div className="text-xs font-bold text-slate-400 uppercase mb-3">Standard Colors</div>
-          <div className="grid grid-cols-5 md:grid-cols-10 gap-3 mb-4">
-            {colors.map((c) => {
-              const owned = isColorOwned(c);
-              const isSelected = accentColor === c;
-              const itemUnseen = isUnseen(`theme_${c}`);
+        <div className="grid grid-cols-5 md:grid-cols-8 gap-4 mb-4">
+          {displayedColors.map((c) => {
+            const owned = isColorOwned(c);
+            const isSelected = accentColor === c;
+            const itemUnseen = isUnseen(`theme_${c}`);
 
-              return (
-                  <button 
-                    key={c} 
-                    onClick={() => owned && handleSelectColor(c)} 
-                    disabled={!owned} 
-                    title={c}
-                    className={`relative aspect-square rounded-2xl transition-all duration-300 ${THEME_COLORS[c]} ${isSelected ? 'ring-4 ring-slate-900 ring-offset-2 scale-105 shadow-lg z-10' : 'scale-90 opacity-70 hover:opacity-100 hover:scale-100'}`}
-                  >
-                      {!owned && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-2xl backdrop-blur-[1px]">
-                              <Lock size={14} className="text-white" />
-                          </div>
-                      )}
-                      {isSelected && (
-                          <div className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md">
-                              <Check size={12} className="text-slate-900" strokeWidth={4} />
-                          </div>
-                      )}
-                      {owned && !isSelected && itemUnseen && (
-                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 border-2 border-white rounded-full flex items-center justify-center shadow-md animate-bounce z-30">
-                              <span className="text-white text-[10px] font-black">!</span>
-                          </div>
-                      )}
-                  </button>
-              )
-            })}
-          </div>
+            return (
+                <button 
+                  key={c} 
+                  onClick={() => owned && handleSelectColor(c)} 
+                  disabled={!owned} 
+                  title={c}
+                  className={`relative aspect-square rounded-2xl transition-all duration-300 ${THEME_COLORS[c]} ${isSelected ? 'ring-4 ring-slate-900 ring-offset-2 scale-105 shadow-lg z-10' : 'scale-90 opacity-70 hover:opacity-100 hover:scale-100'}`}
+                >
+                    {!owned && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-2xl backdrop-blur-[1px]">
+                            <Lock size={14} className="text-white" />
+                        </div>
+                    )}
+                    {isSelected && (
+                        <div className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md">
+                            <Check size={12} className="text-slate-900" strokeWidth={4} />
+                        </div>
+                    )}
+                    {owned && !isSelected && itemUnseen && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 border-2 border-white rounded-full flex items-center justify-center shadow-md animate-bounce z-30">
+                            <span className="text-white text-[10px] font-black">!</span>
+                        </div>
+                    )}
+                </button>
+            )
+          })}
         </div>
-
-        {/* VIP Gradient Colors */}
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-600 uppercase mb-3">
-            <Crown size={12} /> VIP Colors
-          </div>
-          <div className="grid grid-cols-5 md:grid-cols-10 gap-3">
-            {vipColors.map((c) => {
-              const owned = isVIPColorOwned(c);
-              const isSelected = accentColor === c;
-              const itemUnseen = isUnseen(`vip_${c}`);
-
-              return (
-                  <button 
-                    key={c} 
-                    onClick={() => owned && handleSelectColor(c)} 
-                    disabled={!owned} 
-                    title={c}
-                    className={`relative aspect-square rounded-2xl transition-all duration-300 ${VIP_COLORS[c]} ${isSelected ? 'ring-4 ring-amber-500 ring-offset-2 scale-105 shadow-xl z-10' : 'scale-90 opacity-70 hover:opacity-100 hover:scale-100'}`}
-                  >
-                      {!owned && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-2xl backdrop-blur-[1px]">
-                              <Crown size={16} className="text-amber-300" />
-                          </div>
-                      )}
-                      {isSelected && (
-                          <div className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md">
-                              <Check size={12} className="text-slate-900" strokeWidth={4} />
-                          </div>
-                      )}
-                      {owned && !isSelected && itemUnseen && (
-                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 border-2 border-white rounded-full flex items-center justify-center shadow-md animate-bounce z-30">
-                              <Crown size={10} className="text-white" />
-                          </div>
-                      )}
-                  </button>
-              )
-            })}
-          </div>
-        </div>
+        <button onClick={() => setShowAllColors(!showAllColors)} className="w-full py-3 text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors">
+            {showAllColors ? tCommon.showLess : tCommon.showAllColors}
+        </button>
       </div>
-
-            {isDevVisible && (
-                <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
-                    <div className="flex items-center gap-3 mb-4">
-                             <div className="p-2 bg-slate-50 rounded-xl text-slate-500"><KeyRound size={20} /></div>
-                             <h3 className="font-bold text-slate-800">Developer Console</h3>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-                        <input value={devEmail} onChange={(e) => setDevEmail(e.target.value)} placeholder="email@domain" className="p-3 border rounded-2xl" />
-                        <input type="number" value={devAmount} onChange={(e) => setDevAmount(parseInt(e.target.value || '0'))} className="p-3 border rounded-2xl" placeholder="Amount to add" />
-                        <div className="flex gap-2">
-                            <button onClick={() => setDevEmail('vlasdvoranov@gmail.com')} className="p-2 bg-slate-100 rounded-2xl">vlasd...</button>
-                            <button onClick={() => setDevEmail('sparify.at@gmail.com')} className="p-2 bg-slate-100 rounded-2xl">sparify...</button>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3 mb-4">
-                        <button onClick={handleDevAddCoins} disabled={devLoading} className="flex-1 bg-slate-900 text-white py-3 rounded-2xl font-bold">Add Coins</button>
-                        <select value={devMode} onChange={(e) => setDevMode(e.target.value as AppMode)} className="p-3 rounded-2xl border">
-                            <option value="kids">Kids</option>
-                            <option value="adult">Adult</option>
-                        </select>
-                        <button onClick={handleDevSetMode} disabled={devLoading} className="bg-slate-100 py-3 px-4 rounded-2xl">Set Mode</button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-                        <div className="flex gap-2">
-                            <input type="number" value={devSetCoins ?? ''} onChange={(e) => setDevSetCoins(e.target.value === '' ? null : parseInt(e.target.value || '0'))} placeholder="Set coins" className="p-3 border rounded-2xl w-full" />
-                            <button onClick={handleDevSetCoins} disabled={devLoading} className="p-3 bg-slate-900 text-white rounded-2xl">Set</button>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <input type="number" value={devAvatarId ?? ''} onChange={(e) => setDevAvatarId(e.target.value === '' ? null : parseInt(e.target.value || '0'))} placeholder="Avatar id" className="p-3 border rounded-2xl w-full" />
-                            <button onClick={handleDevSetAvatar} disabled={devLoading} className="p-3 bg-slate-900 text-white rounded-2xl">Set Avatar</button>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <select value={devGiveItemId} onChange={(e) => setDevGiveItemId(e.target.value)} className="p-3 border rounded-2xl w-full">
-                                <option value="">Select item...</option>
-                                {SPECIALS_DATABASE.map(s => <option key={s.id} value={s.id}>{s.label} ({s.id})</option>)}
-                            </select>
-                            <button onClick={handleDevGiveItem} disabled={devLoading} className="p-3 bg-slate-900 text-white rounded-2xl">Give Item</button>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
-                        <div className="flex gap-2">
-                            <select value={devGiveColor} onChange={(e) => setDevGiveColor(e.target.value as ThemeColor | '')} className="p-3 border rounded-2xl w-full">
-                                <option value="">Select color...</option>
-                                {colors.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
-                            <button onClick={handleDevGiveColor} disabled={devLoading} className="p-3 bg-slate-900 text-white rounded-2xl">Give Color</button>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <select value={devGiveVIPColor} onChange={(e) => setDevGiveVIPColor(e.target.value as VIPColor | '')} className="p-3 border rounded-2xl w-full">
-                                <option value="">Select VIP...</option>
-                                {vipColors.map(c => <option key={c} value={c}>{c.replace('vip_', '')}</option>)}
-                            </select>
-                            <button onClick={handleDevGiveVIPColor} disabled={devLoading} className="p-3 bg-amber-500 text-white rounded-2xl">Give VIP</button>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <button onClick={handleDevGiveAllColors} disabled={devLoading} className="p-3 bg-amber-400 text-white rounded-2xl">Give All Colors</button>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <button onClick={handleDevResetUnseen} disabled={devLoading} className="p-3 bg-slate-100 rounded-2xl">Reset Unseen</button>
-                        </div>
-                    </div>
-
-                    <div className="text-sm text-slate-500">
-                        <div>Status: {devStatus ?? 'Idle'}</div>
-                    </div>
-                </div>
-            )}
 
       <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
         <div className="flex items-center gap-3 mb-6">
@@ -625,27 +296,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         <div className="flex justify-between items-center text-sm font-medium text-slate-500 mb-2">
             <span>{t.version}</span>
             <span>2.0.0</span>
-        </div>
-      </div>
-
-      {/* Security / Reset Password Section */}
-      <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
-        <div className="flex items-center gap-3 mb-6">
-             <div className="p-2 bg-slate-900 rounded-xl text-white"><Lock size={20} /></div>
-             <h3 className="font-bold text-slate-800">{t.security}</h3>
-        </div>
-        <div className="space-y-3">
-            <p className="text-sm text-slate-500 mb-4">Reset your password by sending a recovery email to your registered email address.</p>
-            <button 
-                onClick={handleResetPassword} 
-                disabled={isResettingPassword}
-                className="w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-2xl border border-slate-200 hover:bg-slate-200 transition-all active:scale-95"
-            >
-                {isResettingPassword ? 'Sending...' : resetSent ? '✓ Email Sent' : 'Send Password Reset Email'}
-            </button>
-            {resetSent && (
-                <p className="text-xs text-emerald-600 text-center mt-3 font-medium">Password reset email has been sent to {user.email}</p>
-            )}
         </div>
       </div>
 

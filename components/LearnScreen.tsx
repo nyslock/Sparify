@@ -1,16 +1,7 @@
+
 import React, { useState, useMemo } from 'react';
 import { Heart, Flame, Zap, Check, Lock, Play, Star, X, Coins, ArrowRight, ArrowLeft, Gamepad2, ShieldAlert, PiggyBank, Smile, Clock, Flag, Globe, ShoppingBasket, School, TrendingUp, AlertTriangle, Wallet, RotateCcw, Tag, Hourglass, Calculator, Briefcase, Percent, PieChart, Landmark, LineChart, ShieldCheck, ZapOff } from 'lucide-react';
-import { Language, TRANSLATIONS, ThemeColor, VIPColor, User, AppMode } from '../types';
-
-interface LearnScreenProps {
-  language: Language;
-  accentColor: ThemeColor | VIPColor;
-  user: User;
-  onCompleteLevel: (levelId: string, rewardAmount: number) => void;
-  onLevelStart: () => void;
-  onLevelEnd: () => void;
-  appMode?: AppMode;
-}
+import { Language, TRANSLATIONS, ThemeColor, User, AppMode } from '../types';
 
 interface Level {
   id: string;
@@ -47,9 +38,18 @@ interface Question {
 
 type LevelContent = (Slide | Question)[];
 
+interface LearnScreenProps {
+  language: Language;
+  accentColor: ThemeColor;
+  user: User;
+  onCompleteLevel: (levelId: string, rewardAmount: number) => void;
+  onLevelStart: () => void;
+  onLevelEnd: () => void;
+  appMode?: AppMode;
+}
+
 export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor, user, onCompleteLevel, onLevelStart, onLevelEnd, appMode = 'kids' }) => {
   const t = TRANSLATIONS[language].learn;
-    const LC = (TRANSLATIONS[language] && (TRANSLATIONS[language].learnContent || {})) as any;
   const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -88,11 +88,11 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
           title: t.sections.basics,
           color: 'bg-emerald-500',
           levels: [
-              { id: 'l_base_1', title: (LC.levels && LC.levels.l_base_1) || 'Hallo Geld', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_basics_1', reward: 5, duration: '2 Min' },
-              { id: 'l_base_2', title: (LC.levels && LC.levels.l_base_2) || 'Euro & Cent', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_basics_2', reward: 5, duration: '2 Min' },
-              { id: 'l_base_3', title: (LC.levels && LC.levels.l_base_3) || 'Scheine', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_basics_3', reward: 8, duration: '3 Min' },
-              { id: 'l_base_4', title: (LC.levels && LC.levels.l_base_4) || 'Geld-Polizei', type: 'game', icon: 'game', position: 'center', contentId: 'c_basics_1', reward: 15, duration: '5 Min' },
-              { id: 'l_base_5', title: (LC.levels && LC.levels.l_base_5) || 'Profi Quiz', type: 'quiz', icon: 'check', position: 'left', contentId: 'c_basics_quiz', reward: 10, duration: '4 Min' },
+              { id: 'l_base_1', title: 'Hallo Geld', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_basics_1', reward: 5, duration: '2 Min' },
+              { id: 'l_base_2', title: 'Euro & Cent', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_basics_2', reward: 5, duration: '2 Min' },
+              { id: 'l_base_3', title: 'Scheine', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_basics_3', reward: 8, duration: '3 Min' },
+              { id: 'l_base_4', title: 'Geld-Polizei', type: 'game', icon: 'game', position: 'center', contentId: 'c_basics_1', reward: 15, duration: '5 Min' },
+              { id: 'l_base_5', title: 'Profi Quiz', type: 'quiz', icon: 'check', position: 'left', contentId: 'c_basics_quiz', reward: 10, duration: '4 Min' },
           ]
       },
       {
@@ -175,22 +175,14 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
       'c_adult_bud_1': [
         { type: 'slide', title: "Finanzielle Freiheit", text: "Die 50-30-20 Regel hilft dir, ein Vermögen aufzubauen, ohne auf alles zu verzichten.", icon: <Landmark size={64} className="text-slate-800" /> }
       ],
-            'c_basics_1': (
-                (LC.contents && LC.contents.c_basics_1) || [
-                    { type: 'slide', title: "Hallo Geld!", text: "Geld ist wichtig. Aber warum haben wir es eigentlich?", icon: <Coins size={64} className="text-yellow-500" /> },
-                    { type: 'slide', title: "Tauschen", text: "Früher haben Leute Hühner gegen Brot getauscht. Das war oft kompliziert.", icon: <ArrowRight size={64} className="text-orange-500" /> },
-                    { type: 'question', question: "Ist Tauschen immer einfach?", options: [{ text: "Nein", correct: true }, { text: "Ja", correct: false }], feedbackSuccess: "Genau!", feedbackError: "Leider nicht immer." }
-                ]
-            ).map((it: any) => it.type === 'slide' ? { ...it, icon: it.icon ?? (it.title?.includes('Euro') ? <Globe size={64} className="text-blue-500" /> : <Coins size={64} className="text-yellow-500" />) } : it),
-            'c_basics_2': (
-                (LC.contents && LC.contents.c_basics_2) || [{ type: 'slide', title: "Euro & Cent", text: "Ein Euro hat 100 Cent.", icon: <Globe size={64} className="text-blue-500" /> }]
-            ).map((it: any) => it.type === 'slide' ? { ...it, icon: it.icon ?? <Globe size={64} className="text-blue-500" /> } : it),
-            'c_basics_3': (
-                (LC.contents && LC.contents.c_basics_3) || [{ type: 'slide', title: "Scheine", text: "Große Beträge zahlen wir mit Scheinen.", icon: <Wallet size={64} className="text-green-600" /> }]
-            ).map((it: any) => it.type === 'slide' ? { ...it, icon: it.icon ?? <Wallet size={64} className="text-green-600" /> } : it),
-            'c_basics_quiz': (
-                (LC.contents && LC.contents.c_basics_quiz) || [{ type: 'question', question: "Was nimmst du zum Bäcker?", options: [{ text: "Steine", correct: false }, { text: "Geld", correct: true }], feedbackSuccess: "Richtig.", feedbackError: "Nein!" }]
-            ),
+      'c_basics_1': [
+        { type: 'slide', title: "Hallo Geld!", text: "Geld ist wichtig. Aber warum haben wir es eigentlich?", icon: <Coins size={64} className="text-yellow-500" /> },
+        { type: 'slide', title: "Tauschen", text: "Früher haben Leute Hühner gegen Brot getauscht. Das war oft kompliziert.", icon: <ArrowRight size={64} className="text-orange-500" /> },
+        { type: 'question', question: "Ist Tauschen immer einfach?", options: [{ text: "Nein", correct: true }, { text: "Ja", correct: false }], feedbackSuccess: "Genau!", feedbackError: "Leider nicht immer." }
+      ],
+      'c_basics_2': [{ type: 'slide', title: "Euro & Cent", text: "Ein Euro hat 100 Cent.", icon: <Globe size={64} className="text-blue-500" /> }],
+      'c_basics_3': [{ type: 'slide', title: "Scheine", text: "Große Beträge zahlen wir mit Scheinen.", icon: <Wallet size={64} className="text-green-600" /> }],
+      'c_basics_quiz': [{ type: 'question', question: "Was nimmst du zum Bäcker?", options: [{ text: "Steine", correct: false }, { text: "Geld", correct: true }], feedbackSuccess: "Richtig.", feedbackError: "Nein!" }],
       'c_earn_1': [{ type: 'slide', title: "Arbeit", text: "Geld verdient man meist durch Arbeit.", icon: <Zap size={64} className="text-yellow-500" /> }],
       'c_earn_2': [{ type: 'slide', title: "Taschengeld", text: "Taschengeld ist zum Üben da.", icon: <Smile size={64} className="text-pink-500" /> }],
       'c_earn_3': [{ type: 'slide', title: "Pfand", text: "Leere Flaschen bringen Geld zurück!", icon: <RotateCcw size={64} className="text-blue-400" /> }],
@@ -246,9 +238,9 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
 
   const paths = useMemo(() => {
     const VB_CENTER = 150;
-    const VB_OFFSET = 60; 
-    const VB_Y_START = 44; // Matches padding-top in DOM
-    const VB_HEADER_H = 108; // Height of section header including margins
+    const VB_OFFSET = 60; // 60/300 = 20% from center -> 30% and 70% total
+    const VB_Y_START = 16; // Matches pt-4 in DOM
+    const VB_HEADER_H = 104; // py-3(24) + text-lg(28) + border-4(4) + mb-12(48) = 104
     const VB_LEVEL_H = 120; // Exact height of h-[120px] container
     
     let fullPath = `M ${VB_CENTER} ${VB_Y_START} `;
@@ -265,7 +257,6 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
             if (level.position === 'left') nextX = VB_CENTER - VB_OFFSET;
             if (level.position === 'right') nextX = VB_CENTER + VB_OFFSET;
             
-            // Pointing to the vertical CENTER of the 120px level container
             const nextY = currentY + (VB_LEVEL_H / 2);
             
             const curve = `C ${prevX} ${prevY + (nextY - prevY) * 0.5}, ${nextX} ${nextY - (nextY - prevY) * 0.5}, ${nextX} ${nextY} `;
@@ -277,7 +268,6 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
             prevY = nextY; 
             currentY += VB_LEVEL_H; 
         });
-        currentY += 32; // section-bottom gap
     });
     return { fullPath, activePath, height: currentY };
   }, [user.completedLevels, SECTIONS]); 
@@ -285,7 +275,6 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
   const activeContent = selectedLevel ? LEVEL_CONTENTS[selectedLevel.contentId] : [];
   const activeSlide = activeContent[currentSlideIndex];
 
-  // Logic functions to fix missing references
   const startLevel = () => {
     setIsPlaying(true);
     setCurrentSlideIndex(0);
@@ -333,10 +322,10 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
         <div className="flex-1 overflow-y-auto no-scrollbar pb-32 pt-4 relative md:flex md:justify-center">
             <div className="w-full relative max-w-md">
                 {/* SVG Line Background */}
-                <svg className="absolute top-0 left-0 w-full pointer-events-none opacity-20" viewBox={`0 0 300 ${paths.height + 200}`} preserveAspectRatio="xMidYMin slice" style={{ height: paths.height + 200 }}>
+                <svg className="absolute top-0 left-0 w-full pointer-events-none opacity-20" viewBox={`0 0 300 ${paths.height}`} preserveAspectRatio="none" style={{ height: paths.height }}>
                     <path d={paths.fullPath} stroke="white" strokeWidth="12" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="20 20" />
                 </svg>
-                <svg className="absolute top-0 left-0 w-full pointer-events-none z-0" viewBox={`0 0 300 ${paths.height + 200}`} preserveAspectRatio="xMidYMin slice" style={{ height: paths.height + 200 }}>
+                <svg className="absolute top-0 left-0 w-full pointer-events-none z-0" viewBox={`0 0 300 ${paths.height}`} preserveAspectRatio="none" style={{ height: paths.height }}>
                     <path d={paths.activePath} stroke="#8b5cf6" strokeWidth="12" fill="none" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-lg" />
                 </svg>
 
@@ -352,7 +341,7 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
                                     const status = getStatus(level.id, sIdx, lIdx);
                                     return (
                                         <div key={level.id} className="relative w-full h-[120px]">
-                                            <div className="absolute -translate-x-1/2 transition-all duration-300" style={getPositionStyle(level.position)}>
+                                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-300" style={getPositionStyle(level.position)}>
                                                 <button 
                                                     onClick={() => status !== 'locked' && setSelectedLevel(level)} 
                                                     disabled={status === 'locked'} 
@@ -379,7 +368,7 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
 
         {selectedLevel && !isPlaying && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6">
-                <div className="bg-[#1e1e2e] border-2 border-slate-700 w-full max-w-sm rounded-3xl p-6 relative animate-in zoom-in-95 duration-200 shadow-2xl">
+                <div className="bg-[#1e1e2e] border-2 border-slate-700 w-full max-sm rounded-3xl p-6 relative animate-in zoom-in-95 duration-200 shadow-2xl">
                     <button onClick={() => setSelectedLevel(null)} className="absolute -top-4 -right-4 bg-slate-700 text-white p-3 rounded-full border-4 border-[#1e1e2e]"><X size={24} /></button>
                     <div className="text-center">
                         <div className={`w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-slate-700 text-white`}>

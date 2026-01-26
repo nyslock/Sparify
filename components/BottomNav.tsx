@@ -1,11 +1,11 @@
 import React from 'react';
-import { Home, Settings, Plus, GraduationCap, ShoppingBag, Dices } from 'lucide-react';
-import { ThemeColor, THEME_COLORS, ViewState, VIPColor, getAccentColorClass } from '../types';
+import { Home, Settings, Plus, GraduationCap, ShoppingBag } from 'lucide-react';
+import { ThemeColor, THEME_COLORS, ViewState } from '../types';
 
 interface BottomNavProps {
   currentView: ViewState;
   onChangeView: (view: ViewState) => void;
-  accentColor: ThemeColor | VIPColor;
+  accentColor: ThemeColor;
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onChangeView, accentColor }) => {
@@ -57,7 +57,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onChangeView,
         <div className={`relative mx-2 transition-all duration-500 ${isFloating ? '-top-8' : '-top-10'}`}>
             <button
             onClick={() => onChangeView('SCANNER')}
-            className={`w-16 h-16 ${getAccentColorClass(accentColor)} rounded-full shadow-xl shadow-slate-400/40 flex items-center justify-center text-white active:scale-95 transition-transform ring-4 ring-white`}
+            className={`w-16 h-16 ${THEME_COLORS[accentColor]} rounded-full shadow-xl shadow-slate-400/40 flex items-center justify-center text-white active:scale-95 transition-transform ring-4 ring-white`}
             >
             <Plus size={32} strokeWidth={3} />
             </button>
@@ -74,19 +74,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onChangeView,
         >
           {!isFloating && currentView === 'SHOP' && <div className="w-8 h-1 bg-slate-900 rounded-full mb-1 animate-in zoom-in"></div>}
           <ShoppingBag size={24} strokeWidth={currentView === 'SHOP' ? 3 : 2.5} />
-        </button>
-
-        {/* Casino Tab */}
-        <button 
-          onClick={() => onChangeView('CASINO')}
-          className={`flex-1 flex flex-col items-center justify-center h-full rounded-[2rem] transition-all duration-300 ${
-            currentView === 'CASINO' 
-                ? (isFloating ? 'bg-slate-100 text-slate-900' : 'text-slate-900') 
-                : 'text-slate-400 hover:text-slate-600'
-          }`}
-        >
-          {!isFloating && currentView === 'CASINO' && <div className="w-8 h-1 bg-slate-900 rounded-full mb-1 animate-in zoom-in"></div>}
-          <Dices size={24} strokeWidth={currentView === 'CASINO' ? 3 : 2.5} />
         </button>
 
         {/* Settings Tab */}

@@ -1,21 +1,19 @@
 
 import React from 'react';
-import { Home, Settings, Plus, GraduationCap, ShoppingBag, LogOut, PiggyBank, PieChart, Briefcase, Trophy, Dices } from 'lucide-react';
-import { ThemeColor, THEME_COLORS, VIPColor, ViewState, User, AVATARS, CUSTOM_LOGO_URL, AppMode, Language, TRANSLATIONS, getAccentColorClass } from '../types';
+import { Home, Settings, Plus, GraduationCap, ShoppingBag, LogOut, PiggyBank, PieChart, Briefcase } from 'lucide-react';
+import { ThemeColor, THEME_COLORS, ViewState, User, AVATARS, CUSTOM_LOGO_URL, AppMode } from '../types';
 
 interface SidebarProps {
   currentView: ViewState;
   onChangeView: (view: ViewState) => void;
-  accentColor: ThemeColor | VIPColor;
+  accentColor: ThemeColor;
   user: User;
   onLogout: () => void;
   appMode?: AppMode;
-  language?: Language;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, accentColor, user, onLogout, appMode = 'kids', language = 'de' }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, accentColor, user, onLogout, appMode = 'kids' }) => {
   const isFrameActive = user.inventory.includes('frame_gold');
-  const t = TRANSLATIONS[language];
 
   const NavItem = ({ view, icon: Icon, label }: { view: ViewState, icon: any, label: string }) => (
     <button
@@ -41,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, acc
       <div className="flex items-center gap-3 mb-10 px-2">
          <div className={`
              flex items-center justify-center shadow-lg text-white transition-all
-             ${appMode === 'adult' ? 'w-8 h-8 rounded-lg bg-slate-900 shadow-none' : `w-12 h-12 rounded-2xl ${getAccentColorClass(accentColor)}`}
+             ${appMode === 'adult' ? 'w-8 h-8 rounded-lg bg-slate-900 shadow-none' : `w-12 h-12 rounded-2xl ${THEME_COLORS[accentColor]}`}
          `}>
             {CUSTOM_LOGO_URL && appMode === 'kids' ? (
                 <img src={CUSTOM_LOGO_URL} alt="Logo" className="w-8 h-8 object-contain" />
@@ -56,19 +54,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, acc
       </div>
 
       <div className="flex-1 space-y-2">
-        <NavItem view="DASHBOARD" icon={appMode === 'adult' ? PieChart : Home} label={appMode === 'adult' ? (t.dashboard.adTitle || 'Dashboard') : (t.dashboard.myPigs || 'Übersicht')} />
-        <NavItem view="LEARN" icon={appMode === 'adult' ? Briefcase : GraduationCap} label={appMode === 'adult' ? (t.learn.sections?.basics || 'Finanzwissen') : (t.learn.sections?.basics || 'Lernen & Spielen')} />
-        <NavItem view="SHOP" icon={ShoppingBag} label={(t.shop.title || 'Shop')} />
-        <NavItem view="CASINO" icon={Dices} label={(t.casino?.title || 'Casino')} />
-        <NavItem view="ACHIEVEMENTS" icon={Trophy} label={(t.detail?.achievements || 'Erfolge')} />
-        <NavItem view="SETTINGS" icon={Settings} label={(t.settings?.title || 'Einstellungen')} />
+        <NavItem view="DASHBOARD" icon={appMode === 'adult' ? PieChart : Home} label={appMode === 'adult' ? "Dashboard" : "Übersicht"} />
+        <NavItem view="LEARN" icon={appMode === 'adult' ? Briefcase : GraduationCap} label={appMode === 'adult' ? "Finanzwissen" : "Lernen & Spielen"} />
+        <NavItem view="SHOP" icon={ShoppingBag} label="Shop" />
+        <NavItem view="SETTINGS" icon={Settings} label="Einstellungen" />
         
         <button
             onClick={() => onChangeView('SCANNER')}
             className={`w-full flex items-center gap-4 px-4 py-3 transition-all mt-6 ${
                 appMode === 'adult' 
                 ? 'rounded-lg bg-slate-900 text-white hover:bg-slate-800' 
-                : `${getAccentColorClass(accentColor)} text-white shadow-md hover:opacity-90 active:scale-95 rounded-2xl`
+                : `${THEME_COLORS[accentColor]} text-white shadow-md hover:opacity-90 active:scale-95 rounded-2xl`
             }`}
         >
             <Plus size={appMode === 'adult' ? 20 : 24} strokeWidth={3} />
@@ -85,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, acc
                 <p className={`${appMode === 'adult' ? 'font-bold text-sm' : 'font-black'} text-slate-800 truncate`}>{user.name}</p>
                 {appMode === 'kids' && (
                     <div className="flex items-center gap-1 text-xs font-bold text-yellow-600">
-                          <span>{user.coins} {t.shop?.balance || 'Münzen'}</span>
+                        <span>{user.coins} Münzen</span>
                     </div>
                 )}
             </div>

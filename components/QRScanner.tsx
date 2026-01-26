@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X, Camera, Eye, UserCheck, Loader2, AlertCircle } from 'lucide-react';
-import { ThemeColor, THEME_COLORS, Language, TRANSLATIONS, VIPColor, getAccentColorClass } from '../types';
+import { ThemeColor, THEME_COLORS, Language, TRANSLATIONS } from '../types';
 import jsQR from 'jsqr';
 
 interface QRScannerProps {
   onClose: () => void;
   onFound: (code: string, isGuest: boolean) => Promise<{ success: boolean; message?: string }>;
-  accentColor: ThemeColor | VIPColor;
+  accentColor: ThemeColor;
   language: Language;
 }
 
@@ -293,7 +293,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onClose, onFound, accentCo
           <button
             type="submit"
             disabled={processing}
-            className={`${isGuestMode ? 'bg-blue-500 shadow-blue-500/30' : getAccentColorClass(accentColor)} text-white font-black px-6 py-4 rounded-2xl shadow-lg active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100`}
+            className={`${isGuestMode ? 'bg-blue-500 shadow-blue-500/30' : THEME_COLORS[accentColor]} text-white font-black px-6 py-4 rounded-2xl shadow-lg active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100`}
           >
             Go
           </button>
