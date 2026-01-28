@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Plus, PiggyBank as PigIcon, Eye, Lock, Megaphone, Trash2, Wallet, CreditCard, ChevronRight, TrendingUp, PieChart, ArrowUpRight, ArrowDownLeft, Snowflake, Target, Percent, Info, AlertCircle, Check } from 'lucide-react';
 import { PiggyBank, ThemeColor, THEME_COLORS, Language, TRANSLATIONS, CUSTOM_LOGO_URL, AppMode, User, Goal } from '../types';
@@ -38,8 +37,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   const tDetail = TRANSLATIONS[language].detail;
   const tScanner = TRANSLATIONS[language].scanner;
 
-  const TREASURE_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogo.png';
-
   const aggregatedData = useMemo(() => {
     if (ownedPigs.length === 0) return [];
     
@@ -56,7 +53,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         result.push({ day: dayLabel, amount: sum });
     }
 
-    // Filter based on period: 7D slices the last 7 items, MTD shows full (up to 30)
     if (chartPeriod === '7D') {
         return result.slice(-7);
     }
@@ -310,7 +306,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                         </div>
                     </div>
                     <div className="pl-4">
-                        <img src={TREASURE_LOGO_URL} alt="Logo" className="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-lg" />
+                        <div className={`w-24 h-24 md:w-32 md:h-32 bg-white/10 backdrop-blur-md rounded-[2rem] p-4 flex items-center justify-center shadow-inner border border-white/20`}>
+                            <img 
+                              src={CUSTOM_LOGO_URL}
+                              className="w-full h-full object-contain"
+                              alt="Sparify Hero Logo"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

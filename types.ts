@@ -1,16 +1,17 @@
-import { Sparkles, Trophy, Snowflake, TrendingUp, ShieldCheck, Gift, Landmark, ShieldAlert, Crown, Rainbow, Zap, Star, Gem, Ticket, Shield } from 'lucide-react';
+
+import { Sparkles, Trophy, Snowflake, TrendingUp, ShieldCheck, Gift, Landmark, ShieldAlert, Crown, Rainbow, Zap, Star, Gem, Ticket, Shield, Frame, BadgeCheck } from 'lucide-react';
 
 export type ThemeColor = 
-  | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink' | 'teal' | 'cyan' | 'black';
-
-export type VIPColor = 
-  | 'vip_sunset' | 'vip_ocean' | 'vip_forest' | 'vip_galaxy' | 'vip_candy' 
-  | 'vip_fire' | 'vip_emerald' | 'vip_royal' | 'vip_peach' | 'vip_midnight';
+  | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink' | 'teal' 
+  | 'cyan' | 'indigo' | 'lime' | 'rose' | 'fuchsia' | 'violet' | 'sky' | 'amber' | 'zinc'
+  | 'mint' | 'gold' | 'black'
+  | 'slate' | 'stone' | 'emerald' | 'cocoa' | 'lilac' | 'salmon' | 'ocean' | 'forest' | 'night' | 'berry';
 
 export type Language = 'de' | 'en' | 'hr' | 'tr' | 'ru' | 'hu';
 export type AppMode = 'kids' | 'adult';
 
-export const CUSTOM_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogoOrange.png'; 
+export const CUSTOM_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogo.png'; 
+export const LOGIN_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogoBlau.png';
 
 export interface User {
   name: string;
@@ -21,14 +22,14 @@ export interface User {
   streak: number; 
   lastCompletedDate: string | null; 
   inventory: string[]; 
-  unseenItems: string[]; // Trackt IDs von Items, die neu gewonnen wurden
+  unseenItems: string[]; 
   completedLevels: string[]; 
   claimedAchievements: string[]; 
   activeSpecials: string[]; 
   streakFreezeUntil?: string | null; 
   language: Language;
-  accentColor?: ThemeColor | VIPColor;
   age: number | null;
+  birthdate: string | null;
   hasSeenTutorial: boolean;
 }
 
@@ -53,19 +54,82 @@ export interface SpecialItem {
     label: string;
     description: string;
     price: number;
-    category: 'profile' | 'piggy' | 'instant';
+    category: 'profile' | 'piggy' | 'coupon' | 'tag' | 'frame' | 'streak';
     icon: any;
     color: string;
 }
 
 export const SPECIALS_DATABASE: SpecialItem[] = [
   {
-    id: 'item_lucky_bag',
-    label: 'Wundertüte',
-    description: 'Gewinne Münzen, Avatare oder exklusive Farben!',
+    id: 'item_discount_coupon',
+    label: '50% Rabatt-Gutschein',
+    description: 'Halbiert den Preis deines nächsten Einkaufs!',
+    price: 80,
+    category: 'coupon',
+    icon: Ticket,
+    color: 'text-orange-500'
+  },
+  {
+    id: 'item_streak_freeze',
+    label: 'Streakfreezer',
+    description: 'Friert deine Streak für 24h ein. Schutz vor Verlust!',
+    price: 120,
+    category: 'streak',
+    icon: Snowflake,
+    color: 'text-blue-400'
+  },
+  {
+    id: 'frame_wood',
+    label: 'Holz-Rahmen',
+    description: 'Ein rustikaler Rahmen für dein Profilbild.',
     price: 150,
-    category: 'instant',
-    icon: Gift,
+    category: 'frame',
+    icon: Frame,
+    color: 'text-amber-700'
+  },
+  {
+    id: 'frame_silver',
+    label: 'Silber-Rahmen',
+    description: 'Glänze mit diesem edlen Silber-Rahmen.',
+    price: 300,
+    category: 'frame',
+    icon: Shield,
+    color: 'text-slate-400'
+  },
+  {
+    id: 'frame_gold',
+    label: 'Gold-Rahmen',
+    description: 'Der ultimative Status für Spar-Könige.',
+    price: 600,
+    category: 'frame',
+    icon: Crown,
+    color: 'text-yellow-500'
+  },
+  {
+    id: 'tag_saver_pro',
+    label: 'Titel: Spar-Profi',
+    description: 'Zeige allen, dass du dein Geld im Griff hast.',
+    price: 100,
+    category: 'tag',
+    icon: BadgeCheck,
+    color: 'text-blue-500'
+  },
+  {
+    id: 'tag_money_magnet',
+    label: 'Titel: Münz-Magnet',
+    description: 'Du ziehst das Geld förmlich an!',
+    price: 200,
+    category: 'tag',
+    icon: Zap,
+    color: 'text-yellow-400'
+  },
+  {
+    id: 'tag_future_boss',
+    label: 'Titel: Zukunfts-Boss',
+    description: 'Große Träume erfordern große Disziplin.',
+    price: 400,
+    category: 'tag',
+    icon: Star,
     color: 'text-purple-500'
   }
 ];
@@ -152,11 +216,10 @@ export type ViewState =
   | 'DASHBOARD' 
   | 'LEARN'
   | 'SHOP'
-  | 'ACHIEVEMENTS'
   | 'SETTINGS' 
   | 'SCANNER' 
   | 'DETAIL'
-  | 'CASINO';
+  | 'BOX_TUTORIAL';
 
 export const AVATARS = [
   'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Profile%20Pictures/avatar_01.png',
@@ -176,7 +239,7 @@ export const AVATARS = [
   'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Profile%20Pictures/avatar_15.png',
   'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Profile%20Pictures/avatar_16.png',
   'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Profile%20Pictures/avatar_17.png',
-  'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Profile%20Pictures/avatar_19.png',
+  'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Profile%20Pictures/avatar_18.png',
   'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Profile%20Pictures/avatar_19.png',
   'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Profile%20Pictures/avatar_20.png',
   'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Profile%20Pictures/avatar_21.png',
@@ -186,135 +249,79 @@ export const AVATARS = [
 ];
 
 export const THEME_COLORS: { [key in ThemeColor]: string } = {
-  red: 'bg-red-500', 
-  orange: 'bg-orange-500', 
-  yellow: 'bg-yellow-400', 
-  green: 'bg-green-500', 
-  blue: 'bg-blue-500', 
-  purple: 'bg-purple-500', 
-  pink: 'bg-pink-500', 
-  teal: 'bg-teal-500', 
-  cyan: 'bg-cyan-500', 
-  black: 'bg-slate-900'
-};
-
-export const VIP_COLORS: { [key in VIPColor]: string } = {
-  vip_sunset: 'bg-gradient-to-br from-orange-400 via-red-500 to-pink-600',
-  vip_ocean: 'bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600',
-  vip_forest: 'bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600',
-  vip_galaxy: 'bg-gradient-to-br from-purple-600 via-indigo-700 to-slate-900',
-  vip_candy: 'bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400',
-  vip_fire: 'bg-gradient-to-br from-yellow-400 via-orange-500 to-red-700',
-  vip_emerald: 'bg-gradient-to-br from-emerald-300 via-green-500 to-teal-700',
-  vip_royal: 'bg-gradient-to-br from-blue-600 via-purple-700 to-pink-600',
-  vip_peach: 'bg-gradient-to-br from-yellow-300 via-orange-400 to-rose-500',
-  vip_midnight: 'bg-gradient-to-br from-slate-700 via-blue-900 to-slate-950'
-};
-
-export const getAccentColorClass = (color: ThemeColor | VIPColor): string => {
-  if (color.startsWith('vip_')) {
-    return VIP_COLORS[color as VIPColor];
-  }
-  return THEME_COLORS[color as ThemeColor];
+  red: 'bg-red-500', orange: 'bg-orange-500', yellow: 'bg-yellow-400', green: 'bg-green-500', blue: 'bg-blue-500', purple: 'bg-purple-500', pink: 'bg-pink-500', teal: 'bg-teal-500', cyan: 'bg-cyan-500', indigo: 'bg-indigo-500', lime: 'bg-lime-500', rose: 'bg-rose-500', fuchsia: 'bg-fuchsia-500', violet: 'bg-violet-600', sky: 'bg-sky-500', amber: 'bg-amber-500', zinc: 'bg-zinc-600', mint: 'bg-emerald-300', gold: 'bg-yellow-600', black: 'bg-slate-900', slate: 'bg-slate-500', stone: 'bg-stone-500', emerald: 'bg-emerald-600', cocoa: 'bg-amber-800', lilac: 'bg-purple-300', salmon: 'bg-rose-400', ocean: 'bg-cyan-700', forest: 'bg-green-800', night: 'bg-blue-950', berry: 'bg-pink-700'
 };
 
 export const TRANSLATIONS: Record<Language, any> = {
   de: {
     login: { slogan: 'Schlau sparen, Träume erfüllen.', title: 'Willkommen zurück', email: 'E-Mail', password: 'Passwort', button: 'Einloggen', registerBtn: 'Konto erstellen', forgotPassword: 'Passwort vergessen?', resetTitle: 'Passwort zurücksetzen', resetButton: 'Link senden', backToLogin: 'Zurück zum Login', resetSuccess: 'E-Mail gesendet!' },
-    age: { title: 'Fast fertig!', subtitle: 'Wie alt bist du?', hint: 'Dies hat keinen Einfluss auf die Funktionen, es passt lediglich das Design der App an dich an.', confirm: 'Los geht\'s', years: 'Jahre' },
+    age: { title: 'Fast fertig!', subtitle: 'Wann hast du Geburtstag?', hint: 'Dies hat keinen Einfluss auf die Funktionen, es passt lediglich das Design der App an dich an.', confirm: 'Los geht\'s', years: 'Jahre', birthdate: 'Geburtsdatum' },
     dashboard: { balance: 'Kontostand', newPig: 'Neues Schwein', myPigs: 'Meine Schweine', praiseMessages: ['Super!', 'Klasse!', 'Spitze!'], adLabel: 'Tipp', adTitle: 'Spar-Experte', adSubtitle: 'Jeder Cent zählt', moreSavings: 'Mehr sparen', noPigs: 'Keine Schweine vorhanden', watchedPigs: 'Beobachtete Schweine', removeGuestConfirm: 'Beobachtung beenden?', pigs: 'Schweinchen' },
     detail: { history: 'Verlauf', confirm: 'Bestätigen', cancel: 'Abbrechen', errorNotEnough: 'Guthaben zu niedrig', withdrawal: 'Auszahlung', available: 'Verfügbar', payout: 'Auszahlen', newGoal: 'Neuer Wunsch', share: 'Aufteilung', noGoals: 'Keine Wünsche', transactions: 'Transaktionen', noTransactions: 'Keine Transaktionen', goal: 'Wunsch', achievements: 'Erfolge', achievementsDesc: 'Deine Belohnungen', editGoal: 'Wunsch bearbeiten', settingsTitle: 'Einstellungen', pigName: 'Name', color: 'Farbe', delete: 'Löschen', payoutTitle: 'Auszahlung' },
     scanner: { loading: 'Kamera lädt...', modeGuest: 'Zuschauer', title: 'QR Scan', modeOwner: 'Besitzer', manual: 'Code eingeben' },
-    settings: { title: 'Einstellungen', security: 'Sicherheit', newPassword: 'Neues Passwort', passwordSaved: 'Passwort gespeichert', changePassword: 'Passwort ändern', appMode: 'App Modus', profile: 'Profil', name: 'Name', activeSpecials: 'Aktive Items', design: 'Design', language: 'Sprache', info: 'Info', version: 'Version', logout: 'Abmelden', logoutConfirm: 'Abmelden?', cancel: 'Abbrechen' },
-    common: { showLess: 'Weniger', showAll: 'Alle', showAllColors: 'Farben', greeting: 'Hallo' },
+    settings: { title: 'Einstellungen', security: 'Sicherheit', newPassword: 'Neues Passwort', passwordSaved: 'Passwort gespeichert', changePassword: 'Passwort ändern', appMode: 'App Modus', profile: 'Profil', name: 'Name', activeSpecials: 'Aktive Items', design: 'Design', language: 'Sprache', info: 'Info', version: 'Version', logout: 'Abmelden', logoutConfirm: 'Abmelden?', cancel: 'Abbrechen', tags: 'Namens-Tags', frames: 'Profil-Rahmen' },
+    common: { showLess: 'Weniger', showAll: 'Alle', showAllColors: 'Farben', greeting: 'Hallo', next: 'Weiter', prev: 'Zurück', skip: 'Überspringen', finish: 'Fertig' },
     help: { appTutorial: 'App Hilfe', boxTutorial: 'Box Hilfe' },
-    learn: { sections: { basics: 'Basics', earning: 'Verdienen', spending: 'Ausgeben', saving: 'Sparen', safety: 'Sicherheit' }, start: 'Start' },
-    shop: { title: 'Shop', subtitle: 'Items kaufen', specials: 'Specials', owned: 'Besitzt', sectionAvatars: 'Avatare', sectionThemes: 'Themes', balance: 'Guthaben' }
-    , casino: { title: 'Casino' }
+    boxTutorial: [
+      {
+        heading: "Wach auf, kleiner Freund!",
+        bodyText: "Schließe dein Schweinchen per USB-C an den Strom an. Sobald das Display hell leuchtet, ist es bereit für seine erste Mahlzeit!",
+      },
+      {
+        heading: "Wir werden ein Team",
+        bodyText: "Deine App sucht nun nach deinem Sparschwein. Achte auf den fröhlichen Piep-Ton – er verrät dir, dass die Verbindung steht!",
+      },
+      {
+        heading: "Fütterungszeit!",
+        bodyText: "Schiebe Münzen oder Scheine in den Schlitz. Das Display erkennt den Wert sofort und zählt in Echtzeit für dich hoch.",
+      },
+      {
+        heading: "Sicher wie im Tresor",
+        bodyText: "Dank deines digitalen Schlosses bleibt dein Erspartes geschützt. Das Display zeigt dir immer an, ob alles sicher verschlossen ist.",
+      },
+      {
+        heading: "Bau dir deine Welt",
+        bodyText: "Nutze bunte Bausteine, um dein Schweinchen einzigartig zu machen. Drücke jetzt auf Start und erfülle dir deine ersten Träume!",
+      }
+    ],
+    tutorial: {
+      step0: { title: 'Willkommen bei Sparify!', text: 'Wir zeigen dir kurz, wie du mit deinem digitalen Sparschwein Träume erfüllen kannst.' },
+      step1: { title: 'Dein Kontostand', text: 'Hier siehst du, wie viel Geld du insgesamt in all deinen Sparschweinen gespart hast.' },
+      step2: { title: 'Deine Schweinchen', text: 'In dieser Liste findest du alle deine Schweine. Tippe auf eines, um Details zu sehen oder Geld auszuzahlen.' },
+      step3: { title: 'Scanner & Hinzufügen', text: 'Tippe auf das Plus, um ein neues Sparschwein zu scannen oder per Code hinzuzufügen.' },
+      step4: { title: 'Navigation', text: 'Nutze die Leiste unten, um zum Shop, zu den Spielen oder den Einstellungen zu gelangen.' }
+    },
+    learn: { sections: { basics: 'Basics', earning: 'Verdienen', spending: 'Ausgeben', saving: 'Sparen', safety: 'Sicherheit' }, start: 'Start', streakFrozen: 'Streak geschützt!' },
+    shop: { title: 'Shop', subtitle: 'Items kaufen', specials: 'Specials', owned: 'Besitzt', sectionAvatars: 'Avatare', sectionThemes: 'Themes', balance: 'Guthaben', discountActive: '50% Rabatt aktiv!' }
   },
   en: {
     login: { slogan: 'Smart saving, big dreams.', title: 'Welcome back', email: 'Email', password: 'Password', button: 'Login', registerBtn: 'Register', forgotPassword: 'Forgot password?', resetTitle: 'Reset password', resetButton: 'Send link', backToLogin: 'Back to login', resetSuccess: 'Email sent!' },
-    age: { title: 'Almost there!', subtitle: 'How old are you?', hint: 'This doesn\'t affect features, it only adjusts the app design for you.', confirm: 'Let\'s go', years: 'years' },
-    dashboard: { balance: 'Balance', newPig: 'New Piggy', myPigs: 'My Piggies', praiseMessages: ['Great!', 'Awesome!', 'Nice!'], adLabel: 'Ad', adTitle: 'Savings Adult', adSubtitle: 'Every cent counts', moreSavings: 'Save more', noPigs: 'No piggies yet', watchedPigs: 'Watched Piggies', removeGuestConfirm: 'Stop watching?', pigs: 'Piggies' },
+    age: { title: 'Almost there!', subtitle: 'When is your birthday?', hint: 'This doesn\'t affect features, it only adjusts the app design for you.', confirm: 'Let\'s go', years: 'years', birthdate: 'Birthdate' },
+    dashboard: { balance: 'Balance', newPiggy: 'New Pig', myPigs: 'My Piggies', praiseMessages: ['Great!', 'Awesome!', 'Nice!'], adLabel: 'Ad', adTitle: 'Savings Expert', adSubtitle: 'Every cent counts', moreSavings: 'Save more', noPigs: 'No piggies yet', watchedPigs: 'Watched Piggies', removeGuestConfirm: 'Stop watching?', pigs: 'Piggies' },
     detail: { history: 'History', confirm: 'Confirm', cancel: 'Cancel', errorNotEnough: 'Not enough balance', withdrawal: 'Withdrawal', available: 'Available', payout: 'Withdraw', newGoal: 'New Goal', share: 'Allocation', noGoals: 'No goals', transactions: 'Transactions', noTransactions: 'No transactions', goal: 'Goal', achievements: 'Achievements', achievementsDesc: 'Your rewards', editGoal: 'Edit goal', settingsTitle: 'Settings', pigName: 'Name', color: 'Color', delete: 'Delete', payoutTitle: 'Withdrawal' },
     scanner: { loading: 'Loading...', modeGuest: 'Guest', title: 'Scan QR', modeOwner: 'Owner', manual: 'Enter code' },
-    settings: { title: 'Settings', security: 'Security', newPassword: 'New Password', passwordSaved: 'Password saved', changePassword: 'Change password', appMode: 'App Mode', profile: 'Profile', name: 'Name', activeSpecials: 'Active items', design: 'Design', language: 'Language', info: 'Info', version: 'Version', logout: 'Logout', logoutConfirm: 'Logout?', cancel: 'Cancel' },
-    common: { showLess: 'Show less', showAll: 'Show all', showAllColors: 'Show colors', greeting: 'Hello' },
+    settings: { title: 'Settings', security: 'Security', newPassword: 'New Password', passwordSaved: 'Password saved', changePassword: 'Change password', appMode: 'App Mode', profile: 'Profile', name: 'Name', activeSpecials: 'Active items', design: 'Design', language: 'Language', info: 'Info', version: 'Version', logout: 'Logout', logoutConfirm: 'Logout?', cancel: 'Cancel', tags: 'Name Tags', frames: 'Profile Frames' },
+    common: { showLess: 'Show less', showAll: 'Show all', showAllColors: 'Show colors', greeting: 'Hello', next: 'Next', prev: 'Back', skip: 'Skip', finish: 'Finish' },
     help: { appTutorial: 'App Tutorial', boxTutorial: 'Box Tutorial' },
-    learn: { sections: { basics: 'Basics', earning: 'Earning', spending: 'Spending', saving: 'Saving', safety: 'Safety' }, start: 'Start' },
-    // detailed learn content translations
-    learnContent: {
-      levels: {
-        l_base_1: 'Hello Money',
-        l_base_2: 'Euro & Cent',
-        l_base_3: 'Banknotes',
-        l_base_4: 'Money Game',
-        l_base_5: 'Pro Quiz'
-      },
-      contents: {
-        c_basics_1: [
-          { type: 'slide', title: 'Hello Money!', text: 'Money helps us trade and save.' },
-          { type: 'slide', title: 'Trading', text: 'People used to trade chickens for bread.' },
-          { type: 'question', question: 'Is bartering always easy?', options: ['No','Yes'], feedbackSuccess: 'Exactly!', feedbackError: 'Not always.' }
-        ],
-        c_basics_2: [{ type: 'slide', title: 'Euro & Cent', text: 'One euro equals 100 cents.' }],
-        c_basics_3: [{ type: 'slide', title: 'Banknotes', text: 'We use banknotes for larger amounts.' }],
-        c_basics_quiz: [{ type: 'question', question: 'What do you take to the bakery?', options: ['Stones','Money'], feedbackSuccess: 'Correct.', feedbackError: 'Nope.' }]
-      }
+    boxTutorial: [
+        { heading: "Wake up, little friend!", bodyText: "Connect your piggy to power via USB-C. As soon as the display lights up, it's ready for its first meal!" },
+        { heading: "Becoming a Team", bodyText: "Your app is now searching for your piggy bank. Listen for the happy beep – it tells you that the connection is established!" },
+        { heading: "Feeding Time!", bodyText: "Slide coins or bills into the slot. The display recognizes the value immediately and counts up for you in real time." },
+        { heading: "Safe like a Vault", bodyText: "Thanks to your digital lock, your savings stay protected. The display always shows you if everything is securely locked." },
+        { heading: "Build your World", bodyText: "Use colorful building blocks to make your piggy unique. Press Start now and fulfill your first dreams!" }
+    ],
+    tutorial: {
+      step0: { title: 'Welcome to Sparify!', text: 'Let us show you how to fulfill your dreams with your digital piggy bank.' },
+      step1: { title: 'Your Balance', text: 'Here you can see the total amount saved across all your piggy banks.' },
+      step2: { title: 'Your Piggies', text: 'This list shows all your piggies. Tap one to see details or withdraw money.' },
+      step3: { title: 'Scan & Add', text: 'Tap the Plus button to scan a new piggy bank or add one via code.' },
+      step4: { title: 'Navigation', text: 'Use the bottom bar to visit the shop, play games, or change settings.' }
     },
-    shop: { title: 'Shop', subtitle: 'Buy items', specials: 'Specials', owned: 'Owned', sectionAvatars: 'Avatars', sectionThemes: 'Themes', balance: 'Balance' }
-    , casino: { title: 'Casino' }
+    learn: { sections: { basics: 'Basics', earning: 'Earning', spending: 'Spending', saving: 'Saving', safety: 'Safety' }, start: 'Start', streakFrozen: 'Streak Protected!' },
+    shop: { title: 'Shop', subtitle: 'Buy items', specials: 'Specials', owned: 'Owned', sectionAvatars: 'Avatars', sectionThemes: 'Themes', balance: 'Balance', discountActive: '50% Discount active!' }
   },
-  hr: {
-    login: { slogan: 'Pametno štedi, ostvari snove.', title: 'Dobrodošli natrag', email: 'E-mail', password: 'Lozinka', button: 'Prijava', registerBtn: 'Registracija', forgotPassword: 'Zaboravljena lozinka?', resetTitle: 'Resetiraj lozinku', resetButton: 'Pošalji link', backToLogin: 'Natrag na prijavu', resetSuccess: 'E-mail poslan!' },
-    age: { title: 'Skoro gotovo!', subtitle: 'Koliko imaš godina?', hint: 'To ne utječe na funkcije, samo prilagođava dizajn aplikacije tebi.', confirm: 'Krenimo', years: 'godina' },
-    dashboard: { balance: 'Stanje', newPig: 'Nova kasica', myPigs: 'Moje kasice', praiseMessages: ['Super!', 'Odlično!', 'Sjajno!'], adLabel: 'Savjet', adTitle: 'Štednja za Odrasle', adSubtitle: 'Svaki cent je važan', moreSavings: 'Štedi više', noPigs: 'Nema kasica', watchedPigs: 'Pratite kasice', removeGuestConfirm: 'Prestati pratiti?', pigs: 'Kasice' },
-    detail: { history: 'Povijest', confirm: 'Potvrdi', cancel: 'Odustani', errorNotEnough: 'Nedovoljno sredstava', withdrawal: 'Isplata', available: 'Dostupno', payout: 'Isplati', newGoal: 'Nova želja', share: 'Raspodjela', noGoals: 'Nema želja', transactions: 'Tranakcije', noTransactions: 'Nema transakcija', goal: 'Želja', achievements: 'Postignuća', achievementsDesc: 'Tvoje nagrade', editGoal: 'Uredi želju', settingsTitle: 'Postavke', pigName: 'Ime', color: 'Boja', delete: 'Obriši', payoutTitle: 'Isplata' },
-    scanner: { loading: 'Učitavanje...', modeGuest: 'Gost', title: 'Skeniraj QR', modeOwner: 'Vlasnik', manual: 'Unesi kod' },
-    settings: { title: 'Postavke', security: 'Sigurnost', newPassword: 'Nova lozinka', passwordSaved: 'Lozinka spremljena', changePassword: 'Promijeni lozinku', appMode: 'Način rada', profile: 'Profil', name: 'Ime', activeSpecials: 'Aktivni predmeti', design: 'Dizajn', language: 'Jezik', info: 'Info', version: 'Verzija', logout: 'Odjava', logoutConfirm: 'Odjava?', cancel: 'Odustani' },
-    common: { showLess: 'Manje', showAll: 'Sve', showAllColors: 'Boje', greeting: 'Bok' },
-    help: { appTutorial: 'Pomoć za aplikaciju', boxTutorial: 'Pomoć za kasicu' },
-    learn: { sections: { basics: 'Osnove', earning: 'Zarada', spending: 'Potrošnja', saving: 'Štednja', safety: 'Sigurnost' }, start: 'Kreni' },
-    shop: { title: 'Trgovina', subtitle: 'Kupi predmete', specials: 'Posebno', owned: 'Kupljeno', sectionAvatars: 'Avatari', sectionThemes: 'Teme', balance: 'Novčići' }
-    , casino: { title: 'Casino' }
-  },
-  tr: {
-    login: { slogan: 'Akıllıca biriktir, hayallerine ulaş.', title: 'Tekrar hoş geldin', email: 'E-posta', password: 'Şifre', button: 'Giriş Yap', registerBtn: 'Kayıt Ol', forgotPassword: 'Şifremi unuttum?', resetTitle: 'Şifreyi sıfırla', resetButton: 'Link gönder', backToLogin: 'Giriş ekranına dön', resetSuccess: 'E-posta gönderildi!' },
-    age: { title: 'Az kaldı!', subtitle: 'Kaç yaşındasın?', hint: 'Bu özellikleri etkilemez, saca uygulama tasarımını sana göre ayarlar.', confirm: 'Haydi başlayalım', years: 'yaş' },
-    dashboard: { balance: 'Bakiye', newPig: 'Yeni Kumbara', myPigs: 'Kumbaralarım', praiseMessages: ['Harika!', 'Mükemmel!', 'Çok iyi!'], adLabel: 'İpucu', adTitle: 'Yetişkin Tasarrufu', adSubtitle: 'Her kuruş sayılır', moreSavings: 'Daha fazla biriktir', noPigs: 'Kumbara yok', watchedPigs: 'İzlenen Kumbaralar', removeGuestConfirm: 'İzlemeyi bırak?', pigs: 'Kumbaralar' },
-    detail: { history: 'Geçmiş', confirm: 'Onayla', cancel: 'İptal', errorNotEnough: 'Yetersiz bakiye', withdrawal: 'Para Çekme', available: 'Mevcut', payout: 'Para Çek', newGoal: 'Yeni Hedef', share: 'Dağılım', noGoals: 'Hedef yok', transactions: 'İşlemler', noTransactions: 'İşlem yok', goal: 'Hedef', achievements: 'Başarılar', achievementsDesc: 'Ödüllerin', editGoal: 'Hedefi düzenle', settingsTitle: 'Ayarlar', pigName: 'İsim', color: 'Renk', delete: 'Sil', payoutTitle: 'Para Çekme' },
-    scanner: { loading: 'Yükleniyor...', modeGuest: 'Misafir', title: 'QR Tara', modeOwner: 'Sahip', manual: 'Kod gir' },
-    settings: { title: 'Ayarlar', security: 'Güvenlik', newPassword: 'Yeni Şifre', passwordSaved: 'Şifre kaydedildi', changePassword: 'Şifreyi değiştir', appMode: 'Uygulama Modu', profile: 'Profil', name: 'İsim', activeSpecials: 'Aktif öğeler', design: 'Tasarım', language: 'Dil', info: 'Bilgi', version: 'Versiyon', logout: 'Çıkış Yap', logoutConfirm: 'Çıkış yap?', cancel: 'İptal' },
-    common: { showLess: 'Daha az', showAll: 'Hepsini gör', showAllColors: 'Renkler', greeting: 'Merhaba' },
-    help: { appTutorial: 'Uygulama Yardımı', boxTutorial: 'Kutu Yardımı' },
-    learn: { sections: { basics: 'Temeller', earning: 'Kazanma', spending: 'Harcama', saving: 'Biriktirme', safety: 'Güvenlik' }, start: 'Başla' },
-    shop: { title: 'Mağaza', subtitle: 'Öğeleri satın al', specials: 'Özel', owned: 'Sahip olunan', sectionAvatars: 'Avatarlar', sectionThemes: 'Temalar', balance: 'Paralar' }
-    , casino: { title: 'Casino' }
-  },
-  ru: {
-    login: { slogan: 'Копи с умом, исполняй мечты.', title: 'С возвращением', email: 'E-mail', password: 'Пароль', button: 'Войти', registerBtn: 'Регистрация', forgotPassword: 'Забыли пароль?', resetTitle: 'Сброс пароля', resetButton: 'Отправить ссылку', backToLogin: 'Назад к входу', resetSuccess: 'E-mail отправлен!' },
-    age: { title: 'Почти готово!', subtitle: 'Сколько тебе лет?', hint: 'Это не влияет на функции, а только подстраивает дизайн приложения под тебя.', confirm: 'Поехали', years: 'лет' },
-    dashboard: { balance: 'Баланс', newPig: 'Новая копилка', myPigs: 'Мои копилки', praiseMessages: ['Супер!', 'Классно!', 'Отлично!'], adLabel: 'Совет', adTitle: 'Взрослая Копилка', adSubtitle: 'Каждая копейка важна', moreSavings: 'Копить больше', noPigs: 'Копилок нет', watchedPigs: 'Наблюдаемые копилки', removeGuestConfirm: 'Прекратить наблюдение?', pigs: 'Копилки' },
-    detail: { history: 'История', confirm: 'Подтвердить', cancel: 'Отмена', errorNotEnough: 'Недостаточно средств', withdrawal: 'Снятие', available: 'Доступно', payout: 'Снять', newGoal: 'Новая цель', share: 'Распределение', noGoals: 'Целей нет', transactions: 'Транзакции', noTransactions: 'Нет транзакций', goal: 'Цель', achievements: 'Достижения', achievementsDesc: 'Твои награды', editGoal: 'Изменить цель', settingsTitle: 'Настройки', pigName: 'Имя', color: 'Цвет', delete: 'Удалить', payoutTitle: 'Снятие' },
-    scanner: { loading: 'Загрузка...', modeGuest: 'Гость', title: 'Сканировать QR', modeOwner: 'Владелец', manual: 'Введите код' },
-    settings: { title: 'Настройки', security: 'Безопасность', newPassword: 'Новый пароль', passwordSaved: 'Пароль сохранен', changePassword: 'Изменить пароль', appMode: 'Режим приложения', profile: 'Профиль', name: 'Имя', activeSpecials: 'Активные предметы', design: 'Дизайн', language: 'Язык', info: 'Инфо', version: 'Версия', logout: 'Выйти', logoutConfirm: 'Выйти?', cancel: 'Отмена' },
-    common: { showLess: 'Меньше', showAll: 'Все', showAllColors: 'Цвета', greeting: 'Привет' },
-    help: { appTutorial: 'Помощь по приложению', boxTutorial: 'Помощь по копилке' },
-    learn: { sections: { basics: 'Основы', earning: 'Заработок', spending: 'Траты', saving: 'Накопления', safety: 'Безопасность' }, start: 'Начать' },
-    shop: { title: 'Магaзин', subtitle: 'Купить предметы', specials: 'Особое', owned: 'Куплено', sectionAvatars: 'Аватары', sectionThemes: 'Темы', balance: 'Монеты' }
-    , casino: { title: 'Казино' }
-  },
-  hu: {
-    login: { slogan: 'Spórolj okosan, valósítsd meg az álmaidat.', title: 'Üdvözöljük újra', email: 'E-mail', password: 'Jelszó', button: 'Bejelentkezés', registerBtn: 'Regisztráció', forgotPassword: 'Elfelejtett jelszó?', resetTitle: 'Jelszó visszaállítása', resetButton: 'Link küldése', backToLogin: 'Vissza a belépéshez', resetSuccess: 'E-mail elküldve!' },
-    age: { title: 'Majdnem kész!', subtitle: 'Hány éves oder?', hint: 'Ez nicht befolyásolja a funkciókat, nur das App-Design an dich anpassen.', confirm: 'Mehet', years: 'év' },
-    dashboard: { balance: 'Egyenleg', newPig: 'Új malac', myPigs: 'Malacaim', praiseMessages: ['Szuper!', 'Nagyszerű!', 'Remek!'], adLabel: 'Tipp', adTitle: 'Felnőtt Megtakarítás', adSubtitle: 'Minden fillér számít', moreSavings: 'Spórolj többet', noPigs: 'Nincs malacod', watchedPigs: 'Megfigyelt malacok', removeGuestConfirm: 'Megfigyelés leállítása?', pigs: 'Malacok' },
-    detail: { history: 'Előzmények', confirm: 'Megerősítés', cancel: 'Mégse', errorNotEnough: 'Nincs elég einyenleg', withdrawal: 'Kivétel', available: 'Elérhető', payout: 'Kivétel', newGoal: 'Új cél', share: 'Felosztás', noGoals: 'Nincsenek célok', transactions: 'Tranzakciók', noTransactions: 'Nincsenek tranzakciók', goal: 'Cél', achievements: 'Eredmények', achievementsDesc: 'Jutalmaid', editGoal: 'Cél szerkesztése', settingsTitle: 'Beállítások', pigName: 'Név', color: 'Szín', delete: 'Törlés', payoutTitle: 'Kivétel' },
-    scanner: { loading: 'Betöltés...', modeGuest: 'Vendég', title: 'QR szkennelés', modeOwner: 'Tulajdonos', manual: 'Kód megadása' },
-    settings: { title: 'Beállítások', security: 'Biztonság', newPassword: 'Új jelszó', passwordSaved: 'Jelszó elmentve', changePassword: 'Jelszó módosítása', appMode: 'App mód', profile: 'Profil', name: 'Név', activeSpecials: 'Aktiv tárgyak', design: 'Design', language: 'Nyelv', info: 'Infó', version: 'Verzió', logout: 'Kijelentkezés', logoutConfirm: 'Kijelentkezés?', cancel: 'Mégse' },
-    common: { showLess: 'Kevesebb', showAll: 'Összes', showAllColors: 'Színek', greeting: 'Szia' },
-    help: { appTutorial: 'App segítség', boxTutorial: 'Doboz segítség' },
-    learn: { sections: { basics: 'Alapok', earning: 'Kereset', spending: 'Költés', saving: 'Megtakarítás', safety: 'Biztonság' }, start: 'Kezdés' },
-    shop: { title: 'Bolt', subtitle: 'Tárgyak vásárlása', specials: 'Különleges', owned: 'Megvéve', sectionAvatars: 'Avatarok', sectionThemes: 'Témák', balance: 'Érmék' }
-    , casino: { title: 'Casino' }
-  }
+  hr: { login: { slogan: 'Pametna štednja, veliki snovi.', title: 'Dobrodošli natrag' }, age: { title: 'Skoro spremni!' }, dashboard: { balance: 'Saldo' }, common: { next: 'Dalje' }, help: { appTutorial: 'Pomoć' }, tutorial: { step0: { title: 'Dobrodošli!' } }, learn: { start: 'Kreni' }, shop: { title: 'Trgovina' } },
+  tr: { login: { slogan: 'Akıllı tasarruf, bükük hayaller.', title: 'Tekrar hoş geldiniz' }, age: { title: 'Neredeyse bitti!' }, dashboard: { balance: 'Bakiye' }, common: { next: 'İleri' }, help: { appTutorial: 'Yardım' }, tutorial: { step0: { title: 'Hoş geldiniz!' } }, learn: { start: 'Başla' }, shop: { title: 'Mağaza' } },
+  ru: { login: { slogan: 'Умная экономия, большие мечты.', title: 'С возвращением' }, age: { title: 'Почти готово!' }, dashboard: { balance: 'Баланс' }, common: { next: 'Далее' }, help: { appTutorial: 'Помощь' }, tutorial: { step0: { title: 'Добро пожаловать!' } }, learn: { start: 'Начать' }, shop: { title: 'Магазиn' } },
+  hu: { login: { slogan: 'Okos megtakarítás, nagy álmok.', title: 'Üdvözöljük újra' }, age: { title: 'Majdnem kész!' }, dashboard: { balance: 'Egyenleg' }, common: { next: 'Tovább' }, help: { appTutorial: 'Súgó' }, tutorial: { step0: { title: 'Üdvözöljük!' } }, learn: { start: 'Indítás' }, shop: { title: 'Bolt' } }
 };

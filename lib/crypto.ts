@@ -1,12 +1,6 @@
-// Sicherheitsschlüssel für die Verschlüsselung
-const getEnvVar = (viteKey: string, nodeKey: string, fallback: string) => {
-  const vite = (import.meta as any)?.env?.[viteKey];
-  const node = (typeof process !== 'undefined') ? (process.env as any)?.[nodeKey] : undefined;
-  return vite ?? node ?? fallback;
-};
 
-const SECRET_KEY_STRING = getEnvVar('VITE_SPARIFY_SECRET', 'SPARIFY_SECRET', 'SPARIFY_SECURE_KEY_v1');
-const SALT_STRING = getEnvVar('VITE_SPARIFY_SALT', 'SPARIFY_SALT', 'SPARIFY_SALT');
+// Sicherheitsschlüssel für die Verschlüsselung
+const SECRET_KEY_STRING = 'SPARIFY_SECURE_KEY_v1';
 
 const str2ab = (str: string) => {
   const enc = new TextEncoder();
@@ -25,7 +19,7 @@ const getKey = async () => {
   return window.crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt: str2ab(SALT_STRING),
+      salt: str2ab("SPARIFY_SALT"),
       iterations: 100000,
       hash: "SHA-256",
     },

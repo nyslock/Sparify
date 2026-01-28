@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { PiggyBank, Loader2, AlertCircle, Mail, ArrowRight, UserPlus, LogIn, KeyRound, ChevronLeft, Eye, EyeOff } from 'lucide-react';
-import { Language, TRANSLATIONS, CUSTOM_LOGO_URL } from '../types';
+import { Language, TRANSLATIONS, LOGIN_LOGO_URL, THEME_COLORS, ThemeColor } from '../types';
 
 interface LoginScreenProps {
   onLogin: (email: string, pass: string, isRegister: boolean) => Promise<any>;
   onResetPassword?: (email: string) => Promise<any>;
   language: Language;
+  accentColor: ThemeColor;
 }
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPassword, language }) => {
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPassword, language, accentColor }) => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +29,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPasswo
     setLoading(true);
 
     try {
-        // RESET PASSWORD FLOW
         if (isResetMode && onResetPassword) {
             await onResetPassword(email);
             setSuccessMsg(t.resetSuccess);
@@ -36,7 +36,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPasswo
             return;
         }
 
-        // LOGIN / REGISTER FLOW
         const result = await onLogin(email, password, isRegisterMode);
         if (result && result.success && result.needsVerification) {
             setVerificationSent(true);
@@ -86,16 +85,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPasswo
     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-slate-50 md:bg-slate-100 text-slate-900 md:flex-row md:gap-16">
       <div className="flex flex-col items-center mb-6 md:mb-0 md:items-start">
         
-        {CUSTOM_LOGO_URL ? (
-            // CUSTOM LOGO
-            <img 
-                src={CUSTOM_LOGO_URL} 
-                alt="Sparify Logo" 
-                className="w-32 h-32 object-contain mb-4 drop-shadow-xl md:w-48 md:h-48"
-            />
+        {LOGIN_LOGO_URL ? (
+            <div className="w-32 h-32 md:w-48 md:h-48 mb-4 drop-shadow-xl flex items-center justify-center">
+                <img 
+                  src={LOGIN_LOGO_URL}
+                  className="w-full h-full object-contain"
+                  alt="Sparify Logo"
+                />
+            </div>
         ) : (
-            // STANDARD ICON (Fallback)
-            <div className="w-24 h-24 bg-gradient-to-tr from-red-500 to-orange-500 rounded-3xl flex items-center justify-center mb-4 shadow-xl shadow-orange-500/20 md:w-32 md:h-32">
+            <div className="w-24 h-24 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center mb-4 shadow-xl shadow-blue-500/20 md:w-32 md:h-32">
               <PiggyBank size={48} className="text-white md:w-16 md:h-16" />
             </div>
         )}
@@ -122,7 +121,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPasswo
         <h2 className="text-2xl font-bold text-center mb-1 flex items-center justify-center gap-2">
             {isResetMode ? (
                 <>
-                    <KeyRound size={24} className="text-orange-500" />
+                    <KeyRound size={24} className="text-blue-500" />
                     {t.resetTitle}
                 </>
             ) : (
@@ -153,7 +152,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPasswo
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@email.com"
               required
-              className="w-full bg-slate-50 text-slate-900 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all border border-slate-200 placeholder-slate-400 font-bold"
+              className="w-full bg-slate-50 text-slate-900 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all border border-slate-200 placeholder-slate-400 font-bold"
             />
           </div>
           
@@ -168,7 +167,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPasswo
                     placeholder="••••••••"
                     required
                     minLength={6}
-                    className="w-full bg-slate-50 text-slate-900 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all border border-slate-200 placeholder-slate-400 font-bold pr-12"
+                    className="w-full bg-slate-50 text-slate-900 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all border border-slate-200 placeholder-slate-400 font-bold pr-12"
                     />
                     <button 
                         type="button"
@@ -186,7 +185,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPasswo
                             setIsResetMode(true);
                             setErrorMsg(null);
                         }}
-                        className="text-xs font-bold text-slate-400 hover:text-orange-500 mt-2 ml-1"
+                        className="text-xs font-bold text-slate-400 hover:text-blue-500 mt-2 ml-1"
                     >
                         {t.forgotPassword}
                     </button>
@@ -197,7 +196,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPasswo
           <button
             type="submit"
             disabled={loading || (isResetMode && !!successMsg)}
-            className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white font-black py-4 rounded-xl shadow-lg shadow-orange-500/30 active:scale-95 transition-all mt-4 flex items-center justify-center text-lg disabled:opacity-70 disabled:scale-100"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-500/30 active:scale-95 transition-all mt-4 flex items-center justify-center text-lg disabled:opacity-70 disabled:scale-100"
           >
             {loading ? (
               <>
@@ -212,13 +211,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPasswo
 
         {!isResetMode && (
             <div className="mt-6 pt-6 border-t border-slate-100">
-                {/* SMALLER TOGGLE BUTTON INSIDE CARD */}
                 <button 
                     onClick={() => {
                         setIsRegisterMode(!isRegisterMode);
                         setErrorMsg(null);
                     }}
-                    className="w-full text-slate-500 font-bold text-sm hover:text-orange-500 transition-colors flex items-center justify-center gap-2"
+                    className="w-full text-slate-500 font-bold text-sm hover:text-blue-500 transition-colors flex items-center justify-center gap-2"
                 >
                     {isRegisterMode ? (
                         <>
@@ -233,7 +231,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPasswo
             </div>
         )}
       </div>
-      
     </div>
   );
 };

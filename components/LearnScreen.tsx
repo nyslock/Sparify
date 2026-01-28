@@ -1,6 +1,5 @@
-
 import React, { useState, useMemo } from 'react';
-import { Heart, Flame, Zap, Check, Lock, Play, Star, X, Coins, ArrowRight, ArrowLeft, Gamepad2, ShieldAlert, PiggyBank, Smile, Clock, Flag, Globe, ShoppingBasket, School, TrendingUp, AlertTriangle, Wallet, RotateCcw, Tag, Hourglass, Calculator, Briefcase, Percent, PieChart, Landmark, LineChart, ShieldCheck, ZapOff } from 'lucide-react';
+import { Heart, Flame, Zap, Check, Lock, Play, Star, X, Coins, ArrowRight, ArrowLeft, Gamepad2, ShieldAlert, PiggyBank, Smile, Clock, Flag, Globe, ShoppingBasket, School, TrendingUp, AlertTriangle, Wallet, RotateCcw, Tag, Hourglass, Calculator, Briefcase, Percent, PieChart, Landmark, LineChart, ShieldCheck, ZapOff, Snowflake } from 'lucide-react';
 import { Language, TRANSLATIONS, ThemeColor, User, AppMode } from '../types';
 
 interface Level {
@@ -54,6 +53,8 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [quizAnswerState, setQuizAnswerState] = useState<'idle' | 'correct' | 'wrong'>('idle');
+
+  const isStreakFrozen = user.streakFreezeUntil ? new Date(user.streakFreezeUntil) > new Date() : false;
 
   const SECTIONS: Section[] = useMemo(() => {
     if (appMode === 'adult') {
@@ -313,9 +314,17 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
                     <span className="text-yellow-500 font-bold">{user.coins}</span>
                 </div>
             </div>
-            <div className="flex items-center gap-1 bg-blue-500/10 px-2 py-1 rounded-lg border border-blue-500/20">
-                 <Flame size={16} className="text-blue-500" fill="currentColor" />
-                 <span className="text-blue-500 font-bold">{user.streak}</span>
+            <div className="flex items-center gap-3">
+                {isStreakFrozen && (
+                    <div className="flex items-center gap-1.5 bg-blue-500/20 px-3 py-1 rounded-lg border border-blue-500/30 animate-pulse">
+                         <Snowflake size={16} className="text-blue-400" />
+                         <span className="text-blue-400 text-xs font-black uppercase tracking-tighter">{t.streakFrozen}</span>
+                    </div>
+                )}
+                <div className="flex items-center gap-1 bg-blue-500/10 px-2 py-1 rounded-lg border border-blue-500/20">
+                     <Flame size={16} className="text-blue-500" fill="currentColor" />
+                     <span className="text-blue-500 font-bold">{user.streak}</span>
+                </div>
             </div>
         </div>
 
@@ -418,5 +427,3 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
     </div>
   );
 };
-
-export default LearnScreen;
