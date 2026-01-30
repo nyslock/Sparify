@@ -122,7 +122,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
     try {
         const transactionTitle = transReason.trim() || t.withdrawal;
         const today = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        const newTransaction: Transaction = { id: Math.random().toString(), title: transactionTitle, amount: -amount, date: today, type: 'withdrawal' };
+        const newTransaction: Transaction = { id: crypto.randomUUID(), title: transactionTitle, amount: -amount, date: today, type: 'withdrawal' };
         
         await onTransaction(bank.id, currentBalance - amount, [newTransaction]);
         
@@ -145,7 +145,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
       const amount = parseFloat(amountStr);
       if (!goalName || isNaN(amount) || amount <= 0) return;
       
-      const goal = { id: editingGoal?.id || Math.random().toString(), title: goalName, targetAmount: amount, savedAmount: editingGoal?.savedAmount || 0, allocationPercent: editingGoal?.allocationPercent || 0 };
+      const goal = { id: editingGoal?.id || crypto.randomUUID(), title: goalName, targetAmount: amount, savedAmount: editingGoal?.savedAmount || 0, allocationPercent: editingGoal?.allocationPercent || 0 };
       
       if (editingGoal) {
           if (onUpdateGoal) await onUpdateGoal(bank.id, goal);
@@ -173,7 +173,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
           const today = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
           
           const redemptionTx: Transaction = {
-              id: Math.random().toString(),
+              id: crypto.randomUUID(),
               title: title,
               amount: -redeemAmount,
               date: today,
