@@ -661,7 +661,7 @@ export default function App() {
                 await loadUserData(userId!, user.email, false);
             }} onTransaction={async (pigId, newBal, newTxs) => {
                 await supabase.from('piggy_banks').update({ balance: await encryptAmount(newBal) }).eq('id', pigId);
-                if (newTxs.length > 0) await supabase.from('transactions').insert(newTxs.map(t => ({ piggy_bank_id: pigId, title: t.title, amount: encryptAmount(t.amount), type: t.type })));
+                if (newTxs.length > 0) await supabase.from('transactions').insert(await Promise.all(newTxs.map(async t => ({ piggy_bank_id: pigId, title: t.title, amount: await encryptAmount(t.amount), type: t.type }))));
                 await loadUserData(userId!, user.email, false);
             }} onDeleteBank={async (id) => {
                 await supabase.rpc('reset_piggy_bank', { pig_id: id, zero_balance: await encryptAmount(0) });
