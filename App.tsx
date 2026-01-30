@@ -480,6 +480,23 @@ export default function App() {
     setIsSyncing(false);
   };
 
+  const handleAddGoal = async (pigId: string, newGoal: Goal) => {
+    setIsSyncing(true);
+    try {
+        const encTar = await encryptAmount(newGoal.targetAmount);
+        await supabase.from('goals').insert({
+            id: newGoal.id,
+            piggy_bank_id: pigId,
+            title: newGoal.title,
+            target_amount: encTar,
+            saved_amount: await encryptAmount(newGoal.savedAmount),
+            allocation_percent: newGoal.allocationPercent
+        });
+        await loadUserData(userId!, user?.email || '', false);
+    } catch (e) { console.error(e); }
+    setIsSyncing(false);
+  };
+
   const handleLevelComplete = (id: string, reward: number) => {
       const freshUser = userRef.current;
       if (!freshUser) return;
@@ -637,7 +654,7 @@ export default function App() {
                 if (pig?.role === 'owner') await supabase.rpc('reset_piggy_bank', { pig_id: id, zero_balance: await encryptAmount(0) });
                 else await supabase.from('piggy_bank_guests').delete().eq('user_id', userId).eq('piggy_bank_id', id);
                 await loadUserData(userId!, user.email, false);
-            }} accentColor={accentColor} language={language} appMode={appMode} user={user} onUpdateGoal={handleUpdateGoal} />}
+            }} accentColor={accentColor} language={language} appMode={appMode} user={user} onUpdateGoal={handleUpdateGoal} onAddGoal={handleAddGoal} />}
 
             {view === 'DETAIL' && selectedBankId && <PiggyDetailScreen bank={piggyBanks.find(p => p.id === selectedBankId)!} user={user} piggyBanks={piggyBanks} onBack={() => setView('DASHBOARD')} onUpdateBank={async (upd) => {
                 await supabase.from('piggy_banks').update({ name: upd.name, color: upd.color }).eq('id', upd.id);
@@ -652,7 +669,7 @@ export default function App() {
             }} onDeleteGoal={async (pigId, goal) => {
                 await supabase.from('goals').delete().eq('id', goal.id);
                 await loadUserData(userId!, user.email, false);
-            }} language={language} appMode={appMode} onUpdateUser={updateUserProfile} />}
+            }} onUpdateGoal={handleUpdateGoal} onAddGoal={handleAddGoal} language={language} appMode={appMode} onUpdateUser={updateUserProfile} />}
 
             {view === 'LEARN' && <LearnScreen language={language} accentColor={accentColor} user={user} onCompleteLevel={handleLevelComplete} onLevelStart={() => setIsLevelActive(true)} onLevelEnd={() => setIsLevelActive(false)} appMode={appMode} />}
 

@@ -15,12 +15,13 @@ interface PiggyDetailScreenProps {
   onDeleteBank: (id: string) => Promise<void>;
   onDeleteGoal: (pigId: string, goal: Goal) => Promise<void>;
   onUpdateGoal?: (pigId: string, goal: Goal) => void;
+  onAddGoal?: (pigId: string, goal: Goal) => void;
   onUpdateUser: (user: User) => void; 
   language: Language;
   appMode?: AppMode;
 }
 
-export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user, piggyBanks, onBack, onUpdateBank, onTransaction, onDeleteBank, onDeleteGoal, onUpdateGoal, onUpdateUser, language, appMode = 'kids' }) => {
+export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user, piggyBanks, onBack, onUpdateBank, onTransaction, onDeleteBank, onDeleteGoal, onUpdateGoal, onAddGoal, onUpdateUser, language, appMode = 'kids' }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [showPayout, setShowPayout] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
@@ -139,18 +140,18 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
     }
   };
 
-  const handleSaveGoal = () => {
+  const handleSaveGoal = async () => {
       const amountStr = goalAmount.replace(',', '.');
       const amount = parseFloat(amountStr);
       if (!goalName || isNaN(amount) || amount <= 0) return;
       
-      let updatedGoals = [...(bank.goals || [])];
+      const goal = { id: editingGoal?.id || Math.random().toString(), title: goalName, targetAmount: amount, savedAmount: editingGoal?.savedAmount || 0, allocationPercent: editingGoal?.allocationPercent || 0 };
+      
       if (editingGoal) {
-          updatedGoals = updatedGoals.map(g => g.id === editingGoal.id ? { ...g, title: goalName, targetAmount: amount } : g);
+          if (onUpdateGoal) await onUpdateGoal(bank.id, goal);
       } else {
-          updatedGoals.push({ id: Math.random().toString(), title: goalName, targetAmount: amount, savedAmount: 0, allocationPercent: 0 });
+          if (onAddGoal) await onAddGoal(bank.id, goal);
       }
-      onUpdateBank({ ...bank, goals: updatedGoals });
       setShowGoalModal(false);
   }
 

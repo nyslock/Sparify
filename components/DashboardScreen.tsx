@@ -13,6 +13,7 @@ interface DashboardScreenProps {
   appMode?: AppMode;
   user: User;
   onUpdateGoal?: (pigId: string, goal: Goal) => void;
+  onAddGoal?: (pigId: string, goal: Goal) => void;
 }
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({ 
@@ -24,7 +25,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   language,
   appMode = 'kids',
   user,
-  onUpdateGoal
+  onUpdateGoal,
+  onAddGoal
 }) => {
   const [pigToDeleteId, setPigToDeleteId] = useState<string | null>(null);
   const [chartPeriod, setChartPeriod] = useState<'7D' | 'MTD'>('MTD');
