@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Heart, Flame, Zap, Check, Lock, Play, Star, X, Coins, ArrowRight, ArrowLeft, Gamepad2, ShieldAlert, PiggyBank, Smile, Clock, Flag, Globe, ShoppingBasket, School, TrendingUp, AlertTriangle, Wallet, RotateCcw, Tag, Hourglass, Calculator, Briefcase, Percent, PieChart, Landmark, LineChart, ShieldCheck, ZapOff, Snowflake, Shield, Gift } from 'lucide-react';
+import { Heart, Flame, Zap, Check, Lock, Play, Star, X, Coins, ArrowRight, ArrowLeft, Gamepad2, ShieldAlert, PiggyBank, Smile, Clock, Flag, Globe, ShoppingBasket, School, TrendingUp, AlertTriangle, Wallet, RotateCcw, Tag, Hourglass, Calculator, Briefcase, Percent, PieChart, Landmark, LineChart, ShieldCheck, ZapOff, Snowflake, Shield, Gift, Trophy } from 'lucide-react';
 import { Language, getTranslations, ThemeColor, User, AppMode } from '../types';
 
 interface Level {
