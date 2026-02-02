@@ -85,7 +85,15 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ user, onUpdateUser, lang
       }));
 
       const specials = SPECIALS_DATABASE;
-      return { avatars: todaysAvatars, themes: todaysThemes, specials };
+      // Shuffle specials and take first 4
+      const shuffledSpecials = [...specials];
+      for (let i = shuffledSpecials.length - 1; i > 0; i--) {
+          const j = Math.floor(rand() * (i + 1));
+          [shuffledSpecials[i], shuffledSpecials[j]] = [shuffledSpecials[j], shuffledSpecials[i]];
+      }
+      const todaysSpecials = shuffledSpecials.slice(0, 4);
+      
+      return { avatars: todaysAvatars, themes: todaysThemes, specials: todaysSpecials };
   }, [todayStr]);
 
   useEffect(() => {

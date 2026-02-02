@@ -143,7 +143,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                     <Tooltip 
                                         contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
                                         cursor={{ stroke: '#6366f1', strokeWidth: 2 }}
-                                        formatter={(val: number) => [`€${val.toFixed(2)}`, 'Equity']}
+                                        formatter={(val: number) => [`€${val.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Equity']}
                                     />
                                     <Area 
                                         type="monotone" 

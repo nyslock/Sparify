@@ -88,7 +88,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       onUpdateUser({ ...user, birthdate: newDate, age });
   };
 
-  const activeFrame = user.activeSpecials.find(id => id.startsWith('frame_'));
+  const activeFrame = user.activeFrames.find(id => id.startsWith('frame_'));
 
   const isAvatarOwned = (index: number) => {
       if (index < 4) return true;

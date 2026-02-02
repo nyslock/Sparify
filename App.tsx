@@ -254,21 +254,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!userId || !user) return;
-    const interval = setInterval(async () => {
-      // Skip refresh if already loading/syncing to prevent infinite loading
-      if (loading || isSyncing || isRefreshingRef.current) return;
-      isRefreshingRef.current = true;
-      try { 
-        await loadUserData(userId, user.email, false); 
-      } catch (err) { 
-        console.error("Background refresh error:", err); 
-      } finally { 
-        isRefreshingRef.current = false; 
-      }
-    }, 10000); // Increased from 5s to 10s to reduce server load
-    return () => clearInterval(interval);
-  }, [userId, user?.email, loadUserData, loading, isSyncing]);
+    if (user && !user.hasSeenTutorial && user.birthdate && view === 'DASHBOARD' && !loading && !isSyncing) {
+      setView('BOX_TUTORIAL');
+    }
+  }, [user, view, loading, isSyncing]);
 
   useEffect(() => {
     let mounted = true;
@@ -636,6 +625,11 @@ export default function App() {
                                 <h1 className="text-2xl font-black text-slate-900 leading-tight">{user.name}</h1>
                                 {user.streakFreezeUntil && new Date(user.streakFreezeUntil) > new Date() && <Snowflake size={16} className="text-blue-400 animate-pulse" />}
                             </div>
+                            {user.activeTitles.length > 0 && (
+                                <p className="text-[9px] font-black uppercase tracking-tighter truncate text-blue-600">
+                                    {(getTranslations(language) as any).shopItems?.[user.activeTitles[0]]?.label || SPECIALS_DATABASE.find(item => item.id === user.activeTitles[0])?.label?.replace('Titel: ', '')}
+                                </p>
+                            )}
                         </div>
                     </div>
                     <div onClick={() => setView('SETTINGS')} className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-md cursor-pointer">

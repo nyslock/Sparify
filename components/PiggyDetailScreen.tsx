@@ -225,7 +225,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                             <div className="flex flex-col items-center gap-2">
                                 <span className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-tighter flex items-center gap-2 sm:gap-3">
                                     {bank.safeLockEnabled && <Lock size={24} className="text-slate-400 sm:w-8 sm:h-8" />}
-                                    €{bank.balance.toFixed(2)}
+                                    €{bank.balance.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                                 <span className="text-emerald-500 font-bold flex items-center text-xs sm:text-sm bg-emerald-50 px-3 py-1 rounded-full"><TrendingUp size={14} className="mr-1" /> Active</span>
                             </div>
@@ -259,7 +259,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                             <YAxis hide domain={['auto', 'auto']} />
                                             <Tooltip 
                                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} 
-                                                formatter={(v: number) => [`€${v.toFixed(2)}`, 'Equity']}
+                                                formatter={(v: number) => [`€${v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Equity']}
                                             />
                                             <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={3} fill="url(#adultColor)" />
                                         </AreaChart>
@@ -324,7 +324,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                         </div>
                                     </div>
                                     <span className={`font-black text-sm sm:text-base ${t.type === 'deposit' ? 'text-emerald-600' : 'text-slate-900'}`}>
-                                        {t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toFixed(2)}
+                                        {t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                 </div>
                             )) : <p className="text-slate-400 text-center py-10">{t.noTransactions}</p>}
@@ -364,7 +364,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                 </div>
                 <h2 className={`text-7xl md:text-8xl font-black text-white tracking-tighter drop-shadow-sm flex items-center justify-center gap-4 ${bank.safeLockEnabled ? 'scale-90' : ''}`}>
                     {bank.safeLockEnabled && <Lock size={48} className="opacity-80" />}
-                    €{bank.balance.toFixed(2).replace('.', ',')}
+                    €{bank.balance.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </h2>
                 <p className="text-white/80 font-bold mt-2 text-sm bg-black/5 inline-block px-3 py-1 rounded-lg">{t.available}</p>
                 </div>
@@ -443,7 +443,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
             <div className="mb-6 md:mb-0 md:flex-1"><h3 className="font-black text-slate-800 mb-5 ml-4 text-xl">{t.transactions}</h3><div className="space-y-4">{bank.transactions?.length > 0 ? bank.transactions.map((t) => (
                 <div key={t.id} className="bg-white p-5 rounded-[2rem] flex items-center justify-between border border-slate-100 shadow-lg shadow-slate-100">
                     <div className="flex items-center gap-4"><div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${t.type === 'deposit' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>{t.type === 'deposit' ? <ArrowDownLeft size={28} /> : <ArrowUpRight size={28} />}</div><div><h4 className="font-black text-slate-800 text-base">{t.title}</h4><p className="text-slate-400 text-xs font-bold">{t.date}</p></div></div>
-                    <span className={`font-black text-xl ${t.type === 'deposit' ? 'text-emerald-500' : 'text-slate-800'}`}>{t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toFixed(2).replace('.', ',')}</span>
+                    <span className={`font-black text-xl ${t.type === 'deposit' ? 'text-emerald-500' : 'text-slate-800'}`}>{t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>)) : <div className="text-center py-12 text-slate-400 font-bold bg-white rounded-[2rem] border-2 border-dashed border-slate-200">{t.noTransactions}</div>}</div></div>
           </div>
       </div>
@@ -638,7 +638,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                 {transError && <div className="mb-4 flex items-center gap-2 text-red-500 font-bold text-sm bg-red-50 p-3 rounded-xl"><AlertCircle size={16} /> {transError}</div>}
                                 <div className="mb-8 mt-2">
                                     <label className="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block">{t.reasonLabel}</label>
-                                    <input type="text" value={transReason} onChange={(e) => setTransReason(e.target.value)} placeholder="z.B. Eis, Lego..." className="w-full bg-slate-50 rounded-2xl px-5 py-4 font-bold text-slate-800 outline-none border-2 border-slate-100 focus:border-indigo-400 focus:bg-white transition-all" />
+                                    <input type="text" value={transReason} onChange={(e) => setTransReason(e.target.value)} placeholder="z.B. Eis, Lego..." className="w-full bg-slate-50 rounded-2xl px-5 py-4 font-bold text-slate-800 outline-none border-2 border-slate-100 focus:border-indigo-400 focus:bg-white transition-all" maxLength={50} />
                                 </div>
                                 <button 
                                     onClick={handleTransactionExecute} 
@@ -662,7 +662,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                         <div className="space-y-6">
                             <div>
                                 <label className="text-xs font-bold text-slate-400 uppercase mb-2 block ml-1">{t.wishLabel}</label>
-                                <input type="text" value={goalName} onChange={(e) => setGoalName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-5 py-4 font-black text-slate-800 outline-none border-2 border-slate-100 focus:border-indigo-400 focus:bg-white transition-all" placeholder="z.B. Playstation, Fahrrad..." />
+                                <input type="text" value={goalName} onChange={(e) => setGoalName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-5 py-4 font-black text-slate-800 outline-none border-2 border-slate-100 focus:border-indigo-400 focus:bg-white transition-all" placeholder="z.B. Playstation, Fahrrad..." maxLength={50} />
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-slate-400 uppercase mb-2 block ml-1">{t.costLabel}</label>
