@@ -28,7 +28,7 @@ export default function App() {
   const [userId, setUserId] = useState<string | null>(null);
   const [piggyBanks, setPiggyBanks] = useState<PiggyBank[]>([]);
   
-  const [accentColor, setAccentColor] = useState<ThemeColor>('blue');
+  const [accentColor, setAccentColor] = useState<ThemeColor>('primary');
   const [language, setLanguage] = useState<Language>('de');
   const [appMode, setAppMode] = useState<AppMode>('kids'); 
   const [selectedBankId, setSelectedBankId] = useState<string | null>(null);

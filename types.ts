@@ -5,7 +5,7 @@ export type ThemeColor =
   | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink' | 'teal' 
   | 'cyan' | 'indigo' | 'lime' | 'rose' | 'fuchsia' | 'violet' | 'sky' | 'amber' | 'zinc'
   | 'mint' | 'gold' | 'black'
-  | 'slate' | 'stone' | 'emerald' | 'cocoa' | 'lilac' | 'salmon' | 'ocean' | 'forest' | 'night' | 'berry';
+  | 'slate' | 'stone' | 'emerald' | 'cocoa' | 'lilac' | 'salmon' | 'ocean' | 'forest' | 'night' | 'berry' | 'primary';
 
 export type Language = 'de' | 'en' | 'hr' | 'tr' | 'ru' | 'hu';
 export type AppMode = 'kids' | 'adult';
@@ -255,7 +255,7 @@ export const AVATARS = [
 ];
 
 export const THEME_COLORS: { [key in ThemeColor]: string } = {
-  red: 'bg-red-500', orange: 'bg-orange-500', yellow: 'bg-yellow-400', green: 'bg-green-500', blue: 'bg-blue-500', purple: 'bg-purple-500', pink: 'bg-pink-500', teal: 'bg-teal-500', cyan: 'bg-cyan-500', indigo: 'bg-indigo-500', lime: 'bg-lime-500', rose: 'bg-rose-500', fuchsia: 'bg-fuchsia-500', violet: 'bg-violet-600', sky: 'bg-sky-500', amber: 'bg-amber-500', zinc: 'bg-zinc-600', mint: 'bg-emerald-300', gold: 'bg-yellow-600', black: 'bg-slate-900', slate: 'bg-slate-500', stone: 'bg-stone-500', emerald: 'bg-emerald-600', cocoa: 'bg-amber-800', lilac: 'bg-purple-300', salmon: 'bg-rose-400', ocean: 'bg-cyan-700', forest: 'bg-green-800', night: 'bg-blue-950', berry: 'bg-pink-700'
+  red: 'bg-red-500', orange: 'bg-orange-500', yellow: 'bg-yellow-400', green: 'bg-green-500', blue: 'bg-blue-500', purple: 'bg-purple-500', pink: 'bg-pink-500', teal: 'bg-teal-500', cyan: 'bg-cyan-500', indigo: 'bg-indigo-500', lime: 'bg-lime-500', rose: 'bg-rose-500', fuchsia: 'bg-fuchsia-500', violet: 'bg-violet-600', sky: 'bg-sky-500', amber: 'bg-amber-500', zinc: 'bg-zinc-600', mint: 'bg-emerald-300', gold: 'bg-yellow-600', black: 'bg-slate-900', slate: 'bg-slate-500', stone: 'bg-stone-500', emerald: 'bg-emerald-600', cocoa: 'bg-amber-800', lilac: 'bg-purple-300', salmon: 'bg-rose-400', ocean: 'bg-cyan-700', forest: 'bg-green-800', night: 'bg-blue-950', berry: 'bg-pink-700', primary: 'bg-[#00B1B7]'
 };
 
 export const TRANSLATIONS: Record<Language, any> = {
