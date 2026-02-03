@@ -18,7 +18,7 @@ interface SettingsScreenProps {
 }
 
 const colors: ThemeColor[] = [
-    'primary', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'teal', 'cyan', 
+    'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'teal', 'cyan', 
     'indigo', 'lime', 'rose', 'fuchsia', 'violet', 'sky', 'amber', 'zinc',
     'mint', 'gold', 'black', 'slate', 'stone', 'emerald', 'cocoa', 'lilac', 
     'salmon', 'ocean', 'forest', 'night', 'berry'
@@ -96,7 +96,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   };
 
   const isColorOwned = (c: ThemeColor) => {
-      const freeColors = ['primary', 'orange', 'yellow', 'green', 'blue']; 
+      const freeColors = ['orange', 'yellow', 'green', 'blue']; 
       if (freeColors.includes(c)) return true;
       return user.inventory.includes(`theme_${c}`);
   };
@@ -135,8 +135,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const getFrameDisplay = (frameId: string) => {
     if (!user.activeFrames.includes(frameId)) return '';
     switch(frameId) {
-        case 'frame_wood': return 'ring-4 ring-amber-700 ring-offset-2 ring-offset-amber-100 shadow-md';
-        case 'frame_silver': return 'ring-4 ring-slate-400 ring-offset-2 ring-offset-slate-100 shadow-sm';
+        case 'frame_wood': return 'ring-4 ring-amber-800 ring-offset-2';
+        case 'frame_silver': return 'ring-4 ring-slate-300 ring-offset-2';
         case 'frame_gold': return 'ring-4 ring-yellow-400 ring-offset-2';
         default: return '';
     }

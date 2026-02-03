@@ -42,35 +42,26 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
   const aggregatedData = useMemo(() => {
     if (ownedPigs.length === 0) return [];
-
-    const combined = new Map<string, number>();
-    ownedPigs.forEach((pig) => {
-      pig.history?.forEach((entry) => {
-        combined.set(entry.day, (combined.get(entry.day) || 0) + entry.amount);
-      });
-    });
-
-    const result = Array.from(combined.entries())
-      .sort((a, b) => {
-        const aTime = Date.parse(a[0]);
-        const bTime = Date.parse(b[0]);
-        if (!Number.isNaN(aTime) && !Number.isNaN(bTime)) return aTime - bTime;
-        return a[0].localeCompare(b[0]);
-      })
-      .map(([day, amount]) => ({ day, amount }));
-
-    if (chartPeriod === '7D') {
-      return result.slice(-7);
+    
+    const historyLength = ownedPigs[0].history?.length || 0;
+    if (historyLength === 0) return [];
+    
+    const result = [];
+    for (let i = 0; i < historyLength; i++) {
+        let sum = 0;
+        let dayLabel = ownedPigs[0].history[i].day;
+        ownedPigs.forEach(pig => {
+            if (pig.history && pig.history[i]) sum += pig.history[i].amount;
+        });
+        result.push({ day: dayLabel, amount: sum });
     }
 
+    if (chartPeriod === '7D') {
+        return result.slice(-7);
+    }
+    
     return result;
   }, [ownedPigs, chartPeriod]);
-
-  const formatChartDay = (value: string) => {
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return value;
-    return parsed.toLocaleDateString(language, { day: '2-digit', month: '2-digit' });
-  };
 
   const growthInfo = useMemo(() => {
     if (aggregatedData.length < 2) return { percent: "0.0", isPositive: true };
@@ -144,7 +135,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                         tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 600}} 
                                         dy={10}
                                         interval={chartPeriod === 'MTD' ? 4 : 0}
-                                        tickFormatter={formatChartDay}
                                     />
                                     <YAxis 
                                         hide 
@@ -154,7 +144,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                         contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
                                         cursor={{ stroke: '#6366f1', strokeWidth: 2 }}
                                         formatter={(val: number) => [`€${val.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Equity']}
-                                        labelFormatter={formatChartDay}
                                     />
                                     <Area 
                                         type="monotone" 

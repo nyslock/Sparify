@@ -51,9 +51,6 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
   const [showAllocationModal, setShowAllocationModal] = useState<{goal: Goal} | null>(null);
   const [tempAllocation, setTempAllocation] = useState<string>('0');
 
-  const MAX_REASON_LENGTH = 32;
-  const MAX_WISH_LENGTH = 32;
-
   const colors: ThemeColor[] = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
   const t = getTranslations(language).detail;
 
@@ -206,12 +203,6 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
   };
 
   const chartData = bank.history || [];
-  const formatChartDay = (value: string) => {
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return value;
-    return parsed.toLocaleDateString(language, { day: '2-digit', month: '2-digit' });
-  };
-  const clampText = (value: string, max: number) => value.slice(0, max);
 
   if (appMode === 'adult') {
       return (
@@ -264,12 +255,11 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                                     <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                                                 </linearGradient>
                                             </defs>
-                                            <XAxis dataKey="day" hide tickFormatter={formatChartDay} />
+                                            <XAxis dataKey="day" hide />
                                             <YAxis hide domain={['auto', 'auto']} />
                                             <Tooltip 
                                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} 
                                                 formatter={(v: number) => [`€${v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Equity']}
-                                                labelFormatter={formatChartDay}
                                             />
                                             <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={3} fill="url(#adultColor)" />
                                         </AreaChart>
@@ -333,7 +323,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t.date}</p>
                                         </div>
                                     </div>
-                                    <span className={`font-black text-sm sm:text-base tabular-nums whitespace-nowrap text-right min-w-[120px] ${t.type === 'deposit' ? 'text-emerald-600' : 'text-slate-900'}`}>
+                                    <span className={`font-black text-sm sm:text-base ${t.type === 'deposit' ? 'text-emerald-600' : 'text-slate-900'}`}>
                                         {t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                 </div>
@@ -404,8 +394,8 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                    <ResponsiveContainer width="100%" height="100%">
                      <AreaChart data={chartData}>
                        <defs><linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs>
-                       <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }} dy={10} tickFormatter={formatChartDay} />
-                       <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', color: '#1e293b' }} itemStyle={{ color: '#6366f1', fontWeight: 'bold' }} formatter={(value: number) => [`€${value.toFixed(2)}`, 'Betrag']} labelFormatter={formatChartDay} />
+                       <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }} dy={10} />
+                       <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', color: '#1e293b' }} itemStyle={{ color: '#6366f1', fontWeight: 'bold' }} formatter={(value: number) => [`€${value.toFixed(2)}`, 'Betrag']} />
                        <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
                      </AreaChart>
                    </ResponsiveContainer>
@@ -453,7 +443,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
             <div className="mb-6 md:mb-0 md:flex-1"><h3 className="font-black text-slate-800 mb-5 ml-4 text-xl">{t.transactions}</h3><div className="space-y-4">{bank.transactions?.length > 0 ? bank.transactions.map((t) => (
                 <div key={t.id} className="bg-white p-5 rounded-[2rem] flex items-center justify-between border border-slate-100 shadow-lg shadow-slate-100">
                     <div className="flex items-center gap-4"><div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${t.type === 'deposit' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>{t.type === 'deposit' ? <ArrowDownLeft size={28} /> : <ArrowUpRight size={28} />}</div><div><h4 className="font-black text-slate-800 text-base">{t.title}</h4><p className="text-slate-400 text-xs font-bold">{t.date}</p></div></div>
-                    <span className={`font-black text-xl tabular-nums whitespace-nowrap text-right min-w-[140px] ${t.type === 'deposit' ? 'text-emerald-500' : 'text-slate-800'}`}>{t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span className={`font-black text-xl ${t.type === 'deposit' ? 'text-emerald-500' : 'text-slate-800'}`}>{t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>)) : <div className="text-center py-12 text-slate-400 font-bold bg-white rounded-[2rem] border-2 border-dashed border-slate-200">{t.noTransactions}</div>}</div></div>
           </div>
       </div>
@@ -648,8 +638,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                 {transError && <div className="mb-4 flex items-center gap-2 text-red-500 font-bold text-sm bg-red-50 p-3 rounded-xl"><AlertCircle size={16} /> {transError}</div>}
                                 <div className="mb-8 mt-2">
                                     <label className="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block">{t.reasonLabel}</label>
-                                    <input type="text" value={transReason} onChange={(e) => setTransReason(clampText(e.target.value, MAX_REASON_LENGTH))} placeholder="z.B. Eis, Lego..." className="w-full bg-slate-50 rounded-2xl px-5 py-4 font-bold text-slate-800 outline-none border-2 border-slate-100 focus:border-indigo-400 focus:bg-white transition-all" maxLength={MAX_REASON_LENGTH} />
-                                    <div className="mt-2 text-right text-xs font-bold text-slate-400">{transReason.length}/{MAX_REASON_LENGTH}</div>
+                                    <input type="text" value={transReason} onChange={(e) => setTransReason(e.target.value)} placeholder="z.B. Eis, Lego..." className="w-full bg-slate-50 rounded-2xl px-5 py-4 font-bold text-slate-800 outline-none border-2 border-slate-100 focus:border-indigo-400 focus:bg-white transition-all" maxLength={50} />
                                 </div>
                                 <button 
                                     onClick={handleTransactionExecute} 
@@ -673,8 +662,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                         <div className="space-y-6">
                             <div>
                                 <label className="text-xs font-bold text-slate-400 uppercase mb-2 block ml-1">{t.wishLabel}</label>
-                                <input type="text" value={goalName} onChange={(e) => setGoalName(clampText(e.target.value, MAX_WISH_LENGTH))} className="w-full bg-slate-50 rounded-2xl px-5 py-4 font-black text-slate-800 outline-none border-2 border-slate-100 focus:border-indigo-400 focus:bg-white transition-all" placeholder="z.B. Playstation, Fahrrad..." maxLength={MAX_WISH_LENGTH} />
-                                <div className="mt-2 text-right text-xs font-bold text-slate-400">{goalName.length}/{MAX_WISH_LENGTH}</div>
+                                <input type="text" value={goalName} onChange={(e) => setGoalName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-5 py-4 font-black text-slate-800 outline-none border-2 border-slate-100 focus:border-indigo-400 focus:bg-white transition-all" placeholder="z.B. Playstation, Fahrrad..." maxLength={50} />
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-slate-400 uppercase mb-2 block ml-1">{t.costLabel}</label>

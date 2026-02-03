@@ -47,18 +47,9 @@ export default function App() {
       userRef.current = user;
   }, [user]);
 
-  useEffect(() => {
-    if (!userId) return;
-    const savedAccent = loadAccentColor(userId);
-    if (savedAccent) {
-      setAccentColor(savedAccent);
-    }
-  }, [userId]);
-
   const tAge = getTranslations(language).age;
 
   const getPrefsKey = (uid: string) => `sparify_prefs_${uid}`;
-  const getAccentKey = (uid: string) => `sparify_accent_${uid}`;
   const loadPrefs = (uid: string): Pick<User, 'activeFrames' | 'activeTitles'> => {
     try {
       const raw = localStorage.getItem(getPrefsKey(uid));
@@ -73,17 +64,6 @@ export default function App() {
   };
   const savePrefs = (uid: string, prefs: Pick<User, 'activeFrames' | 'activeTitles'>) => {
     try { localStorage.setItem(getPrefsKey(uid), JSON.stringify(prefs)); } catch {}
-  };
-  const loadAccentColor = (uid: string): ThemeColor | null => {
-    try {
-      const raw = localStorage.getItem(getAccentKey(uid));
-      return raw ? (raw as ThemeColor) : null;
-    } catch {
-      return null;
-    }
-  };
-  const saveAccentColor = (uid: string, color: ThemeColor) => {
-    try { localStorage.setItem(getAccentKey(uid), color); } catch {}
   };
 
   const calculateAge = (birthDateString: string) => {
@@ -103,41 +83,6 @@ export default function App() {
       const d = new Date();
       d.setDate(d.getDate() - 1);
       return d.toISOString().split('T')[0];
-  };
-
-  const buildHistory = (transactions: { amount: number; rawDate?: Date; date: string }[], currentBalance: number) => {
-    if (!transactions.length) return [];
-    const ordered = [...transactions].sort((a, b) => (a.rawDate?.getTime() || 0) - (b.rawDate?.getTime() || 0));
-    const dailyTotals = new Map<string, number>();
-    ordered.forEach((tx) => {
-      const dateKey = tx.rawDate ? tx.rawDate.toISOString().split('T')[0] : tx.date;
-      if (!dateKey) return;
-      dailyTotals.set(dateKey, (dailyTotals.get(dateKey) || 0) + tx.amount);
-    });
-
-    const history = Array.from(dailyTotals.entries())
-      .sort((a, b) => {
-        const aTime = Date.parse(a[0]);
-        const bTime = Date.parse(b[0]);
-        if (!Number.isNaN(aTime) && !Number.isNaN(bTime)) return aTime - bTime;
-        return a[0].localeCompare(b[0]);
-      })
-      .map(([day, amount]) => ({ day, amount }));
-
-    let running = 0;
-    const runningHistory = history.map((entry) => {
-      running += entry.amount;
-      return { ...entry, amount: running };
-    });
-
-    if (runningHistory.length > 0) {
-      const offset = currentBalance - runningHistory[runningHistory.length - 1].amount;
-      if (Math.abs(offset) > 0.01) {
-        return runningHistory.map((entry) => ({ ...entry, amount: entry.amount + offset }));
-      }
-    }
-
-    return runningHistory;
   };
 
   const loadUserData = useCallback(async (uid: string, email: string, showLoadingSpinner = true) => {
@@ -276,7 +221,17 @@ export default function App() {
                 })))
             ]);
             decTxs.sort((a, b) => (b.rawDate?.getTime() || 0) - (a.rawDate?.getTime() || 0));
-          const history = buildHistory(decTxs, decBalance);
+          // Build history from transactions: reconstruct running balance at each transaction date
+          const history: { day: string; amount: number }[] = [];
+          try {
+            let running = decBalance;
+            // decTxs currently sorted descending by rawDate
+            for (const tx of decTxs) {
+              history.push({ day: tx.date, amount: running });
+              running -= tx.amount;
+            }
+            history.reverse();
+          } catch (e) { /* fallback to empty history */ }
 
           return {
             id: pig.id, name: pig.name || 'Sparbox', balance: decBalance, color: pig.color || 'blue',
@@ -470,13 +425,6 @@ export default function App() {
       setIsSyncing(false);
   };
 
-  const handleUpdateAccent = (color: ThemeColor) => {
-    setAccentColor(color);
-    if (userId) {
-      saveAccentColor(userId, color);
-    }
-  };
-
   const handleLogout = async () => {
       try {
           await supabase.auth.signOut();
@@ -485,13 +433,11 @@ export default function App() {
           setUser(null);
           setUserId(null);
           setPiggyBanks([]);
-          setAccentColor('primary');
       } catch (err) {
           console.error("Logout failed:", err);
           // Fallback
           setView('LOGIN');
           setUser(null);
-          setAccentColor('primary');
       }
   };
 
@@ -722,7 +668,7 @@ export default function App() {
                 user={user}
                 onUpdateUser={updateUserProfile}
                 accentColor={accentColor}
-                onUpdateAccent={handleUpdateAccent}
+                onUpdateAccent={setAccentColor}
                 onLogout={handleLogout}
                 language={language}
                 setLanguage={setLanguage}

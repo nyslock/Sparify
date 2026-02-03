@@ -11,7 +11,6 @@ interface Level {
   contentId: string;
   reward: number; 
   duration: string; 
-  difficultyLabel: string;
 }
 
 interface Section {
@@ -65,14 +64,14 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
                 title: 'Finanz-Mathematik & Strategie',
                 color: 'bg-slate-800',
                 levels: [
-                    { id: 'p_math_1', title: 'Zinseszins-Magie', type: 'quiz', icon: 'calc', position: 'center', contentId: 'c_adult_math_1', reward: 50, duration: '5 Min', difficultyLabel: 'Einsteiger' },
-                    { id: 'p_math_2', title: 'Inflation & Kaufkraft', type: 'lesson', icon: 'zap', position: 'left', contentId: 'c_adult_math_2', reward: 50, duration: '3 Min', difficultyLabel: 'Einsteiger' },
-                    { id: 'p_math_3', title: 'Optimale Sparquote', type: 'quiz', icon: 'calc', position: 'right', contentId: 'c_adult_math_3', reward: 75, duration: '5 Min', difficultyLabel: 'Mittel' },
-                    { id: 'p_crash', title: 'Börsenpsychologie', type: 'lesson', icon: 'zap', position: 'center', contentId: 'c_adult_crash', reward: 100, duration: '6 Min', difficultyLabel: 'Mittel' },
-                    { id: 'p_compound', title: 'Langfristiges Wachstum', type: 'quiz', icon: 'calc', position: 'left', contentId: 'c_adult_compound', reward: 120, duration: '7 Min', difficultyLabel: 'Fortgeschritten' },
-                    { id: 'p_risk', title: 'Risiko-Management', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_adult_risk', reward: 150, duration: '8 Min', difficultyLabel: 'Fortgeschritten' },
-                    { id: 'p_divers', title: 'Diversifikation', type: 'quiz', icon: 'calc', position: 'center', contentId: 'c_adult_divers', reward: 180, duration: '9 Min', difficultyLabel: 'Profi' },
-                    { id: 'p_tax', title: 'Steuervorteile', type: 'lesson', icon: 'zap', position: 'left', contentId: 'c_adult_tax', reward: 200, duration: '10 Min', difficultyLabel: 'Profi' }
+                    { id: 'p_math_1', title: 'Zinseszins-Magie', type: 'quiz', icon: 'calc', position: 'center', contentId: 'c_adult_math_1', reward: 50, duration: '5 Min' },
+                    { id: 'p_math_2', title: 'Inflation & Kaufkraft', type: 'lesson', icon: 'zap', position: 'left', contentId: 'c_adult_math_2', reward: 50, duration: '3 Min' },
+                    { id: 'p_math_3', title: 'Optimale Sparquote', type: 'quiz', icon: 'calc', position: 'right', contentId: 'c_adult_math_3', reward: 75, duration: '5 Min' },
+                    { id: 'p_crash', title: 'Börsenpsychologie', type: 'lesson', icon: 'zap', position: 'center', contentId: 'c_adult_crash', reward: 100, duration: '6 Min' },
+                    { id: 'p_compound', title: 'Langfristiges Wachstum', type: 'quiz', icon: 'calc', position: 'left', contentId: 'c_adult_compound', reward: 120, duration: '7 Min' },
+                    { id: 'p_risk', title: 'Risiko-Management', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_adult_risk', reward: 150, duration: '8 Min' },
+                    { id: 'p_divers', title: 'Diversifikation', type: 'quiz', icon: 'calc', position: 'center', contentId: 'c_adult_divers', reward: 180, duration: '9 Min' },
+                    { id: 'p_tax', title: 'Steuervorteile', type: 'lesson', icon: 'zap', position: 'left', contentId: 'c_adult_tax', reward: 200, duration: '10 Min' }
                 ]
             },
             {
@@ -80,13 +79,13 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
                 title: 'Investment-Struktur',
                 color: 'bg-indigo-700',
                 levels: [
-                    { id: 'p_bud_1', title: '50-30-20 Meisterschaft', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_adult_bud_1', reward: 50, duration: '4 Min', difficultyLabel: 'Einsteiger' },
-                    { id: 'p_inv_etf', title: 'ETF-Weltportfolio', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_adult_etf', reward: 120, duration: '7 Min', difficultyLabel: 'Mittel' },
-                    { id: 'p_inv_crypto', title: 'Krypto-Risiken', type: 'quiz', icon: 'zap', position: 'right', contentId: 'c_adult_crypto', reward: 150, duration: '8 Min', difficultyLabel: 'Fortgeschritten' },
-                    { id: 'p_inv_bonds', title: 'Anleihen verstehen', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_adult_bonds', reward: 100, duration: '6 Min', difficultyLabel: 'Mittel' },
-                    { id: 'p_inv_real', title: 'Immobilien-Investment', type: 'quiz', icon: 'calc', position: 'left', contentId: 'c_adult_real', reward: 180, duration: '9 Min', difficultyLabel: 'Fortgeschritten' },
-                    { id: 'p_inv_passive', title: 'Passive vs Active', type: 'lesson', icon: 'zap', position: 'right', contentId: 'c_adult_passive', reward: 140, duration: '7 Min', difficultyLabel: 'Fortgeschritten' },
-                    { id: 'p_inv_psych', title: 'Behavioral Finance', type: 'quiz', icon: 'calc', position: 'center', contentId: 'c_adult_psych', reward: 200, duration: '10 Min', difficultyLabel: 'Profi' }
+                    { id: 'p_bud_1', title: '50-30-20 Meisterschaft', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_adult_bud_1', reward: 50, duration: '4 Min' },
+                    { id: 'p_inv_etf', title: 'ETF-Weltportfolio', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_adult_etf', reward: 120, duration: '7 Min' },
+                    { id: 'p_inv_crypto', title: 'Krypto-Risiken', type: 'quiz', icon: 'zap', position: 'right', contentId: 'c_adult_crypto', reward: 150, duration: '8 Min' },
+                    { id: 'p_inv_bonds', title: 'Anleihen verstehen', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_adult_bonds', reward: 100, duration: '6 Min' },
+                    { id: 'p_inv_real', title: 'Immobilien-Investment', type: 'quiz', icon: 'calc', position: 'left', contentId: 'c_adult_real', reward: 180, duration: '9 Min' },
+                    { id: 'p_inv_passive', title: 'Passive vs Active', type: 'lesson', icon: 'zap', position: 'right', contentId: 'c_adult_passive', reward: 140, duration: '7 Min' },
+                    { id: 'p_inv_psych', title: 'Behavioral Finance', type: 'quiz', icon: 'calc', position: 'center', contentId: 'c_adult_psych', reward: 200, duration: '10 Min' }
                 ]
             },
             {
@@ -94,11 +93,11 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
                 title: 'Fortgeschrittene Finanzen',
                 color: 'bg-emerald-700',
                 levels: [
-                    { id: 'p_adv_port', title: 'Portfolio-Optimierung', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_adult_port', reward: 250, duration: '12 Min', difficultyLabel: 'Fortgeschritten' },
-                    { id: 'p_adv_tax_strat', title: 'Steuerstrategien', type: 'quiz', icon: 'calc', position: 'left', contentId: 'c_adult_tax_strat', reward: 300, duration: '15 Min', difficultyLabel: 'Profi' },
-                    { id: 'p_adv_retire', title: 'Altersvorsorge-Planung', type: 'lesson', icon: 'zap', position: 'right', contentId: 'c_adult_retire', reward: 350, duration: '18 Min', difficultyLabel: 'Profi' },
-                    { id: 'p_adv_insure', title: 'Versicherungsstrategie', type: 'quiz', icon: 'calc', position: 'center', contentId: 'c_adult_insure', reward: 280, duration: '14 Min', difficultyLabel: 'Profi' },
-                    { id: 'p_adv_estate', title: 'Vermögensverwaltung', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_adult_estate', reward: 400, duration: '20 Min', difficultyLabel: 'Profi' }
+                    { id: 'p_adv_port', title: 'Portfolio-Optimierung', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_adult_port', reward: 250, duration: '12 Min' },
+                    { id: 'p_adv_tax_strat', title: 'Steuerstrategien', type: 'quiz', icon: 'calc', position: 'left', contentId: 'c_adult_tax_strat', reward: 300, duration: '15 Min' },
+                    { id: 'p_adv_retire', title: 'Altersvorsorge-Planung', type: 'lesson', icon: 'zap', position: 'right', contentId: 'c_adult_retire', reward: 350, duration: '18 Min' },
+                    { id: 'p_adv_insure', title: 'Versicherungsstrategie', type: 'quiz', icon: 'calc', position: 'center', contentId: 'c_adult_insure', reward: 280, duration: '14 Min' },
+                    { id: 'p_adv_estate', title: 'Vermögensverwaltung', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_adult_estate', reward: 400, duration: '20 Min' }
                 ]
             }
         ];
@@ -110,14 +109,14 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
           title: t.sections.basics,
           color: 'bg-emerald-500',
           levels: [
-              { id: 'l_base_1', title: 'Hallo Geld', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_basics_1', reward: 5, duration: '2 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_base_2', title: 'Euro & Cent', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_basics_2', reward: 5, duration: '2 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_base_3', title: 'Scheine', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_basics_3', reward: 8, duration: '3 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_base_4', title: 'Geld-Polizei', type: 'game', icon: 'game', position: 'center', contentId: 'c_basics_1', reward: 15, duration: '5 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_base_5', title: 'Profi Quiz', type: 'quiz', icon: 'check', position: 'left', contentId: 'c_basics_quiz', reward: 10, duration: '4 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_base_6', title: 'Münzen sammeln', type: 'game', icon: 'game', position: 'right', contentId: 'c_basics_2', reward: 12, duration: '4 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_base_7', title: 'Geld zählen', type: 'quiz', icon: 'calc', position: 'center', contentId: 'c_basics_count', reward: 15, duration: '5 Min', difficultyLabel: 'Schwer' },
-              { id: 'l_base_8', title: 'Währungen', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_basics_currency', reward: 18, duration: '6 Min', difficultyLabel: 'Schwer' }
+              { id: 'l_base_1', title: 'Hallo Geld', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_basics_1', reward: 5, duration: '2 Min' },
+              { id: 'l_base_2', title: 'Euro & Cent', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_basics_2', reward: 5, duration: '2 Min' },
+              { id: 'l_base_3', title: 'Scheine', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_basics_3', reward: 8, duration: '3 Min' },
+              { id: 'l_base_4', title: 'Geld-Polizei', type: 'game', icon: 'game', position: 'center', contentId: 'c_basics_1', reward: 15, duration: '5 Min' },
+              { id: 'l_base_5', title: 'Profi Quiz', type: 'quiz', icon: 'check', position: 'left', contentId: 'c_basics_quiz', reward: 10, duration: '4 Min' },
+              { id: 'l_base_6', title: 'Münzen sammeln', type: 'game', icon: 'game', position: 'right', contentId: 'c_basics_2', reward: 12, duration: '4 Min' },
+              { id: 'l_base_7', title: 'Geld zählen', type: 'quiz', icon: 'calc', position: 'center', contentId: 'c_basics_count', reward: 15, duration: '5 Min' },
+              { id: 'l_base_8', title: 'Währungen', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_basics_currency', reward: 18, duration: '6 Min' }
           ]
       },
       {
@@ -125,14 +124,14 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
           title: t.sections.earning,
           color: 'bg-orange-500',
           levels: [
-              { id: 'l_earn_1', title: 'Geldquelle', type: 'lesson', icon: 'zap', position: 'right', contentId: 'c_earn_1', reward: 5, duration: '2 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_earn_2', title: 'Taschengeld', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_earn_2', reward: 8, duration: '3 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_earn_3', title: 'Pfand & Flohmarkt', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_earn_3', reward: 10, duration: '4 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_earn_4', title: 'Flohmarkt Profi', type: 'game', icon: 'game', position: 'center', contentId: 'c_earn_1', reward: 20, duration: '6 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_earn_5', title: 'Job Quiz', type: 'quiz', icon: 'check', position: 'right', contentId: 'c_earn_quiz', reward: 12, duration: '5 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_earn_6', title: 'Hilfsjobs', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_earn_jobs', reward: 15, duration: '5 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_earn_7', title: 'Geld verdienen Spiele', type: 'game', icon: 'game', position: 'center', contentId: 'c_earn_games', reward: 25, duration: '7 Min', difficultyLabel: 'Schwer' },
-              { id: 'l_earn_8', title: 'Unternehmertum', type: 'quiz', icon: 'calc', position: 'right', contentId: 'c_earn_business', reward: 20, duration: '6 Min', difficultyLabel: 'Schwer' }
+              { id: 'l_earn_1', title: 'Geldquelle', type: 'lesson', icon: 'zap', position: 'right', contentId: 'c_earn_1', reward: 5, duration: '2 Min' },
+              { id: 'l_earn_2', title: 'Taschengeld', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_earn_2', reward: 8, duration: '3 Min' },
+              { id: 'l_earn_3', title: 'Pfand & Flohmarkt', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_earn_3', reward: 10, duration: '4 Min' },
+              { id: 'l_earn_4', title: 'Flohmarkt Profi', type: 'game', icon: 'game', position: 'center', contentId: 'c_earn_1', reward: 20, duration: '6 Min' },
+              { id: 'l_earn_5', title: 'Job Quiz', type: 'quiz', icon: 'check', position: 'right', contentId: 'c_earn_quiz', reward: 12, duration: '5 Min' },
+              { id: 'l_earn_6', title: 'Hilfsjobs', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_earn_jobs', reward: 15, duration: '5 Min' },
+              { id: 'l_earn_7', title: 'Geld verdienen Spiele', type: 'game', icon: 'game', position: 'center', contentId: 'c_earn_games', reward: 25, duration: '7 Min' },
+              { id: 'l_earn_8', title: 'Unternehmertum', type: 'quiz', icon: 'calc', position: 'right', contentId: 'c_earn_business', reward: 20, duration: '6 Min' }
           ]
       },
       {
@@ -140,15 +139,15 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
           title: t.sections.spending,
           color: 'bg-rose-500',
           levels: [
-              { id: 'l_spend_1', title: 'Weg ist weg', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_spend_1', reward: 5, duration: '2 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_spend_2', title: 'Brauchen vs Wollen', type: 'game', icon: 'game', position: 'left', contentId: 'c_spend_2', reward: 12, duration: '5 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_spend_3', title: 'Preise checken', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_spend_3', reward: 8, duration: '3 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_spend_4', title: 'Supermarkt', type: 'game', icon: 'game', position: 'center', contentId: 'c_spend_1', reward: 15, duration: '5 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_spend_ex1', title: 'Kiosk', type: 'game', icon: 'game', position: 'left', contentId: 'c_spend_1', reward: 10, duration: '2 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_spend_ex2', title: 'Rechnen', type: 'quiz', icon: 'check', position: 'right', contentId: 'c_spend_2', reward: 10, duration: '3 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_spend_5', title: 'Budget planen', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_spend_budget', reward: 18, duration: '6 Min', difficultyLabel: 'Schwer' },
-              { id: 'l_spend_6', title: 'Sparen beim Einkaufen', type: 'quiz', icon: 'calc', position: 'left', contentId: 'c_spend_save', reward: 20, duration: '7 Min', difficultyLabel: 'Schwer' },
-              { id: 'l_spend_7', title: 'Wunschliste', type: 'game', icon: 'game', position: 'right', contentId: 'c_spend_wishlist', reward: 22, duration: '8 Min', difficultyLabel: 'Schwer' }
+              { id: 'l_spend_1', title: 'Weg ist weg', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_spend_1', reward: 5, duration: '2 Min' },
+              { id: 'l_spend_2', title: 'Brauchen vs Wollen', type: 'game', icon: 'game', position: 'left', contentId: 'c_spend_2', reward: 12, duration: '5 Min' },
+              { id: 'l_spend_3', title: 'Preise checken', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_spend_3', reward: 8, duration: '3 Min' },
+              { id: 'l_spend_4', title: 'Supermarkt', type: 'game', icon: 'game', position: 'center', contentId: 'c_spend_1', reward: 15, duration: '5 Min' },
+              { id: 'l_spend_ex1', title: 'Kiosk', type: 'game', icon: 'game', position: 'left', contentId: 'c_spend_1', reward: 10, duration: '2 Min' },
+              { id: 'l_spend_ex2', title: 'Rechnen', type: 'quiz', icon: 'check', position: 'right', contentId: 'c_spend_2', reward: 10, duration: '3 Min' },
+              { id: 'l_spend_5', title: 'Budget planen', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_spend_budget', reward: 18, duration: '6 Min' },
+              { id: 'l_spend_6', title: 'Sparen beim Einkaufen', type: 'quiz', icon: 'calc', position: 'left', contentId: 'c_spend_save', reward: 20, duration: '7 Min' },
+              { id: 'l_spend_7', title: 'Wunschliste', type: 'game', icon: 'game', position: 'right', contentId: 'c_spend_wishlist', reward: 22, duration: '8 Min' }
           ]
       },
       {
@@ -156,15 +155,15 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
           title: t.sections.saving,
           color: 'bg-blue-500',
           levels: [
-              { id: 'l_save_1', title: 'Zeitmaschine', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_save_1', reward: 5, duration: '3 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_save_2', title: 'Die Sparbox', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_save_2', reward: 8, duration: '3 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_save_3', title: 'Bankkonto', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_save_1', reward: 10, duration: '4 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_save_4', title: 'Sparziele', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_save_3', reward: 10, duration: '4 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_save_5', title: 'Meister Quiz', type: 'quiz', icon: 'check', position: 'left', contentId: 'c_save_quiz', reward: 15, duration: '5 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_save_ex1', title: 'Zinsen?', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_save_1', reward: 10, duration: '3 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_save_6', title: 'Spar-Challenges', type: 'game', icon: 'game', position: 'center', contentId: 'c_save_challenge', reward: 25, duration: '8 Min', difficultyLabel: 'Schwer' },
-              { id: 'l_save_7', title: 'Zukunft planen', type: 'quiz', icon: 'calc', position: 'left', contentId: 'c_save_future', reward: 20, duration: '6 Min', difficultyLabel: 'Schwer' },
-              { id: 'l_save_8', title: 'Notgroschen', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_save_emergency', reward: 18, duration: '5 Min', difficultyLabel: 'Schwer' }
+              { id: 'l_save_1', title: 'Zeitmaschine', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_save_1', reward: 5, duration: '3 Min' },
+              { id: 'l_save_2', title: 'Die Sparbox', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_save_2', reward: 8, duration: '3 Min' },
+              { id: 'l_save_3', title: 'Bankkonto', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_save_1', reward: 10, duration: '4 Min' },
+              { id: 'l_save_4', title: 'Sparziele', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_save_3', reward: 10, duration: '4 Min' },
+              { id: 'l_save_5', title: 'Meister Quiz', type: 'quiz', icon: 'check', position: 'left', contentId: 'c_save_quiz', reward: 15, duration: '5 Min' },
+              { id: 'l_save_ex1', title: 'Zinsen?', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_save_1', reward: 10, duration: '3 Min' },
+              { id: 'l_save_6', title: 'Spar-Challenges', type: 'game', icon: 'game', position: 'center', contentId: 'c_save_challenge', reward: 25, duration: '8 Min' },
+              { id: 'l_save_7', title: 'Zukunft planen', type: 'quiz', icon: 'calc', position: 'left', contentId: 'c_save_future', reward: 20, duration: '6 Min' },
+              { id: 'l_save_8', title: 'Notgroschen', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_save_emergency', reward: 18, duration: '5 Min' }
           ]
       },
       {
@@ -172,12 +171,12 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
           title: t.sections.safety,
           color: 'bg-slate-600',
           levels: [
-              { id: 'l_safe_1', title: 'Angeber-Falle', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_safe_1', reward: 8, duration: '3 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_safe_2', title: 'Geheim-Code', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_safe_2', reward: 10, duration: '3 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_safe_ex1', title: 'Internet', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_safe_1', reward: 8, duration: '3 Min', difficultyLabel: 'Leicht' },
-              { id: 'l_safe_3', title: 'Sichere Passwörter', type: 'quiz', icon: 'check', position: 'center', contentId: 'c_safe_password', reward: 12, duration: '4 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_safe_4', title: 'Online-Sicherheit', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_safe_online', reward: 15, duration: '5 Min', difficultyLabel: 'Mittel' },
-              { id: 'l_safe_5', title: 'Betrug erkennen', type: 'game', icon: 'game', position: 'right', contentId: 'c_safe_scam', reward: 20, duration: '7 Min', difficultyLabel: 'Schwer' }
+              { id: 'l_safe_1', title: 'Angeber-Falle', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_safe_1', reward: 8, duration: '3 Min' },
+              { id: 'l_safe_2', title: 'Geheim-Code', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_safe_2', reward: 10, duration: '3 Min' },
+              { id: 'l_safe_ex1', title: 'Internet', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_safe_1', reward: 8, duration: '3 Min' },
+              { id: 'l_safe_3', title: 'Sichere Passwörter', type: 'quiz', icon: 'check', position: 'center', contentId: 'c_safe_password', reward: 12, duration: '4 Min' },
+              { id: 'l_safe_4', title: 'Online-Sicherheit', type: 'lesson', icon: 'star', position: 'left', contentId: 'c_safe_online', reward: 15, duration: '5 Min' },
+              { id: 'l_safe_5', title: 'Betrug erkennen', type: 'game', icon: 'game', position: 'right', contentId: 'c_safe_scam', reward: 20, duration: '7 Min' }
           ]
       },
       {
@@ -185,10 +184,10 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
           title: 'Fortgeschrittene Themen',
           color: 'bg-purple-600',
           levels: [
-              { id: 'l_adv_1', title: 'Investieren lernen', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_adv_invest', reward: 25, duration: '8 Min', difficultyLabel: 'Schwer' },
-              { id: 'l_adv_2', title: 'Budget-App nutzen', type: 'quiz', icon: 'calc', position: 'left', contentId: 'c_adv_budget', reward: 20, duration: '6 Min', difficultyLabel: 'Schwer' },
-              { id: 'l_adv_3', title: 'Zukunftsvision', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_adv_future', reward: 30, duration: '10 Min', difficultyLabel: 'Schwer' },
-              { id: 'l_adv_4', title: 'Finanzielle Ziele', type: 'game', icon: 'game', position: 'center', contentId: 'c_adv_goals', reward: 35, duration: '12 Min', difficultyLabel: 'Schwer' }
+              { id: 'l_adv_1', title: 'Investieren lernen', type: 'lesson', icon: 'star', position: 'center', contentId: 'c_adv_invest', reward: 25, duration: '8 Min' },
+              { id: 'l_adv_2', title: 'Budget-App nutzen', type: 'quiz', icon: 'calc', position: 'left', contentId: 'c_adv_budget', reward: 20, duration: '6 Min' },
+              { id: 'l_adv_3', title: 'Zukunftsvision', type: 'lesson', icon: 'star', position: 'right', contentId: 'c_adv_future', reward: 30, duration: '10 Min' },
+              { id: 'l_adv_4', title: 'Finanzielle Ziele', type: 'game', icon: 'game', position: 'center', contentId: 'c_adv_goals', reward: 35, duration: '12 Min' }
           ]
       }
     ];
@@ -501,9 +500,8 @@ export const LearnScreen: React.FC<LearnScreenProps> = ({ language, accentColor,
                            {selectedLevel.type === 'game' ? <Gamepad2 size={40} /> : selectedLevel.type === 'quiz' ? <Check size={40} /> : <School size={40} />}
                         </div>
                         <h3 className="text-2xl font-black text-white mb-2">{selectedLevel.title}</h3>
-                        <div className="flex flex-wrap justify-center gap-4 mb-6">
+                        <div className="flex justify-center gap-4 mb-6">
                             <div className="bg-slate-800 px-4 py-2 rounded-xl flex items-center gap-2 border border-slate-700"><Clock size={16} className="text-blue-400" /><span className="text-white font-bold">{selectedLevel.duration}</span></div>
-                            <div className="bg-slate-800 px-4 py-2 rounded-xl flex items-center gap-2 border border-slate-700"><Target size={16} className="text-emerald-400" /><span className="text-white font-bold">{selectedLevel.difficultyLabel}</span></div>
                             <div className="bg-slate-800 px-4 py-2 rounded-xl flex items-center gap-2 border border-slate-700"><div className="w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center text-[10px] font-black text-yellow-900">€</div><span className="text-white font-bold">+{selectedLevel.reward}</span></div>
                         </div>
                         <button onClick={startLevel} className="w-full bg-[#58cc02] text-white font-black text-xl py-4 rounded-2xl shadow-[0_6px_0_#46a302] active:translate-y-1 active:shadow-none uppercase tracking-wide">{t.start}</button>
