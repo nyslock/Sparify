@@ -319,7 +319,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                                 {t.type === 'deposit' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-slate-800 text-sm truncate max-w-[120px] sm:max-w-xs">{t.title || (t.type === 'deposit' ? 'Deposit' : 'Withdrawal')}</h4>
+                                                <h4 className="font-bold text-slate-800 text-sm truncate max-w-[100px] sm:max-w-xs">{t.title || (t.type === 'deposit' ? 'Deposit' : 'Withdrawal')}</h4>
                                                 <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t.date}</p>
                                             </div>
                                         </div>
@@ -442,8 +442,16 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                     </div>
                     <div className="mb-6 md:mb-0 md:flex-1"><h3 className="font-black text-slate-800 mb-5 ml-4 text-xl">{t.transactions}</h3><div className="space-y-4">{bank.transactions?.length > 0 ? bank.transactions.map((t) => (
                         <div key={t.id} className="bg-white p-5 rounded-[2rem] flex items-center justify-between border border-slate-100 shadow-lg shadow-slate-100">
-                            <div className="flex items-center gap-4"><div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${t.type === 'deposit' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>{t.type === 'deposit' ? <ArrowDownLeft size={28} /> : <ArrowUpRight size={28} />}</div><div><h4 className="font-black text-slate-800 text-base">{t.title}</h4><p className="text-slate-400 text-xs font-bold">{t.date}</p></div></div>
-                            <span className={`font-black text-xl ${t.type === 'deposit' ? 'text-emerald-500' : 'text-slate-800'}`}>{t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <div className="flex items-center gap-4 min-w-0">
+                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${t.type === 'deposit' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>
+                                    {t.type === 'deposit' ? <ArrowDownLeft size={28} /> : <ArrowUpRight size={28} />}
+                                </div>
+                                <div className="min-w-0">
+                                    <h4 className="font-black text-slate-800 text-base truncate block max-w-[140px]">{t.title}</h4>
+                                    <p className="text-slate-400 text-xs font-bold">{t.date}</p>
+                                </div>
+                            </div>
+                            <span className={`font-black text-xl whitespace-nowrap ml-2 ${t.type === 'deposit' ? 'text-emerald-500' : 'text-slate-800'}`}>{t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>)) : <div className="text-center py-12 text-slate-400 font-bold bg-white rounded-[2rem] border-2 border-dashed border-slate-200">{t.noTransactions}</div>}</div></div>
                 </div>
             </div>

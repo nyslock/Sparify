@@ -3,6 +3,10 @@
 	color-scheme: light;
 }
 
+* {
+	-webkit-tap-highlight-color: transparent;
+}
+
 html, body, #root {
 	height: 100%;
 	background-color: #f8fafc;

@@ -233,6 +233,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <div className="space-y-3">
             {ownedFrames.map((frame) => {
               const isActive = user.activeFrames.includes(frame.id);
+              const label = (tr as any).shopItems?.[frame.id]?.label || frame.label;
+              const desc = (tr as any).shopItems?.[frame.id]?.description || frame.description;
               return (
                 <button
                   key={frame.id}
@@ -245,8 +247,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                       <Frame size={20} />
                     </div>
                     <div className="text-left">
-                      <div className="font-bold text-slate-800">{frame.label}</div>
-                      <div className="text-xs font-bold text-slate-400">{frame.description}</div>
+                      <div className="font-bold text-slate-800">{label}</div>
+                      <div className="text-xs font-bold text-slate-400">{desc}</div>
                     </div>
                   </div>
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isActive ? 'bg-emerald-500 border-emerald-600' : 'border-slate-300'}`}>
@@ -269,6 +271,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <div className="space-y-3">
             {ownedTitles.map((title) => {
               const isActive = user.activeTitles.includes(title.id);
+              const label = (tr as any).shopItems?.[title.id]?.label || title.label;
+              const desc = (tr as any).shopItems?.[title.id]?.description || title.description;
               return (
                 <button
                   key={title.id}
@@ -281,8 +285,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                       <Tag size={20} />
                     </div>
                     <div className="text-left">
-                      <div className="font-bold text-slate-800">{title.label}</div>
-                      <div className="text-xs font-bold text-slate-400">{title.description}</div>
+                      <div className="font-bold text-slate-800">{label}</div>
+                      <div className="text-xs font-bold text-slate-400">{desc}</div>
                     </div>
                   </div>
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isActive ? 'bg-purple-500 border-purple-600' : 'border-slate-300'}`}>
