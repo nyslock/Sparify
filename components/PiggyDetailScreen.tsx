@@ -206,8 +206,8 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
 
     if (appMode === 'adult') {
         return (
-            <div className="flex-1 flex flex-col h-screen bg-slate-100 overflow-hidden relative">
-                <div className="p-4 sm:p-6 flex justify-between items-center z-50">
+            <div className="flex-1 flex flex-col h-screen bg-slate-100 overflow-hidden relative w-full items-center">
+                <div className="p-4 sm:p-6 flex justify-between items-center z-50 w-full max-w-6xl">
                     <button onClick={onBack} className="w-10 h-10 bg-white shadow-md rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 transition-all">
                         <ArrowLeft size={20} strokeWidth={2.5} />
                     </button>
@@ -340,7 +340,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
 
     return (
         <div className="flex-1 flex flex-col h-screen relative bg-slate-50 md:flex-row md:overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 p-6 pt-16 md:pt-6 flex justify-between items-start z-50 pointer-events-none max-w-6xl mx-auto w-full md:relative md:w-auto md:h-0">
+            <div className="absolute top-0 left-0 right-0 p-6 pt-16 md:pt-6 flex justify-between items-start z-50 pointer-events-none w-full">
                 <button onClick={onBack} className="pointer-events-auto w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center text-white transition-all active:scale-95 shadow-lg ring-1 ring-white/30 md:bg-white md:text-slate-500 md:shadow-md md:hover:bg-slate-50 md:ring-0 md:fixed md:top-6 md:right-24 md:z-[60]">
                     <ArrowLeft size={24} strokeWidth={3} />
                 </button>

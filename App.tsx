@@ -757,7 +757,7 @@ export default function App() {
         onLogout={handleLogout}
         appMode={appMode}
       />
-      <main className="flex-1 flex flex-col h-full relative md:ml-80">
+      <main className="flex-1 flex flex-col h-full relative overflow-hidden">
         {view !== 'LEARN' && view !== 'SHOP' && view !== 'DETAIL' && view !== 'BOX_TUTORIAL' && view !== 'SCANNER' && !isLevelActive && (
           <div className="px-6 pt-12 pb-4 flex justify-between items-center z-10 bg-slate-50/90 backdrop-blur-md sticky top-0 md:hidden">
             <div className="flex items-center gap-3">
