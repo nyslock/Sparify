@@ -697,17 +697,24 @@ export default function App() {
                 }
                 return { success: false, message: 'Gast-Code ungültig' };
               } else {
+                // Owner mode: Find piggy bank by QR code (without user_id filter)
                 result = await supabase
                   .from('piggy_banks')
                   .select('*, transactions(*), goals(*)')
                   .eq('qr_code', code)
-                  .eq('user_id', userId)
                   .maybeSingle();
 
                 if (result.data) {
-                  await loadUserData(userId!, user.email, false);
-                  setView('DASHBOARD');
-                  return { success: true };
+                  // Check if this piggy already belongs to this user
+                  if (result.data.user_id === userId) {
+                    // Already owned, just refresh data
+                    await loadUserData(userId!, user.email, false);
+                    setView('DASHBOARD');
+                    return { success: true };
+                  } else {
+                    // Piggy belongs to someone else
+                    return { success: false, message: 'Diese Sparbox gehört einem anderen Benutzer' };
+                  }
                 }
                 return { success: false, message: 'Code nicht gefunden' };
               }
