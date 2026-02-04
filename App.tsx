@@ -251,14 +251,31 @@ export default function App() {
               running += Math.abs(tx.amount);
             }
           }
+          // Add initial state (balance before first transaction)
+          history.push({ day: new Date(pig.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }), amount: running });
+
           history.reverse();
-        } catch (e) { /* fallback to empty history */ }
+
+          // Deduplicate days: Keep only the LAST entry for each day (which corresponds to the End-of-Day balance)
+          const dayMap = new Map<string, number>();
+          history.forEach(h => dayMap.set(h.day, h.amount));
+          const finalHistory = Array.from(dayMap.entries()).map(([day, amount]) => ({ day, amount }));
+
+          return {
+            id: pig.id, name: pig.name || 'Sparbox', balance: decBalance, color: pig.color || 'blue',
+            role, connectedDate: new Date(pig.created_at).toLocaleDateString(), history: finalHistory,
+            transactions: decTxs, goals: decGoals, glitterEnabled: pig.glitter_enabled || false,
+            rainbowEnabled: pig.rainbow_enabled || false, safeLockEnabled: pig.safe_lock_enabled || false,
+            diamondSkinEnabled: pig.diamond_skin_enabled || false
+          };
+        } catch (e) { console.error(e); }
 
         return {
           id: pig.id, name: pig.name || 'Sparbox', balance: decBalance, color: pig.color || 'blue',
-          role, connectedDate: new Date(pig.created_at).toLocaleDateString(), history,
+          role, connectedDate: new Date(pig.created_at).toLocaleDateString(), history: [],
           transactions: decTxs, goals: decGoals, glitterEnabled: pig.glitter_enabled || false,
-          rainbowEnabled: pig.rainbow_enabled || false, safeLockEnabled: pig.safe_lock_enabled || false
+          rainbowEnabled: pig.rainbow_enabled || false, safeLockEnabled: pig.safe_lock_enabled || false,
+          diamondSkinEnabled: pig.diamond_skin_enabled || false
         };
       };
 
@@ -382,6 +399,8 @@ export default function App() {
         activeTitles: updatedUser.activeTitles,
         theme: accentColor
       });
+      // Also persist unseenItems locally as they are not in DB main table
+      try { localStorage.setItem(`sparify_unseen_${uid}`, JSON.stringify(updatedUser.unseenItems)); } catch { }
     } else {
       try { localStorage.setItem('sparify_pending_profile', JSON.stringify(updatedUser)); } catch { }
     }
@@ -390,7 +409,9 @@ export default function App() {
     const doUpdate = async () => {
       try {
         if (!uid) throw new Error('no-user-id');
-        const res = await supabase.from('profiles').update({
+
+        // Sanitize payload: ensure undefined becomes null for optional fields
+        const payload = {
           name: updatedUser.name,
           avatar_id: updatedUser.avatarId,
           coins: updatedUser.coins,
@@ -399,12 +420,14 @@ export default function App() {
           claimed_achievements: updatedUser.claimedAchievements,
           active_specials: updatedUser.activeSpecials,
           streak: updatedUser.streak,
-          last_completed_date: updatedUser.lastCompletedDate,
-          streak_freeze_until: updatedUser.streakFreezeUntil,
+          last_completed_date: updatedUser.lastCompletedDate || null,
+          streak_freeze_until: updatedUser.streakFreezeUntil || null,
           language: updatedUser.language,
-          birthdate: updatedUser.birthdate,
+          birthdate: updatedUser.birthdate || null,
           has_seen_tutorial: updatedUser.hasSeenTutorial
-        }).eq('id', uid);
+        };
+
+        const res = await supabase.from('profiles').update(payload).eq('id', uid);
 
         if (res.error) {
           console.error('Supabase update error:', res.error, res);
@@ -419,7 +442,8 @@ export default function App() {
         try {
           await new Promise(r => setTimeout(r, 1200));
           if (!uid) return;
-          const retryRes = await supabase.from('profiles').update({
+
+          const payload = {
             name: updatedUser.name,
             avatar_id: updatedUser.avatarId,
             coins: updatedUser.coins,
@@ -428,12 +452,14 @@ export default function App() {
             claimed_achievements: updatedUser.claimedAchievements,
             active_specials: updatedUser.activeSpecials,
             streak: updatedUser.streak,
-            last_completed_date: updatedUser.lastCompletedDate,
-            streak_freeze_until: updatedUser.streakFreezeUntil,
+            last_completed_date: updatedUser.lastCompletedDate || null,
+            streak_freeze_until: updatedUser.streakFreezeUntil || null,
             language: updatedUser.language,
-            birthdate: updatedUser.birthdate,
+            birthdate: updatedUser.birthdate || null,
             has_seen_tutorial: updatedUser.hasSeenTutorial
-          }).eq('id', uid);
+          };
+
+          const retryRes = await supabase.from('profiles').update(payload).eq('id', uid);
           if (retryRes.error) console.error('Retry failed:', retryRes.error, retryRes);
           else {
             console.debug('Profile update retry saved:', retryRes.data);
