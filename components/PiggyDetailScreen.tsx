@@ -349,7 +349,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                 </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto no-scrollbar p-6 flex gap-8 max-w-6xl mx-auto w-full">
+            <div className="flex-1 overflow-y-auto no-scrollbar p-6 flex flex-col md:flex-row gap-8 max-w-6xl mx-auto w-full">
                 <div className="md:w-1/2 md:flex md:flex-col md:gap-6">
                     <div id="tutorial-piggy-balance" className={`relative ${bank.rainbowEnabled ? 'animate-rainbow-bg' : THEME_COLORS[bank.color]} rounded-b-[3.5rem] md:rounded-[2.5rem] pt-28 pb-12 px-6 shadow-2xl shadow-slate-300/50 z-10 transition-colors duration-500 overflow-hidden md:pt-12 md:flex-1 md:flex md:flex-col md:justify-center`}>
                         {bank.glitterEnabled && (

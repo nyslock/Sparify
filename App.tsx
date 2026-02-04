@@ -706,8 +706,20 @@ export default function App() {
                   .maybeSingle();
 
                 if (result.data) {
-                  // Check if this piggy already belongs to this user
-                  if (result.data.user_id === userId) {
+                  // Check if this piggy already belongs to this user or is unassigned
+                  if (!result.data.user_id) {
+                    // New/unassigned pig -> claim it
+                    const { error: claimError } = await supabase
+                      .from('piggy_banks')
+                      .update({ user_id: userId })
+                      .eq('id', result.data.id);
+
+                    if (claimError) throw claimError;
+
+                    await loadUserData(userId!, user.email, false);
+                    setView('DASHBOARD');
+                    return { success: true };
+                  } else if (result.data.user_id === userId) {
                     // Already owned, just refresh data
                     await loadUserData(userId!, user.email, false);
                     setView('DASHBOARD');

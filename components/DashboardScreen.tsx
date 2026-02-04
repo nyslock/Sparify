@@ -341,7 +341,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
                 <div className="flex items-center justify-between mb-4 px-2">
                     <h3 className="text-2xl font-black text-slate-900">{t.myPigs}</h3>
-                    <button onClick={onConnect} className="md:hidden w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 hover:scale-110 transition-transform">
+                    <button id="tutorial-connect-mobile" onClick={onConnect} className="md:hidden w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 hover:scale-110 transition-transform">
                         <Plus size={20} />
                     </button>
                 </div>

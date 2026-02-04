@@ -38,12 +38,25 @@ export const SpotlightTutorial: React.FC<SpotlightTutorialProps> = ({
     const updateElementPosition = () => {
         if (!currentStep) return;
 
-        const element = document.getElementById(currentStep.elementId);
+        let element = document.getElementById(currentStep.elementId);
+
+        // Fallback for mobile IDs if needed
+        if (!element && currentStep.elementId === 'tutorial-connect') {
+            element = document.getElementById('tutorial-connect-mobile');
+        }
+
         if (element) {
             const rect = element.getBoundingClientRect();
-            setElementRect(rect);
+            // Only update if rect actually changed or was null
+            if (!elementRect ||
+                rect.top !== elementRect.top ||
+                rect.left !== elementRect.left ||
+                rect.width !== elementRect.width ||
+                rect.height !== elementRect.height) {
+                setElementRect(rect);
+            }
         } else {
-            setElementRect(null);
+            if (elementRect) setElementRect(null);
         }
     };
 
@@ -51,13 +64,22 @@ export const SpotlightTutorial: React.FC<SpotlightTutorialProps> = ({
         // Check if we need to navigate to a different screen
         if (currentStep?.screen && currentStep.screen !== currentScreen && onNavigate) {
             onNavigate(currentStep.screen);
-            // Wait for navigation to complete before highlighting
-            setTimeout(() => {
-                updateElementPosition();
-            }, 300);
-        } else {
-            updateElementPosition();
         }
+
+        // Wait a bit then start checking for the element
+        const timer = setTimeout(() => {
+            updateElementPosition();
+        }, 300);
+
+        // Keep searching for the element for a few seconds (in case of slow renders/transitions)
+        const interval = setInterval(() => {
+            updateElementPosition();
+        }, 500);
+
+        // Stop checking after 3 seconds to save resources
+        const stopSearch = setTimeout(() => {
+            clearInterval(interval);
+        }, 3000);
 
         // Set up resize observer to track element position changes
         const element = document.getElementById(currentStep?.elementId || '');
@@ -73,6 +95,9 @@ export const SpotlightTutorial: React.FC<SpotlightTutorialProps> = ({
         window.addEventListener('scroll', updateElementPosition, true);
 
         return () => {
+            clearTimeout(timer);
+            clearInterval(interval);
+            clearTimeout(stopSearch);
             if (observerRef.current) {
                 observerRef.current.disconnect();
             }
@@ -115,8 +140,8 @@ export const SpotlightTutorial: React.FC<SpotlightTutorialProps> = ({
 
     return (
         <div className="fixed inset-0 z-[9999] pointer-events-auto">
-            {/* Backdrop with blur */}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300" />
+            {/* Backdrop with blur - reduced blur if no spotlight to keep content readable */}
+            <div className={`absolute inset-0 bg-black/60 transition-all duration-500 ${elementRect ? 'backdrop-blur-sm' : 'backdrop-blur-[1px]'}`} />
 
             {/* Spotlight cutout effect using SVG mask */}
             {elementRect && (
@@ -176,10 +201,10 @@ export const SpotlightTutorial: React.FC<SpotlightTutorialProps> = ({
                                 <div
                                     key={idx}
                                     className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentStepIndex
-                                            ? 'w-8 bg-indigo-500'
-                                            : idx < currentStepIndex
-                                                ? 'w-1.5 bg-indigo-300'
-                                                : 'w-1.5 bg-slate-200'
+                                        ? 'w-8 bg-indigo-500'
+                                        : idx < currentStepIndex
+                                            ? 'w-1.5 bg-indigo-300'
+                                            : 'w-1.5 bg-slate-200'
                                         }`}
                                 />
                             ))}
