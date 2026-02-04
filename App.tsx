@@ -63,8 +63,18 @@ export default function App() {
       return { activeFrames: [], activeTitles: [] };
     }
   };
-  const savePrefs = (uid: string, prefs: { activeFrames: string[], activeTitles: string[], theme?: ThemeColor }) => {
-    try { localStorage.setItem(getPrefsKey(uid), JSON.stringify(prefs)); } catch { }
+  const savePrefs = (uid: string, prefs: Partial<{ activeFrames: string[], activeTitles: string[], theme?: ThemeColor }>) => {
+    try {
+      const existing = loadPrefs(uid);
+      const merged = { ...existing, ...prefs };
+      // Filter out undefined values to keep clean
+      if (prefs.theme) merged.theme = prefs.theme;
+      // If array is passed, use it. If not, keep existing.
+      if (prefs.activeFrames) merged.activeFrames = prefs.activeFrames;
+      if (prefs.activeTitles) merged.activeTitles = prefs.activeTitles;
+
+      localStorage.setItem(getPrefsKey(uid), JSON.stringify(merged));
+    } catch { }
   };
 
   const calculateAge = (birthDateString: string) => {

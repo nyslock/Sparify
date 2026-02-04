@@ -319,11 +319,11 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                                 {t.type === 'deposit' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-slate-800 text-sm">{t.title || (t.type === 'deposit' ? 'Deposit' : 'Withdrawal')}</h4>
+                                                <h4 className="font-bold text-slate-800 text-sm truncate max-w-[120px] sm:max-w-xs">{t.title || (t.type === 'deposit' ? 'Deposit' : 'Withdrawal')}</h4>
                                                 <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t.date}</p>
                                             </div>
                                         </div>
-                                        <span className={`font-black text-sm sm:text-base ${t.type === 'deposit' ? 'text-emerald-600' : 'text-slate-900'}`}>
+                                        <span className={`font-black text-sm sm:text-base whitespace-nowrap ${t.type === 'deposit' ? 'text-emerald-600' : 'text-slate-900'}`}>
                                             {t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </div>

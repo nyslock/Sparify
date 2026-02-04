@@ -1,8 +1,7 @@
+import { LucideIcon, PiggyBank as PigIcon, Shield, Crown, BadgeCheck, Zap, Star, Sparkles, Briefcase, Gem, Ticket, Snowflake, Frame, TrendingUp, ShieldCheck, Gift, Landmark, ShieldAlert, Rainbow } from 'lucide-react';
 
-import { Sparkles, Trophy, Snowflake, TrendingUp, ShieldCheck, Gift, Landmark, ShieldAlert, Crown, Rainbow, Zap, Star, Gem, Ticket, Shield, Frame, BadgeCheck } from 'lucide-react';
-
-export type ThemeColor = 
-  | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink' | 'teal' 
+export type ThemeColor =
+  | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink' | 'teal'
   | 'cyan' | 'indigo' | 'lime' | 'rose' | 'fuchsia' | 'violet' | 'sky' | 'amber' | 'zinc'
   | 'mint' | 'gold' | 'black'
   | 'slate' | 'stone' | 'emerald' | 'cocoa' | 'lilac' | 'salmon' | 'ocean' | 'forest' | 'night' | 'berry' | 'primary';
@@ -10,7 +9,7 @@ export type ThemeColor =
 export type Language = 'de' | 'en' | 'hr' | 'tr' | 'ru' | 'hu';
 export type AppMode = 'kids' | 'adult';
 
-export const CUSTOM_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogo.png'; 
+export const CUSTOM_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogo.png';
 export const LOGIN_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogoBlau.png';
 
 export interface User {
@@ -19,14 +18,14 @@ export interface User {
   email: string;
   trophies: number;
   coins: number;
-  streak: number; 
-  lastCompletedDate: string | null; 
-  inventory: string[]; 
-  unseenItems: string[]; 
-  completedLevels: string[]; 
-  claimedAchievements: string[]; 
-  activeSpecials: string[]; 
-  streakFreezeUntil?: string | null; 
+  streak: number;
+  lastCompletedDate: string | null;
+  inventory: string[];
+  unseenItems: string[];
+  completedLevels: string[];
+  claimedAchievements: string[];
+  activeSpecials: string[];
+  streakFreezeUntil?: string | null;
   language: Language;
   age: number | null;
   birthdate: string | null;
@@ -42,7 +41,7 @@ export interface PiggyBank {
   balance: number;
   color: ThemeColor;
   connectedDate: string;
-  role: 'owner' | 'guest'; 
+  role: 'owner' | 'guest';
   history: { day: string; amount: number }[];
   transactions: Transaction[];
   goals: Goal[];
@@ -53,13 +52,13 @@ export interface PiggyBank {
 }
 
 export interface SpecialItem {
-    id: string;
-    label: string;
-    description: string;
-    price: number;
-    category: 'profile' | 'piggy' | 'coupon' | 'tag' | 'frame' | 'streak';
-    icon: any;
-    color: string;
+  id: string;
+  label: string;
+  description: string;
+  price: number;
+  category: 'profile' | 'piggy' | 'coupon' | 'tag' | 'frame' | 'streak';
+  icon: any;
+  color: string;
 }
 
 export const SPECIALS_DATABASE: SpecialItem[] = [
@@ -110,22 +109,40 @@ export const SPECIALS_DATABASE: SpecialItem[] = [
     color: 'text-yellow-500'
   },
   {
-    id: 'tag_saver_pro',
-    label: 'tag_saver_pro',
-    description: 'tag_saver_pro',
-    price: 100,
+    id: 'tag_coin_master',
+    label: 'tag_coin_master',
+    description: 'tag_coin_master',
+    price: 150,
     category: 'tag',
     icon: BadgeCheck,
-    color: 'text-blue-500'
+    color: 'text-amber-500'
   },
   {
-    id: 'tag_money_magnet',
-    label: 'tag_money_magnet',
-    description: 'tag_money_magnet',
-    price: 200,
+    id: 'tag_smart_fox',
+    label: 'tag_smart_fox',
+    description: 'tag_smart_fox',
+    price: 250,
     category: 'tag',
-    icon: Zap,
-    color: 'text-yellow-400'
+    icon: Sparkles,
+    color: 'text-orange-500'
+  },
+  {
+    id: 'tag_dream_catcher',
+    label: 'tag_dream_catcher',
+    description: 'tag_dream_catcher',
+    price: 350,
+    category: 'tag',
+    icon: Star,
+    color: 'text-blue-400'
+  },
+  {
+    id: 'tag_diamond_hands',
+    label: 'tag_diamond_hands',
+    description: 'tag_diamond_hands',
+    price: 500,
+    category: 'tag',
+    icon: Gem,
+    color: 'text-cyan-400'
   },
   {
     id: 'tag_future_boss',
@@ -133,7 +150,7 @@ export const SPECIALS_DATABASE: SpecialItem[] = [
     description: 'tag_future_boss',
     price: 400,
     category: 'tag',
-    icon: Star,
+    icon: Briefcase,
     color: 'text-purple-500'
   }
 ];
@@ -217,13 +234,13 @@ export interface Goal {
   allocationPercent: number;
 }
 
-export type ViewState = 
-  | 'LOGIN' 
-  | 'DASHBOARD' 
+export type ViewState =
+  | 'LOGIN'
+  | 'DASHBOARD'
   | 'LEARN'
   | 'SHOP'
-  | 'SETTINGS' 
-  | 'SCANNER' 
+  | 'SETTINGS'
+  | 'SCANNER'
   | 'DETAIL'
   | 'BOX_TUTORIAL';
 
@@ -336,8 +353,10 @@ export const TRANSLATIONS: Record<Language, any> = {
       frame_wood: { label: 'Holz-Rahmen', description: 'Ein rustikaler Rahmen für dein Profilbild.' },
       frame_silver: { label: 'Silber-Rahmen', description: 'Glänze mit diesem edlen Silber-Rahmen.' },
       frame_gold: { label: 'Gold-Rahmen', description: 'Der ultimative Status für Spar-Könige.' },
-      tag_saver_pro: { label: 'Spar-Profi', description: 'Zeige allen, dass du dein Geld im Griff hast.' },
-      tag_money_magnet: { label: 'Münz-Magnet', description: 'Du ziehst das Geld förmlich an!' },
+      tag_coin_master: { label: 'Münz-Meister', description: 'Du kennst jede Münze beim Namen.' },
+      tag_smart_fox: { label: 'Schlau-Fuchs', description: 'Clever sparen wie ein Fuchs.' },
+      tag_dream_catcher: { label: 'Traumfänger', description: 'Du erfüllst dir jeden Wunsch.' },
+      tag_diamond_hands: { label: 'Diamant-Hände', description: 'Du hältst dein Geld eisern fest!' },
       tag_future_boss: { label: 'Zukunfts-Boss', description: 'Große Träume erfordern große Disziplin.' }
     }
   },
@@ -397,9 +416,11 @@ export const TRANSLATIONS: Record<Language, any> = {
       frame_wood: { label: 'Wood Frame', description: 'A rustic frame for your profile.' },
       frame_silver: { label: 'Silver Frame', description: 'A sleek silver frame.' },
       frame_gold: { label: 'Gold Frame', description: 'The ultimate status frame.' },
-      tag_saver_pro: { label: 'Saver Pro', description: 'Show everyone you control your money.' },
-      tag_money_magnet: { label: 'Money Magnet', description: 'You attract coins!' },
-      tag_future_boss: { label: 'Future Boss', description: 'Big dreams require discipline.' }
+      tag_coin_master: { label: 'Münz-Meister', description: 'Du kennst jede Münze beim Namen.' },
+      tag_smart_fox: { label: 'Schlau-Fuchs', description: 'Clever sparen wie ein Fuchs.' },
+      tag_dream_catcher: { label: 'Traumfänger', description: 'Du erfüllst dir jeden Wunsch.' },
+      tag_diamond_hands: { label: 'Diamant-Hände', description: 'Du hältst dein Geld eisern fest!' },
+      tag_future_boss: { label: 'Zukunfts-Boss', description: 'Große Träume erfordern große Disziplin.' }
     }
   },
   hr: { login: { slogan: 'Pametna štednja, veliki snovi.', title: 'Dobrodošli natrag' }, age: { title: 'Skoro spremni!' }, dashboard: { balance: 'Saldo' }, common: { next: 'Dalje' }, help: { appTutorial: 'Pomoć' }, tutorial: { step0: { title: 'Dobrodošli!' } }, learn: { start: 'Kreni' }, shop: { title: 'Trgovina' } },
