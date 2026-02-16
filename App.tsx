@@ -265,7 +265,7 @@ export default function App() {
           const finalHistory = Array.from(dayMap.entries()).map(([day, amount]) => ({ day, amount }));
 
           return {
-            id: pig.id, name: pig.name || 'Sparbox', balance: decBalance, color: pig.color || 'blue',
+            id: pig.id, name: pig.name || 'Sparbox', balance: finalHistory.length > 0 ? finalHistory[finalHistory.length - 1].amount : 0, color: pig.color || 'blue',
             role, connectedDate: new Date(pig.created_at).toLocaleDateString(), history: finalHistory,
             transactions: decTxs, goals: decGoals, glitterEnabled: pig.glitter_enabled || false,
             rainbowEnabled: pig.rainbow_enabled || false, safeLockEnabled: pig.safe_lock_enabled || false,
@@ -274,7 +274,7 @@ export default function App() {
         } catch (e) { console.error(e); }
 
         return {
-          id: pig.id, name: pig.name || 'Sparbox', balance: decBalance, color: pig.color || 'blue',
+          id: pig.id, name: pig.name || 'Sparbox', balance: 0, color: pig.color || 'blue',
           role, connectedDate: new Date(pig.created_at).toLocaleDateString(), history: [],
           transactions: decTxs, goals: decGoals, glitterEnabled: pig.glitter_enabled || false,
           rainbowEnabled: pig.rainbow_enabled || false, safeLockEnabled: pig.safe_lock_enabled || false,
