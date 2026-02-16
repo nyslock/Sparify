@@ -78,12 +78,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     if (appMode === 'adult') {
         return (
             <div className="flex-1 overflow-y-auto no-scrollbar h-full bg-slate-100">
-                <div className="p-6 md:p-10 pb-40 max-w-7xl mx-auto w-full">
+                <div className="p-6 md:p-10 xl:p-12 pb-40 max-w-7xl mx-auto w-full">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
                         <div>
                             <p className="text-slate-400 font-bold text-sm uppercase tracking-widest mb-1">{t.balance}</p>
                             <div className="flex items-center gap-4">
-                                <span className="text-5xl font-black text-slate-900">€{totalBalance.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</span>
+                                <span className="text-5xl xl:text-6xl font-black text-slate-900">€{totalBalance.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</span>
                                 <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-black ${growthInfo.isPositive ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
                                     {growthInfo.isPositive ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
                                     {growthInfo.percent}%
@@ -168,7 +168,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             <h3 className="text-2xl font-black text-slate-900 mb-6 px-2 flex items-center gap-2">
                                 <Wallet size={24} className="text-emerald-500" /> {t.myPigs}
                             </h3>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                                 {ownedPigs.map(pig => (
                                     <div key={pig.id} onClick={() => onSelectBank(pig.id)} className="bg-white p-6 rounded-[2.5rem] border border-white shadow-sm flex items-center justify-between hover:shadow-md cursor-pointer transition-all">
                                         <div className="flex items-center gap-4">
@@ -282,7 +282,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
     return (
         <div className="flex-1 overflow-y-auto no-scrollbar h-full">
-            <div className="p-6 pb-32 max-w-7xl mx-auto w-full">
+            <div className="p-6 xl:p-8 pb-32 max-w-7xl mx-auto w-full">
                 <div className="mb-8 w-full">
                     <div className="bg-slate-100 rounded-[1.5rem] border-2 border-dashed border-slate-200 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-slate-300 transition-colors cursor-pointer">
                         <span className="absolute top-2 right-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-200 px-2 py-0.5 rounded">{t.adLabel}</span>
@@ -304,7 +304,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                         <div className="flex justify-between items-center relative z-10">
                             <div>
                                 <h2 className="text-white/90 text-sm font-bold uppercase tracking-wide mb-1">{t.balance}</h2>
-                                <div className="text-5xl md:text-6xl font-black text-white mb-6 tracking-tight drop-shadow-md">
+                                <div className="text-5xl md:text-6xl xl:text-7xl font-black text-white mb-6 tracking-tight drop-shadow-md">
                                     €{totalBalance.toFixed(2)}
                                 </div>
                                 <div className="flex gap-2">
@@ -315,7 +315,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                 </div>
                             </div>
                             <div className="pl-4">
-                                <div className={`w-24 h-24 md:w-32 md:h-32 bg-white/10 backdrop-blur-md rounded-[2rem] p-4 flex items-center justify-center shadow-inner border border-white/20`}>
+                                <div className={`w-24 h-24 md:w-32 md:h-32 xl:w-40 xl:h-40 bg-white/10 backdrop-blur-md rounded-[2rem] p-4 flex items-center justify-center shadow-inner border border-white/20`}>
                                     <img
                                         src={CUSTOM_LOGO_URL}
                                         className="w-full h-full object-contain"
@@ -346,7 +346,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     </button>
                 </div>
 
-                <div id="tutorial-piggy-list" className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                <div id="tutorial-piggy-list" className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
                     {ownedPigs.length === 0 ? (
                         <div className="col-span-full text-center py-12 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 shadow-sm mx-2">
                             <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -365,7 +365,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             <Eye size={24} className="text-slate-400" />
                             <h3 className="text-xl font-black text-slate-500">{t.watchedPigs}</h3>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4 opacity-90">
+                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 opacity-90">
                             {guestPigs.map(pig => renderPigCard(pig, true))}
                         </div>
                     </>

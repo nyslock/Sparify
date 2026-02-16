@@ -45,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, acc
   );
 
   return (
-    <div className={`hidden md:flex flex-col w-80 h-screen bg-white border-r border-slate-100 p-6 ${appMode === 'adult' ? 'w-64' : ''}`}>
+    <div className={`hidden md:flex flex-col w-80 xl:w-96 h-screen bg-white border-r border-slate-100 p-6 ${appMode === 'adult' ? 'w-64 xl:w-80' : ''}`}>
 
       <div className="flex items-center gap-3 mb-10 px-2">
         {CUSTOM_LOGO_URL ? (
