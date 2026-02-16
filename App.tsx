@@ -16,6 +16,7 @@ import { Trophy, RotateCcw, AlertTriangle, RefreshCw, PiggyBank as PigIcon, Help
 import { AppHelpModal } from './components/AppHelpModal';
 import { supabase } from './lib/supabaseClient';
 import { decryptAmount, encryptAmount } from './lib/crypto';
+import { syncBalance, getTotalBalance } from './lib/piggyBank';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [piggyBanks, setPiggyBanks] = useState<PiggyBank[]>([]);
+  const [totalBalance, setTotalBalance] = useState<number>(0);
 
   const [accentColor, setAccentColor] = useState<ThemeColor>('primary');
   const [language, setLanguage] = useState<Language>('de');
@@ -224,8 +226,10 @@ export default function App() {
       }
 
       const processPig = async (pig: any, role: 'owner' | 'guest'): Promise<PiggyBank> => {
-        const [decBalance, decTxs, decGoals] = await Promise.all([
-          decryptAmount(pig.balance),
+        const syncedBalance = await syncBalance(pig.id);
+        const decBalance = syncedBalance !== null ? syncedBalance : 0;
+
+        const [decTxs, decGoals] = await Promise.all([
           Promise.all((pig.transactions || []).map(async (t: any) => ({
             id: t.id, title: t.title, amount: await decryptAmount(t.amount), type: t.type,
             date: new Date(t.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }),
@@ -265,7 +269,7 @@ export default function App() {
           const finalHistory = Array.from(dayMap.entries()).map(([day, amount]) => ({ day, amount }));
 
           return {
-            id: pig.id, name: pig.name || 'Sparbox', balance: finalHistory.length > 0 ? finalHistory[finalHistory.length - 1].amount : 0, color: pig.color || 'blue',
+            id: pig.id, name: pig.name || 'Sparbox', balance: decBalance, color: pig.color || 'blue',
             role, connectedDate: new Date(pig.created_at).toLocaleDateString(), history: finalHistory,
             transactions: decTxs, goals: decGoals, glitterEnabled: pig.glitter_enabled || false,
             rainbowEnabled: pig.rainbow_enabled || false, safeLockEnabled: pig.safe_lock_enabled || false,
@@ -285,6 +289,13 @@ export default function App() {
       const owned = await Promise.all((ownedPigsRes.data || []).map(p => processPig(p, 'owner')));
       const guest = await Promise.all(guestPigsData.map(p => processPig(p, 'guest')));
       setPiggyBanks([...owned, ...guest]);
+
+      // Get total balance using the separate method
+      if (uid) {
+        const total = await getTotalBalance(uid);
+        setTotalBalance(total);
+      }
+
       dataLoadedRef.current = true;
     } catch (err) {
       console.error("Load User Data Error:", err);
