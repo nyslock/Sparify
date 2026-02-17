@@ -20,23 +20,35 @@ export async function getBalance(piggyBankId: string) {
 
 // Function to get total balance from all user's piggy banks
 export async function getTotalBalance(userId: string) {
-  const { data, error } = await supabase
-    .from('piggy_banks')
-    .select('balance')
-    .eq('user_id', userId); // Assuming there's a user_id column
+  try {
+    const { data, error } = await supabase
+      .from('piggy_banks')
+      .select('balance')
+      .eq('user_id', userId);
 
-  if (error) {
-    console.error('Error fetching piggy banks:', error);
+    if (error) {
+      // Ignore abort errors silently, log others
+      if (!error.message?.includes('AbortError')) {
+        console.error('Error fetching piggy banks:', error);
+      }
+      return 0;
+    }
+
+    let total = 0;
+    for (const pig of data) {
+      const decrypted = await decryptAmount(pig.balance);
+      total += decrypted;
+    }
+
+    return total;
+  } catch (err: any) {
+    // Silently handle abort errors (common in React Strict Mode)
+    if (err?.message?.includes('AbortError')) {
+      return 0;
+    }
+    console.error('Error in getTotalBalance:', err);
     return 0;
   }
-
-  let total = 0;
-  for (const pig of data) {
-    const decrypted = await decryptAmount(pig.balance);
-    total += decrypted;
-  }
-
-  return total;
 }
 
 /**
@@ -88,8 +100,8 @@ export async function syncBalance(piggyBankId: string): Promise<number | null> {
     let totalBalance = await decryptAmount(piggyBank.balance);
 
     for (const transaction of newTransactions) {
-      const amount = await decryptAmount(transaction.amount);
-      totalBalance += amount;
+      // Transactions are stored unencrypted as numbers
+      totalBalance += Number(transaction.amount) || 0;
     }
 
     // Step 5: Encrypt the new balance

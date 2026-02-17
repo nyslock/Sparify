@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Plus, PiggyBank as PigIcon, Eye, Lock, Megaphone, Trash2, Wallet, CreditCard, ChevronRight, TrendingUp, PieChart, ArrowUpRight, ArrowDownLeft, Snowflake, Target, Percent, Info, AlertCircle, Check } from 'lucide-react';
 import { PiggyBank, ThemeColor, THEME_COLORS, Language, getTranslations, CUSTOM_LOGO_URL, AppMode, User, Goal } from '../types';
-import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, PieChart as RechartsPieChart, Pie } from 'recharts';
 
 interface DashboardScreenProps {
     piggyBanks: PiggyBank[];
@@ -30,6 +30,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 }) => {
     const [pigToDeleteId, setPigToDeleteId] = useState<string | null>(null);
     const [chartPeriod, setChartPeriod] = useState<'7D' | 'MTD'>('MTD');
+    const [chartView, setChartView] = useState<'history' | 'transactions'>('history');
 
     if (!user) return null;
 
@@ -72,8 +73,20 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         return { percent: Math.abs(diff).toFixed(1), isPositive: diff >= 0 };
     }, [aggregatedData]);
 
-    const totalBalance = ownedPigs.reduce((acc, pig) => acc + pig.balance, 0);
+    const totalBalance = ownedPigs.reduce((acc, pig) => acc + (Number(pig.balance) || 0), 0);
     const activeCount = ownedPigs.length;
+
+    const transactionSummary = useMemo(() => {
+        let deposited = 0;
+        let withdrawn = 0;
+        piggyBanks.forEach(pig => {
+            pig.transactions.forEach(tx => {
+                if (tx.type === 'deposit') deposited += Number(tx.amount) || 0;
+                else if (tx.type === 'withdrawal') withdrawn += Math.abs(Number(tx.amount) || 0);
+            });
+        });
+        return { deposited, withdrawn };
+    }, [piggyBanks]);
 
     if (appMode === 'adult') {
         return (
@@ -102,63 +115,112 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             <h3 className="font-black text-slate-800 text-xl flex items-center gap-2">
                                 <TrendingUp size={24} className="text-indigo-500" /> {tDetail.history}
                             </h3>
-                            <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-100">
-                                <button
-                                    onClick={() => setChartPeriod('7D')}
-                                    className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartPeriod === '7D' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    7D
-                                </button>
-                                <button
-                                    onClick={() => setChartPeriod('MTD')}
-                                    className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartPeriod === 'MTD' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    MTD
-                                </button>
+                            <div className="flex gap-2">
+                                <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-100">
+                                    <button
+                                        onClick={() => setChartView('history')}
+                                        className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartView === 'history' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        Balance
+                                    </button>
+                                    <button
+                                        onClick={() => setChartView('transactions')}
+                                        className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartView === 'transactions' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        Transaktionen
+                                    </button>
+                                </div>
+                                {chartView === 'history' && (
+                                    <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-100">
+                                        <button
+                                            onClick={() => setChartPeriod('7D')}
+                                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartPeriod === '7D' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                        >
+                                            7D
+                                        </button>
+                                        <button
+                                            onClick={() => setChartPeriod('MTD')}
+                                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartPeriod === 'MTD' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                        >
+                                            MTD
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="h-[300px] w-full">
-                            {aggregatedData.length > 0 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={aggregatedData}>
-                                        <defs>
-                                            <linearGradient id="adultGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
-                                                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                        <XAxis
-                                            dataKey="day"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }}
-                                            dy={10}
-                                            interval={chartPeriod === 'MTD' ? 4 : 0}
-                                        />
-                                        <YAxis
-                                            hide
-                                            domain={['auto', 'auto']}
-                                        />
-                                        <Tooltip
-                                            contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
-                                            cursor={{ stroke: '#6366f1', strokeWidth: 2 }}
-                                            formatter={(val: number) => [`€${val.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Equity']}
-                                        />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="amount"
-                                            stroke="#6366f1"
-                                            strokeWidth={4}
-                                            fill="url(#adultGradient)"
-                                            animationDuration={1000}
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
+                            {chartView === 'history' ? (
+                                <>
+                                    {aggregatedData.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={aggregatedData}>
+                                                <defs>
+                                                    <linearGradient id="adultGradient" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
+                                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                                <XAxis
+                                                    dataKey="day"
+                                                    axisLine={false}
+                                                    tickLine={false}
+                                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }}
+                                                    dy={10}
+                                                    interval={chartPeriod === 'MTD' ? 4 : 0}
+                                                />
+                                                <YAxis
+                                                    hide
+                                                    domain={['auto', 'auto']}
+                                                />
+                                                <Tooltip
+                                                    contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
+                                                    cursor={{ stroke: '#6366f1', strokeWidth: 2 }}
+                                                    formatter={(val: number) => [`€${val.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Equity']}
+                                                />
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="amount"
+                                                    stroke="#6366f1"
+                                                    strokeWidth={4}
+                                                    fill="url(#adultGradient)"
+                                                    animationDuration={1000}
+                                                />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-slate-400">
+                                            <p>Keine Daten vorhanden</p>
+                                        </div>
+                                    )}
+                                </>
                             ) : (
-                                <div className="flex items-center justify-center h-full text-slate-400">
-                                    <p>Keine Daten vorhanden</p>
-                                </div>
+                                <>
+                                    {transactionSummary.deposited + transactionSummary.withdrawn > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <RechartsPieChart>
+                                                <Pie
+                                                    data={[
+                                                        { name: 'Einzahlungen', value: transactionSummary.deposited, fill: '#10b981' },
+                                                        { name: 'Auszahlungen', value: transactionSummary.withdrawn, fill: '#ef4444' }
+                                                    ]}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    labelLine={false}
+                                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                                    outerRadius={80}
+                                                    fill="#8884d8"
+                                                    dataKey="value"
+                                                />
+                                                <Tooltip formatter={(value: number) => [`€${value.toLocaleString('de-DE', { minimumFractionDigits: 2 })}`, '']} />
+                                            </RechartsPieChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-slate-400">
+                                            <p>Keine Transaktionen vorhanden</p>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>
@@ -264,7 +326,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
             <div className="text-right mt-4 sm:mt-0 pl-5 sm:pl-0 w-full sm:w-auto relative z-10">
                 <span className={`block font-black text-3xl ${isGuest ? 'text-slate-500' : 'text-slate-900'}`}>
-                    €{pig.balance.toFixed(2)}
+                    €{(Number(pig.balance) || 0).toFixed(2)}
                 </span>
             </div>
 
@@ -305,7 +367,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             <div>
                                 <h2 className="text-white/90 text-sm font-bold uppercase tracking-wide mb-1">{t.balance}</h2>
                                 <div className="text-5xl md:text-6xl xl:text-7xl font-black text-white mb-6 tracking-tight drop-shadow-md">
-                                    €{totalBalance.toFixed(2)}
+                                    €{(Number(totalBalance) || 0).toFixed(2)}
                                 </div>
                                 <div className="flex gap-2">
                                     <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-sm">

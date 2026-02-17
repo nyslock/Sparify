@@ -1,16 +1,18 @@
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, Suspense, lazy, memo } from 'react';
 import { User, PiggyBank, ViewState, ThemeColor, Language, getTranslations, AVATARS, Transaction, Goal, AppMode, CUSTOM_LOGO_URL, THEME_COLORS, SPECIALS_DATABASE } from './types';
-import { LoginScreen } from './components/LoginScreen';
-import { DashboardScreen } from './components/DashboardScreen';
-import { SettingsScreen } from './components/SettingsScreen';
+// Lazy load screen components for code splitting
+const LoginScreen = lazy(() => import('./components/LoginScreen').then(m => ({ default: m.LoginScreen })));
+const DashboardScreen = lazy(() => import('./components/DashboardScreen').then(m => ({ default: m.DashboardScreen })));
+const SettingsScreen = lazy(() => import('./components/SettingsScreen').then(m => ({ default: m.SettingsScreen })));
+const PiggyDetailScreen = lazy(() => import('./components/PiggyDetailScreen').then(m => ({ default: m.PiggyDetailScreen })));
+const LearnScreen = lazy(() => import('./components/LearnScreen').then(m => ({ default: m.LearnScreen })));
+const ShopScreen = lazy(() => import('./components/ShopScreen').then(m => ({ default: m.ShopScreen })));
+const BoxTutorialScreen = lazy(() => import('./components/BoxTutorialScreen').then(m => ({ default: m.BoxTutorialScreen })));
+// Eagerly load always-visible components
 import { BottomNav } from './components/BottomNav';
 import { Sidebar } from './components/Sidebar';
 import { QRScanner } from './components/QRScanner';
-import { PiggyDetailScreen } from './components/PiggyDetailScreen';
-import { LearnScreen } from './components/LearnScreen';
-import { ShopScreen } from './components/ShopScreen';
-import { BoxTutorialScreen } from './components/BoxTutorialScreen';
 import { SpotlightTutorial, TutorialStep } from './components/SpotlightTutorial';
 import { Trophy, RotateCcw, AlertTriangle, RefreshCw, PiggyBank as PigIcon, HelpCircle, BookOpen, Smartphone, Baby, Briefcase, ChevronRight, ChevronLeft, X, ArrowRight, Snowflake } from 'lucide-react';
 import { AppHelpModal } from './components/AppHelpModal';
@@ -225,14 +227,21 @@ export default function App() {
         if (data) guestPigsData = data;
       }
 
-      const processPig = async (pig: any, role: 'owner' | 'guest'): Promise<PiggyBank> => {
-        const syncedBalance = await syncBalance(pig.id);
-        const decBalance = syncedBalance !== null ? syncedBalance : 0;
+      const processPig = async (pig: any, role: 'owner' | 'guest', shouldSync = false): Promise<PiggyBank> => {
+        // Only sync balance on manual refresh, not on initial load - speeds up first page render
+        let decBalance = 0;
+        if (shouldSync) {
+          const syncedBalance = await syncBalance(pig.id);
+          decBalance = syncedBalance !== null ? syncedBalance : 0;
+        } else {
+          // On initial load, just decrypt the stored balance (much faster)
+          decBalance = await decryptAmount(pig.balance);
+        }
 
         const [decTxs, decGoals] = await Promise.all([
           Promise.all((pig.transactions || []).map(async (t: any) => ({
-            id: t.id, title: t.title, amount: await decryptAmount(t.amount), type: t.type,
-            date: new Date(t.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }),
+            id: t.id, title: t.title, amount: Number(t.amount) || 0, type: t.type,
+            date: new Date(t.created_at).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }),
             rawDate: new Date(t.created_at)
           }))),
           Promise.all((pig.goals || []).map(async (g: any) => ({
@@ -286,8 +295,9 @@ export default function App() {
         };
       };
 
-      const owned = await Promise.all((ownedPigsRes.data || []).map(p => processPig(p, 'owner')));
-      const guest = await Promise.all(guestPigsData.map(p => processPig(p, 'guest')));
+      // Pass showLoadingSpinner as shouldSync flag - only sync on manual refreshes
+      const owned = await Promise.all((ownedPigsRes.data || []).map(p => processPig(p, 'owner', !showLoadingSpinner)));
+      const guest = await Promise.all(guestPigsData.map(p => processPig(p, 'guest', !showLoadingSpinner)));
       setPiggyBanks([...owned, ...guest]);
 
       // Get total balance using the separate method
@@ -334,7 +344,13 @@ export default function App() {
         } else if (mounted) {
           setLoading(false);
         }
-      } catch (err) { console.error(err); setLoading(false); }
+      } catch (err: any) { 
+        // Silently ignore abort errors (common in React Strict Mode)
+        if (!err?.message?.includes('AbortError')) {
+          console.error(err);
+        }
+        setLoading(false); 
+      }
     };
     initialize();
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -348,7 +364,11 @@ export default function App() {
             new Promise((_, reject) => setTimeout(() => reject(new Error('load-timeout')), 10000))
           ]);
           console.log('Background loadUserData completed');
-        } catch (e) {
+        } catch (e: any) {
+          // Silently ignore abort errors (common in React Strict Mode)
+          if (e?.message?.includes('AbortError')) {
+            return;
+          }
           console.warn('Background loadUserData timed out or failed:', e);
         }
       } else if (event === 'SIGNED_OUT') {
@@ -642,12 +662,13 @@ export default function App() {
   if (loading) return <LoadingSkeleton />;
 
   if (view === 'LOGIN' && !user) return (
-    <LoginScreen
-      onLogin={async (email, password, isRegister) => {
-        if (isRegister) {
-          const { data, error } = await supabase.auth.signUp({ email, password });
-          if (error) throw error;
-          const needsVerification = !data.session;
+    <Suspense fallback={<LoadingSkeleton />}>
+      <LoginScreen
+        onLogin={async (email, password, isRegister) => {
+          if (isRegister) {
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            if (error) throw error;
+            const needsVerification = !data.session;
           return { success: true, needsVerification };
         }
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -662,6 +683,7 @@ export default function App() {
       language={language}
       accentColor={accentColor}
     />
+    </Suspense>
   );
 
   // Fallback: if user exists but view isn't set properly, show dashboard
@@ -801,74 +823,108 @@ export default function App() {
           </div>
         )}
 
-        {view === 'DASHBOARD' && <DashboardScreen piggyBanks={piggyBanks} onConnect={() => setView('SCANNER')} onSelectBank={(id) => { setSelectedBankId(id); setView('DETAIL'); }} onRemoveBank={async (id) => {
-          const pig = piggyBanks.find(p => p.id === id);
-          if (pig?.role === 'owner') await supabase.rpc('reset_piggy_bank', { pig_id: id, zero_balance: await encryptAmount(0) });
-          else await supabase.from('piggy_bank_guests').delete().eq('user_id', userId).eq('piggy_bank_id', id);
-          await loadUserData(userId!, user.email, false);
-        }} accentColor={accentColor} language={language} appMode={appMode} user={user} onUpdateGoal={handleUpdateGoal} onAddGoal={handleAddGoal} />}
+        {view === 'DASHBOARD' && (
+          <Suspense fallback={<LoadingSkeleton />}>
+            <DashboardScreen piggyBanks={piggyBanks} onConnect={() => setView('SCANNER')} onSelectBank={(id) => { setSelectedBankId(id); setView('DETAIL'); }} onRemoveBank={async (id) => {
+              const pig = piggyBanks.find(p => p.id === id);
+              if (pig?.role === 'owner') await supabase.rpc('reset_piggy_bank', { pig_id: id, zero_balance: await encryptAmount(0) });
+              else await supabase.from('piggy_bank_guests').delete().eq('user_id', userId).eq('piggy_bank_id', id);
+              await loadUserData(userId!, user.email, false);
+            }} accentColor={accentColor} language={language} appMode={appMode} user={user} onUpdateGoal={handleUpdateGoal} onAddGoal={handleAddGoal} />
+          </Suspense>
+        )}
 
-        {view === 'DETAIL' && selectedBankId && <PiggyDetailScreen bank={piggyBanks.find(p => p.id === selectedBankId)!} user={user} piggyBanks={piggyBanks} onBack={() => setView('DASHBOARD')} onUpdateBank={async (upd) => {
-          await supabase.from('piggy_banks').update({ name: upd.name, color: upd.color }).eq('id', upd.id);
-          await loadUserData(userId!, user.email, false);
-        }} onTransaction={async (pigId, newBal, newTxs) => {
-          await supabase.from('piggy_banks').update({ balance: await encryptAmount(newBal) }).eq('id', pigId);
-          if (newTxs.length > 0) await supabase.from('transactions').insert(await Promise.all(newTxs.map(async t => ({ piggy_bank_id: pigId, title: t.title, amount: await encryptAmount(t.amount), type: t.type }))));
-          await loadUserData(userId!, user.email, false);
-        }} onDeleteBank={async (id) => {
-          await supabase.rpc('reset_piggy_bank', { pig_id: id, zero_balance: await encryptAmount(0) });
-          await loadUserData(userId!, user.email, false); setView('DASHBOARD');
-        }} onDeleteGoal={async (pigId, goal) => {
-          await supabase.from('goals').delete().eq('id', goal.id);
-          await loadUserData(userId!, user.email, false);
-        }} onUpdateGoal={handleUpdateGoal} onAddGoal={handleAddGoal} language={language} appMode={appMode} onUpdateUser={updateUserProfile} />}
+        {view === 'DETAIL' && selectedBankId && (
+          <Suspense fallback={<LoadingSkeleton />}>
+            <PiggyDetailScreen bank={piggyBanks.find(p => p.id === selectedBankId)!} user={user} piggyBanks={piggyBanks} onBack={() => setView('DASHBOARD')} onUpdateBank={async (upd) => {
+              await supabase.from('piggy_banks').update({ name: upd.name, color: upd.color }).eq('id', upd.id);
+              await loadUserData(userId!, user.email, false);
+            }} onTransaction={async (pigId, newBal, newTxs) => {
+  // 1. Просто вставляем транзакцию. Не обновляем баланс вручную.
+  // База данных (или функция syncBalance при следующем вызове) сама пересчитает итог.
+  if (newTxs.length > 0) {
+    await supabase.from('transactions').insert(
+      newTxs.map(t => ({ 
+        piggy_bank_id: pigId, 
+        title: t.title, 
+        amount: t.amount, 
+        type: t.type 
+      }))
+    );
+  }
+  
+  // 2. Перезагружаем данные. 
+  // loadUserData вызовет syncBalance, который увидит новую транзакцию 
+  // и корректно отнимет сумму от текущего баланса в базе.
+  await loadUserData(userId!, user.email, false);
+}} onDeleteBank={async (id) => {
+              await supabase.rpc('reset_piggy_bank', { pig_id: id, zero_balance: await encryptAmount(0) });
+              await loadUserData(userId!, user.email, false); setView('DASHBOARD');
+            }} onDeleteGoal={async (pigId, goal) => {
+              await supabase.from('goals').delete().eq('id', goal.id);
+              await loadUserData(userId!, user.email, false);
+            }} onUpdateGoal={handleUpdateGoal} onAddGoal={handleAddGoal} language={language} appMode={appMode} onUpdateUser={updateUserProfile} />
+          </Suspense>
+        )}
 
-        {view === 'LEARN' && <LearnScreen language={language} accentColor={accentColor} user={user} onCompleteLevel={handleLevelComplete} onLevelStart={() => setIsLevelActive(true)} onLevelEnd={() => setIsLevelActive(false)} appMode={appMode} />}
+        {view === 'LEARN' && (
+          <Suspense fallback={<LoadingSkeleton />}>
+            <LearnScreen language={language} accentColor={accentColor} user={user} onCompleteLevel={handleLevelComplete} onLevelStart={() => setIsLevelActive(true)} onLevelEnd={() => setIsLevelActive(false)} appMode={appMode} />
+          </Suspense>
+        )}
 
-        {view === 'SHOP' && <ShopScreen language={language} user={user} onUpdateUser={updateUserProfile} />}
+        {view === 'SHOP' && (
+          <Suspense fallback={<LoadingSkeleton />}>
+            <ShopScreen language={language} user={user} onUpdateUser={updateUserProfile} />
+          </Suspense>
+        )}
         {view === 'SETTINGS' && (
-          <SettingsScreen
-            user={user}
-            onUpdateUser={updateUserProfile}
-            accentColor={accentColor}
-            onUpdateAccent={(color) => {
-              setAccentColor(color);
-              if (userId) {
-                savePrefs(userId, {
-                  activeFrames: user?.activeFrames || [],
-                  activeTitles: user?.activeTitles || [],
-                  theme: color
-                });
-              }
-            }}
-            onLogout={handleLogout}
-            language={language}
-            setLanguage={setLanguage}
-            appMode={appMode}
-            onChangeView={(v) => {
-              if (v === 'SPOTLIGHT_TUTORIAL') {
-                setShowSpotlight(true);
-              } else {
-                setView(v);
-              }
-            }}
-            onOpenAppHelp={() => setShowAppHelp(true)}
-          />
+          <Suspense fallback={<LoadingSkeleton />}>
+            <SettingsScreen
+              user={user}
+              onUpdateUser={updateUserProfile}
+              accentColor={accentColor}
+              onUpdateAccent={(color) => {
+                setAccentColor(color);
+                if (userId) {
+                  savePrefs(userId, {
+                    activeFrames: user?.activeFrames || [],
+                    activeTitles: user?.activeTitles || [],
+                    theme: color
+                  });
+                }
+              }}
+              onLogout={handleLogout}
+              language={language}
+              setLanguage={setLanguage}
+              appMode={appMode}
+              onChangeView={(v) => {
+                if (v === 'SPOTLIGHT_TUTORIAL') {
+                  setShowSpotlight(true);
+                } else {
+                  setView(v);
+                }
+              }}
+              onOpenAppHelp={() => setShowAppHelp(true)}
+            />
+          </Suspense>
         )}
 
         {view === 'BOX_TUTORIAL' && (
-          <BoxTutorialScreen
-            language={language}
-            accentColor={accentColor}
-            onFinish={async () => {
-              await updateUserProfile({ ...user, hasSeenTutorial: true });
-              setView('DASHBOARD');
-            }}
-            onSkip={async () => {
-              await updateUserProfile({ ...user, hasSeenTutorial: true });
-              setView('DASHBOARD');
-            }}
-          />
+          <Suspense fallback={<LoadingSkeleton />}>
+            <BoxTutorialScreen
+              language={language}
+              accentColor={accentColor}
+              onFinish={async () => {
+                await updateUserProfile({ ...user, hasSeenTutorial: true });
+                setView('DASHBOARD');
+              }}
+              onSkip={async () => {
+                await updateUserProfile({ ...user, hasSeenTutorial: true });
+                setView('DASHBOARD');
+              }}
+            />
+          </Suspense>
         )}
 
         {view === 'SPOTLIGHT_TUTORIAL' && (

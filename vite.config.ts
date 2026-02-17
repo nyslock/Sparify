@@ -17,8 +17,9 @@ export default defineConfig(({ mode }) => {
   return {
     base: '/', // ✅ КЛЮЧЕВО: для sparify.org
     server: {
-      port: 3000,
+      port: 5173,
       host: '0.0.0.0',
+      strictPort: true,
     },
     plugins: [react()],
     define: {
@@ -32,6 +33,10 @@ export default defineConfig(({ mode }) => {
         // Alias '@' to the project root for cleaner imports.
         '@': path.resolve(__dirname, '.'),
       },
+      dedupe: ['react', 'react-dom'],
+    },
+    optimizeDeps: {
+      include: ['react', 'react-dom'],
     },
     build: {
       outDir: 'dist',
