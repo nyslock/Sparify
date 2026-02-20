@@ -311,10 +311,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
             <div className="flex items-center space-x-6 pl-5 w-full relative z-10">
                 <div className={`
-            w-16 h-16 shrink-0 rounded-[1.2rem] flex items-center justify-center shadow-md transform transition-transform 
+            w-20 h-20 shrink-0 rounded-[1.2rem] flex items-center justify-center shadow-md transform transition-transform 
             ${isGuest ? 'bg-white text-slate-400 border border-slate-200' : `${THEME_COLORS[pig.color]} text-white group-hover:rotate-6`}
         `}>
-                    {isGuest ? <Eye size={32} /> : <PigIcon size={32} />}
+                    {isGuest ? <Eye size={40} /> : <PigIcon size={40} />}
                 </div>
                 <div className="flex-1 min-w-0">
                     <h4 className={`font-black text-2xl tracking-tight truncate ${isGuest ? 'text-slate-600' : 'text-slate-800'}`}>{pig.name}</h4>

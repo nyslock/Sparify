@@ -50,8 +50,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, acc
       <div className="flex items-center gap-3 mb-10 px-2">
         {CUSTOM_LOGO_URL ? (
           <div className={`
-                flex items-center justify-center p-2 shadow-lg transition-all rounded-xl
-                ${appMode === 'adult' ? 'w-8 h-8' : 'w-12 h-12'} ${THEME_COLORS[accentColor]}
+                flex items-center justify-center p-1 shadow-lg transition-all rounded-xl
+                ${appMode === 'adult' ? 'w-14 h-14' : 'w-20 h-20'} ${THEME_COLORS[accentColor]}
             `}>
             <img
               src={CUSTOM_LOGO_URL}
@@ -62,9 +62,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, acc
         ) : (
           <div className={`
                  flex items-center justify-center shadow-lg text-white transition-all
-                 ${appMode === 'adult' ? 'w-8 h-8 rounded-lg bg-slate-900 shadow-none' : `w-12 h-12 rounded-2xl ${THEME_COLORS[accentColor]}`}
+                 ${appMode === 'adult' ? 'w-14 h-14 rounded-lg bg-slate-900 shadow-none' : `w-20 h-20 rounded-2xl ${THEME_COLORS[accentColor]}`}
              `}>
-            <PiggyBank size={appMode === 'adult' ? 18 : 28} />
+            <PiggyBank size={appMode === 'adult' ? 32 : 48} />
           </div>
         )}
         <div>

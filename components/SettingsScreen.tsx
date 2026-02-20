@@ -16,6 +16,7 @@ interface SettingsScreenProps {
   onChangeAppMode?: (mode: AppMode) => void;
   onChangeView?: (view: ViewState) => void;
   onOpenAppHelp?: () => void;
+  onAdminAddMoney?: (amount: number) => Promise<{ ok: boolean; error?: string } | void>;
 }
 
 const colors: ThemeColor[] = [
@@ -44,7 +45,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   appMode,
   onChangeAppMode,
   onChangeView,
-  onOpenAppHelp
+  onOpenAppHelp,
+  onAdminAddMoney
 }) => {
   const [editingName, setEditingName] = useState(user.name);
   const [showAllAvatars, setShowAllAvatars] = useState(false);
@@ -53,6 +55,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [columnsPerRow, setColumnsPerRow] = useState(4);
   const [adminAmountToAdd, setAdminAmountToAdd] = useState('');
   const [adminModeToggle, setAdminModeToggle] = useState(appMode);
+  const [adminResult, setAdminResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [adminIsSaving, setAdminIsSaving] = useState(false);
 
   const ADMIN_EMAILS = ['vlasdvoranov@gmail.com', 'sparify@gmail.com'];
   const isAdmin = user.email && ADMIN_EMAILS.includes(user.email);
@@ -388,21 +392,44 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   />
                 </div>
                 <button
-                  onClick={() => {
-                    const amount = parseFloat(adminAmountToAdd);
-                    if (!isNaN(amount) && amount > 0) {
-                      // Get all piggy banks and add the amount to the first one or create a list of all balances
-                      // For now, we'll add it to user's metadata or sync balance
-                      // This would need to be implemented with the proper backend call
-                      alert(`${amount}€ hinzugefügt!`);
-                      setAdminAmountToAdd('');
+                  onClick={async () => {
+                    setAdminResult(null);
+                    const rawAmount = adminAmountToAdd.replace(',', '.').trim();
+                    const amount = Number(rawAmount);
+                    if (!onAdminAddMoney) {
+                      setAdminResult({ type: 'error', message: 'Admin-Aktion nicht verfügbar.' });
+                      return;
+                    }
+                    if (!Number.isFinite(amount) || amount <= 0) {
+                      setAdminResult({ type: 'error', message: 'Bitte einen gültigen Betrag eingeben.' });
+                      return;
+                    }
+                    setAdminIsSaving(true);
+                    try {
+                      const result = await onAdminAddMoney(amount);
+                      if (result && 'ok' in result && result.ok === false) {
+                        setAdminResult({ type: 'error', message: result.error || 'Fehler beim Hinzufügen.' });
+                      } else {
+                        setAdminResult({ type: 'success', message: `${amount.toFixed(2)}€ hinzugefügt.` });
+                        setAdminAmountToAdd('');
+                      }
+                    } catch {
+                      setAdminResult({ type: 'error', message: 'Fehler beim Hinzufügen.' });
+                    } finally {
+                      setAdminIsSaving(false);
                     }
                   }}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-xl transition-all active:scale-95 flex items-center gap-2"
+                  disabled={adminIsSaving}
+                  className={`text-white font-bold px-6 py-3 rounded-xl transition-all active:scale-95 flex items-center gap-2 ${adminIsSaving ? 'bg-slate-300' : 'bg-green-500 hover:bg-green-600'}`}
                 >
                   <Plus size={18} /> Hinzufügen
                 </button>
               </div>
+              {adminResult && (
+                <div className={`mt-3 text-sm font-bold rounded-xl px-3 py-2 ${adminResult.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+                  {adminResult.message}
+                </div>
+              )}
             </div>
 
             {/* App Mode Toggle */}

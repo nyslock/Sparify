@@ -431,8 +431,7 @@ export default function App() {
     if (uid) {
       savePrefs(uid, {
         activeFrames: updatedUser.activeFrames,
-        activeTitles: updatedUser.activeTitles,
-        theme: accentColor
+        activeTitles: updatedUser.activeTitles
       });
       // Also persist unseenItems locally as they are not in DB main table
       try { localStorage.setItem(`sparify_unseen_${uid}`, JSON.stringify(updatedUser.unseenItems)); } catch { }
@@ -506,6 +505,31 @@ export default function App() {
 
     await doUpdate();
     setIsSyncing(false);
+  };
+
+  const handleAdminAddMoney = async (amount: number) => {
+    if (!userId || !user) {
+      return { ok: false, error: 'Kein Benutzer angemeldet.' };
+    }
+    const targetPig = piggyBanks.find(p => p.role === 'owner') || piggyBanks[0];
+    if (!targetPig) {
+      return { ok: false, error: 'Keine Sparbox gefunden.' };
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return { ok: false, error: 'Ungültiger Betrag.' };
+    }
+
+    const title = 'Admin: Einzahlung';
+    try {
+      await supabase.from('transactions').insert([
+        { piggy_bank_id: targetPig.id, title, amount, type: 'deposit' }
+      ]);
+      await loadUserData(userId, user.email, false);
+      return { ok: true };
+    } catch (e) {
+      console.error('Admin add money failed:', e);
+      return { ok: false, error: 'Fehler beim Speichern.' };
+    }
   };
 
   const handleLogout = async () => {
@@ -697,7 +721,7 @@ export default function App() {
   }
 
   return (
-    <div className={`flex h-screen font-sans overflow-hidden ${appMode === 'adult' ? 'bg-slate-100' : 'bg-slate-50'}`}>
+    <div className={`flex h-screen font-sans overflow-hidden ${appMode === 'adult' ? 'bg-slate-100 adult-mode' : 'bg-slate-50'}`}>
       {/* QR Scanner Overlay - appears on top of everything */}
       {view === 'SCANNER' && (
         <QRScanner
@@ -908,6 +932,7 @@ export default function App() {
                 }
               }}
               onOpenAppHelp={() => setShowAppHelp(true)}
+              onAdminAddMoney={handleAdminAddMoney}
             />
           </Suspense>
         )}

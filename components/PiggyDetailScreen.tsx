@@ -54,6 +54,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
 
     const colors: ThemeColor[] = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
     const t = getTranslations(language).detail;
+    const NOTE_MAX_CHARS = 16;
 
     const ownedPigSpecials = SPECIALS_DATABASE.filter(item =>
         item.category === 'piggy' && user.inventory.includes(item.id)
@@ -100,7 +101,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
         setConfirmGoalDelete(false);
         if (goal) {
             setEditingGoal(goal);
-            setGoalName(goal.title);
+            setGoalName(goal.title.slice(0, NOTE_MAX_CHARS));
             setGoalAmount(goal.targetAmount.toFixed(2).replace('.', ','));
         } else {
             setEditingGoal(null);
@@ -121,7 +122,8 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
         setTransError(null);
 
         try {
-            const transactionTitle = transReason.trim() || t.withdrawal;
+            const safeReason = transReason.trim().slice(0, NOTE_MAX_CHARS);
+            const transactionTitle = safeReason || t.withdrawal;
             const today = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const newTransaction: Transaction = { id: crypto.randomUUID(), title: transactionTitle, amount: -amount, date: today, type: 'withdrawal' };
 
@@ -144,9 +146,10 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
     const handleSaveGoal = async () => {
         const amountStr = goalAmount.replace(',', '.');
         const amount = parseFloat(amountStr);
-        if (!goalName || isNaN(amount) || amount <= 0) return;
+        const trimmedName = goalName.trim().slice(0, NOTE_MAX_CHARS);
+        if (!trimmedName || isNaN(amount) || amount <= 0) return;
 
-        const goal = { id: editingGoal?.id || crypto.randomUUID(), title: goalName, targetAmount: amount, savedAmount: editingGoal?.savedAmount || 0, allocationPercent: editingGoal?.allocationPercent || 0 };
+        const goal = { id: editingGoal?.id || crypto.randomUUID(), title: trimmedName, targetAmount: amount, savedAmount: editingGoal?.savedAmount || 0, allocationPercent: editingGoal?.allocationPercent || 0 };
 
         if (editingGoal) {
             if (onUpdateGoal) await onUpdateGoal(bank.id, goal);
@@ -222,10 +225,10 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
             return itemDate >= filterDate;
         });
         
-        // Ensure no negative values
+        // Ensure no negative values - force all negative to 0
         return filtered.map(item => ({
             ...item,
-            amount: Math.max(0, item.amount)
+            amount: item.amount < 0 ? 0 : item.amount
         }));
     }, [bank.history, timePeriod]);
     
@@ -260,6 +263,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                 <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 pt-0 max-w-6xl mx-auto w-full pb-40">
                     <div className="space-y-6">
                         <div className={`bg-white rounded-[2rem] p-5 sm:p-8 shadow-xl shadow-slate-200/50 border border-white flex flex-col items-center text-center gap-6 sm:gap-8 ${bank.safeLockEnabled ? 'border-2 border-slate-900 shadow-slate-400' : ''}`}>
+                            <div className="text-5xl md:text-6xl drop-shadow-sm"><PigIcon size={80} className="text-slate-800" /></div>
                             <div>
                                 <p className="text-slate-400 font-bold text-[10px] sm:text-xs uppercase tracking-widest mb-1">{t.available}</p>
                                 <div className="flex flex-col items-center gap-2">
@@ -311,7 +315,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                                     </linearGradient>
                                                 </defs>
                                                 <XAxis dataKey="day" hide />
-                                                <YAxis hide domain={[0, 'auto']} />
+                                                <YAxis hide type="number" domain={[0, 'auto']} />
                                                 <Tooltip
                                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
                                                     formatter={(v: number) => [`€${v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Equity']}
@@ -414,6 +418,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-20 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
                         <div className="absolute bottom-0 left-0 w-48 h-48 bg-black opacity-10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none"></div>
                         <div className="text-center relative z-10">
+                            <div className="text-6xl md:text-7xl mb-4 drop-shadow-lg"><PigIcon size={80} className="text-white opacity-90" /></div>
                             <div className="inline-block bg-black/10 backdrop-blur-md px-5 py-2 rounded-full mb-3 border border-white/20 shadow-sm">
                                 <h1 className="text-white text-xs font-black uppercase tracking-widest flex items-center gap-2"><PigIcon size={14} /> {bank.name}</h1>
                             </div>
@@ -465,7 +470,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                     <AreaChart data={chartData}>
                                         <defs><linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} /><stop offset="95%" stopColor="#6366f1" stopOpacity={0} /></linearGradient></defs>
                                         <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }} dy={10} />
-                                        <YAxis hide domain={[0, 'auto']} />
+                                        <YAxis hide type="number" domain={[0, 'auto']} />
                                         <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', color: '#1e293b' }} itemStyle={{ color: '#6366f1', fontWeight: 'bold' }} formatter={(value: number) => [`€${value.toFixed(2)}`, 'Betrag']} />
                                         <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
                                     </AreaChart>
@@ -737,7 +742,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                     {transError && <div className="mb-4 flex items-center gap-2 text-red-500 font-bold text-sm bg-red-50 p-3 rounded-xl"><AlertCircle size={16} /> {transError}</div>}
                                     <div className="mb-8 mt-2">
                                         <label className="text-xs font-bold text-slate-400 uppercase ml-2 mb-2 block">{t.reasonLabel}</label>
-                                        <input type="text" value={transReason} onChange={(e) => setTransReason(e.target.value)} placeholder="z.B. Eis, Lego..." className="w-full bg-slate-50 rounded-2xl px-5 py-4 font-bold text-slate-800 outline-none border-2 border-slate-100 focus:border-indigo-400 focus:bg-white transition-all" maxLength={16} />
+                                        <input type="text" value={transReason} onChange={(e) => setTransReason(e.target.value.slice(0, NOTE_MAX_CHARS))} placeholder="z.B. Eis, Lego..." className="w-full bg-slate-50 rounded-2xl px-5 py-4 font-bold text-slate-800 outline-none border-2 border-slate-100 focus:border-indigo-400 focus:bg-white transition-all" maxLength={NOTE_MAX_CHARS} />
                                     </div>
                                     <button
                                         onClick={handleTransactionExecute}
@@ -761,7 +766,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                             <div className="space-y-6">
                                 <div>
                                     <label className="text-xs font-bold text-slate-400 uppercase mb-2 block ml-1">{t.wishLabel}</label>
-                                    <input type="text" value={goalName} onChange={(e) => setGoalName(e.target.value)} className="w-full bg-slate-50 rounded-2xl px-5 py-4 font-black text-slate-800 outline-none border-2 border-slate-100 focus:border-indigo-400 focus:bg-white transition-all" placeholder="z.B. Playstation, Fahrrad..." maxLength={16} />
+                                    <input type="text" value={goalName} onChange={(e) => setGoalName(e.target.value.slice(0, NOTE_MAX_CHARS))} className="w-full bg-slate-50 rounded-2xl px-5 py-4 font-black text-slate-800 outline-none border-2 border-slate-100 focus:border-indigo-400 focus:bg-white transition-all" placeholder="z.B. Playstation, Fahrrad..." maxLength={NOTE_MAX_CHARS} />
                                 </div>
                                 <div>
                                     <label className="text-xs font-bold text-slate-400 uppercase mb-2 block ml-1">{t.costLabel}</label>
