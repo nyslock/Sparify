@@ -123,7 +123,8 @@ export default function App() {
         const calcAge = p.birthdate ? calculateAge(p.birthdate) : null;
         if (p.birthdate === null && !isRefreshingRef.current) {
           setShowAgeSelection(true);
-        } else if (p.birthdate !== null) {
+        } else if (p.birthdate !== null && showLoadingSpinner) {
+          // Nur beim initialen Load den Modus basierend auf Alter setzen, nicht bei jedem Sync
           setAppMode(calcAge! > 14 ? 'adult' : 'kids');
         }
 
@@ -898,6 +899,7 @@ export default function App() {
               language={language}
               setLanguage={setLanguage}
               appMode={appMode}
+              onChangeAppMode={(newMode) => setAppMode(newMode)}
               onChangeView={(v) => {
                 if (v === 'SPOTLIGHT_TUTORIAL') {
                   setShowSpotlight(true);

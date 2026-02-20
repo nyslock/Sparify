@@ -91,7 +91,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onResetPasswo
             <div className="w-32 h-32 md:w-48 md:h-48 mb-4 drop-shadow-xl flex items-center justify-center">
                 <img 
                   src={LOGIN_LOGO_URL}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain rounded-3xl"
                   alt="Sparify Logo"
                 />
             </div>

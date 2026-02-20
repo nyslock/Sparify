@@ -1,8 +1,8 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Settings, ArrowUpRight, Target, Trophy, CheckCircle2, PiggyBank as PigIcon, Trash2, Signal, ArrowDownLeft, Wallet, Star, Flag, ArrowRightLeft, PieChart, Check, Sparkles, Gift, ShoppingBag, AlertCircle, PlusCircle, X, Percent, TrendingUp, Info, Lock, Loader2 } from 'lucide-react';
+import { ArrowLeft, Settings, ArrowUpRight, Target, Trophy, CheckCircle2, PiggyBank as PigIcon, Trash2, Signal, ArrowDownLeft, Wallet, Star, Flag, ArrowRightLeft, Check, Sparkles, Gift, ShoppingBag, AlertCircle, PlusCircle, X, Percent, TrendingUp, Info, Lock, Loader2 } from 'lucide-react';
 import { PiggyBank, ThemeColor, THEME_COLORS, Language, getTranslations, Goal, Transaction, User, AppMode, SPECIALS_DATABASE } from '../types';
-import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { AreaChart, Area, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { AchievementsScreen } from './AchievementsScreen';
 
 interface PiggyDetailScreenProps {
@@ -29,6 +29,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isProcessingTransaction, setIsProcessingTransaction] = useState(false);
     const [transactionSuccess, setTransactionSuccess] = useState(false);
+    const [timePeriod, setTimePeriod] = useState<'week' | 'month' | 'all'>('all');
 
     const [editName, setEditName] = useState(bank.name);
     const [glitterToggle, setGlitterToggle] = useState(bank.glitterEnabled || false);
@@ -202,7 +203,46 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
         if (id === 'effect_safe_lock') setSafeLockToggle(!safeLockToggle);
     };
 
-    const chartData = bank.history || [];
+    const getFilteredChartData = useMemo(() => {
+        const data = bank.history || [];
+        if (data.length === 0) return [];
+        
+        const today = new Date();
+        let filterDate = new Date();
+        
+        if (timePeriod === 'week') {
+            filterDate.setDate(today.getDate() - 7);
+        } else if (timePeriod === 'month') {
+            filterDate.setMonth(today.getMonth() - 1);
+        }
+        
+        const filtered = data.filter(item => {
+            if (timePeriod === 'all') return true;
+            const itemDate = new Date(item.day?.split('.').reverse().join('-') || today);
+            return itemDate >= filterDate;
+        });
+        
+        // Ensure no negative values
+        return filtered.map(item => ({
+            ...item,
+            amount: Math.max(0, item.amount)
+        }));
+    }, [bank.history, timePeriod]);
+    
+    const chartData = getFilteredChartData;
+    
+    const getGoalDistribution = useMemo(() => {
+        const goals = bank.goals || [];
+        if (goals.length === 0) return [];
+        
+        return goals.map(goal => ({
+            name: goal.title,
+            value: Math.max(0, goal.targetAmount),
+            id: goal.id
+        }));
+    }, [bank.goals]);
+    
+    const CHART_COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'];
 
     if (appMode === 'adult') {
         return (
@@ -242,8 +282,23 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-md border border-white">
-                                <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center justify-between mb-4">
                                     <h3 className="font-bold text-slate-800 flex items-center gap-2"><Signal size={18} className="text-indigo-500" /> {t.history}</h3>
+                                    <div className="flex gap-2">
+                                        {(['week', 'month', 'all'] as const).map(period => (
+                                            <button
+                                                key={period}
+                                                onClick={() => setTimePeriod(period)}
+                                                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                                                    timePeriod === period
+                                                        ? 'bg-indigo-500 text-white'
+                                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                }`}
+                                            >
+                                                {period === 'week' ? 'Woche' : period === 'month' ? 'Monat' : 'Alles'}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                                 <div className="h-[200px]">
                                     {chartData.length > 0 ? (
@@ -256,7 +311,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                                     </linearGradient>
                                                 </defs>
                                                 <XAxis dataKey="day" hide />
-                                                <YAxis hide domain={['auto', 'auto']} />
+                                                <YAxis hide domain={[0, 'auto']} />
                                                 <Tooltip
                                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
                                                     formatter={(v: number) => [`€${v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Equity']}
@@ -388,6 +443,21 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                     <div id="tutorial-piggy-history" className="mx-6 mb-8 md:mx-0 md:mb-0 bg-white rounded-[2.5rem] p-6 border border-slate-100 shadow-xl shadow-slate-200/50 flex-1 min-h-[220px] relative z-20">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-black text-slate-800 flex items-center gap-3 text-lg"><div className="bg-indigo-100 p-2 rounded-xl text-indigo-500"><Signal size={20} /></div> {t.history}</h3>
+                            <div className="flex gap-2">
+                                {(['week', 'month', 'all'] as const).map(period => (
+                                    <button
+                                        key={period}
+                                        onClick={() => setTimePeriod(period)}
+                                        className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-all ${
+                                            timePeriod === period
+                                                ? 'bg-indigo-500 text-white'
+                                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                        }`}
+                                    >
+                                        {period === 'week' ? 'Woche' : period === 'month' ? 'Monat' : 'Alles'}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                         <div style={{ width: '100%', height: 140 }}>
                             {chartData.length > 0 ? (
@@ -395,6 +465,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                     <AreaChart data={chartData}>
                                         <defs><linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} /><stop offset="95%" stopColor="#6366f1" stopOpacity={0} /></linearGradient></defs>
                                         <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }} dy={10} />
+                                        <YAxis hide domain={[0, 'auto']} />
                                         <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', color: '#1e293b' }} itemStyle={{ color: '#6366f1', fontWeight: 'bold' }} formatter={(value: number) => [`€${value.toFixed(2)}`, 'Betrag']} />
                                         <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
                                     </AreaChart>
@@ -440,6 +511,34 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                             </div>
                         ) : <div className="bg-white rounded-[2rem] p-10 text-center border-2 border-dashed border-slate-200"><p className="text-slate-800 font-bold text-lg mb-1">{t.noGoals}</p></div>}
                     </div>
+                    
+                    {getGoalDistribution.length > 0 && (
+                        <div className="mb-6 md:mb-0 bg-white rounded-[2rem] p-6 border border-slate-100 shadow-xl shadow-slate-200/50">
+                            <h3 className="font-black text-slate-800 mb-5 text-lg flex items-center gap-2"><Target size={20} className="text-purple-500" /> Zielverteilung</h3>
+                            <div style={{ width: '100%', height: 200 }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={getGoalDistribution}
+                                            cx="50%"
+                                            cy="50%"
+                                            labelLine={false}
+                                            label={({ name, value }) => `${name}: €${value.toFixed(2)}`}
+                                            outerRadius={60}
+                                            fill="#8884d8"
+                                            dataKey="value"
+                                        >
+                                            {getGoalDistribution.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip formatter={(value: number) => `€${value.toFixed(2)}`} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    )}
+                    
                     <div id="tutorial-piggy-transactions" className="mb-6 md:mb-0 md:flex-1"><h3 className="font-black text-slate-800 mb-5 ml-4 text-xl">{t.transactions}</h3><div className="space-y-4">{bank.transactions?.length > 0 ? bank.transactions.map((t) => (
                         <div key={t.id} className="bg-white p-5 rounded-[2rem] flex items-center justify-between border border-slate-100 shadow-lg shadow-slate-100">
                             <div className="flex items-center gap-4 min-w-0">
@@ -574,14 +673,6 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                 <div>
                                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">{t.pigName}</label>
                                     <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full bg-slate-50 text-slate-900 font-bold text-xl p-5 rounded-2xl border-2 border-slate-100 focus:border-indigo-500 outline-none" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-3">{t.color}</label>
-                                    <div className="flex justify-between bg-slate-50 p-4 rounded-2xl flex-wrap gap-2">
-                                        {colors.map((c) => (
-                                            <button key={c} onClick={() => onUpdateBank({ ...bank, color: c, name: editName })} className={`w-10 h-10 rounded-full transition-all ${THEME_COLORS[c]} ${bank.color === c ? 'ring-4 ring-slate-300 scale-110' : 'opacity-70'}`} />
-                                        ))}
-                                    </div>
                                 </div>
 
                                 {ownedPigSpecials.length > 0 && (

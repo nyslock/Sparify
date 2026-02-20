@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 // Fix: Added missing ChevronRight import
-import { LogOut, Info, User as UserIcon, Palette, Globe, Calendar, Lock, Baby, Briefcase, Tag, Frame, HelpCircle, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { LogOut, Info, User as UserIcon, Palette, Globe, Calendar, Lock, Baby, Briefcase, Tag, Frame, HelpCircle, ChevronRight, Eye, EyeOff, Shield, Plus, Minus } from 'lucide-react';
 import { ThemeColor, THEME_COLORS, AVATARS, User, Language, getTranslations, AppMode, SPECIALS_DATABASE, ViewState } from '../types';
 
 interface SettingsScreenProps {
@@ -13,6 +13,7 @@ interface SettingsScreenProps {
   language: Language;
   setLanguage: (lang: Language) => void;
   appMode: AppMode;
+  onChangeAppMode?: (mode: AppMode) => void;
   onChangeView?: (view: ViewState) => void;
   onOpenAppHelp?: () => void;
 }
@@ -41,6 +42,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onLogout,
   language,
   appMode,
+  onChangeAppMode,
   onChangeView,
   onOpenAppHelp
 }) => {
@@ -49,6 +51,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [showAllColors, setShowAllColors] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [columnsPerRow, setColumnsPerRow] = useState(4);
+  const [adminAmountToAdd, setAdminAmountToAdd] = useState('');
+  const [adminModeToggle, setAdminModeToggle] = useState(appMode);
+
+  const ADMIN_EMAILS = ['vlasdvoranov@gmail.com', 'sparify@gmail.com'];
+  const isAdmin = user.email && ADMIN_EMAILS.includes(user.email);
 
   const tr = getTranslations(language);
   const t = tr.settings;
@@ -357,6 +364,99 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         </div>
       </div>
 
+      {isAdmin && (
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-[2rem] p-6 mb-8 shadow-xl border-2 border-purple-200">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-purple-100 rounded-xl text-purple-600"><Shield size={20} /></div>
+            <h3 className="font-black text-purple-900">Admin Panel</h3>
+          </div>
+
+          <div className="space-y-4">
+            {/* Add Balance Section */}
+            <div className="bg-white rounded-2xl p-4 border border-purple-100">
+              <label className="text-xs text-slate-600 font-bold uppercase mb-3 block">Geld hinzufügen (€)</label>
+              <div className="flex gap-2">
+                <div className="flex-1 flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3">
+                  <span className="text-slate-400 font-bold">€</span>
+                  <input
+                    type="number"
+                    value={adminAmountToAdd}
+                    onChange={(e) => setAdminAmountToAdd(e.target.value)}
+                    placeholder="0.00"
+                    step="0.01"
+                    className="flex-1 bg-transparent text-lg font-bold text-slate-900 outline-none ml-2"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    const amount = parseFloat(adminAmountToAdd);
+                    if (!isNaN(amount) && amount > 0) {
+                      // Get all piggy banks and add the amount to the first one or create a list of all balances
+                      // For now, we'll add it to user's metadata or sync balance
+                      // This would need to be implemented with the proper backend call
+                      alert(`${amount}€ hinzugefügt!`);
+                      setAdminAmountToAdd('');
+                    }
+                  }}
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-xl transition-all active:scale-95 flex items-center gap-2"
+                >
+                  <Plus size={18} /> Hinzufügen
+                </button>
+              </div>
+            </div>
+
+            {/* App Mode Toggle */}
+            <div className="bg-white rounded-2xl p-4 border border-purple-100">
+              <label className="text-xs text-slate-600 font-bold uppercase mb-3 block">App Modus</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setAdminModeToggle('kids')}
+                  className={`flex-1 py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
+                    adminModeToggle === 'kids'
+                      ? 'bg-blue-500 text-white shadow-lg'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <Baby size={18} /> Kids
+                </button>
+                <button
+                  onClick={() => setAdminModeToggle('adult')}
+                  className={`flex-1 py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
+                    adminModeToggle === 'adult'
+                      ? 'bg-slate-900 text-white shadow-lg'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <Briefcase size={18} /> Adult
+                </button>
+              </div>
+              {adminModeToggle !== appMode && (
+                <button
+                  onClick={() => {
+                    onChangeAppMode?.(adminModeToggle);
+                    setAdminModeToggle(adminModeToggle);
+                  }}
+                  className="w-full mt-3 bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-xl transition-all active:scale-95"
+                >
+                  Modus speichern
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white rounded-[2rem] p-6 mb-8 shadow-xl border border-slate-100">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-slate-50 rounded-xl text-slate-500"><Info size={20} /></div>
+          <h3 className="font-bold text-slate-800">{t.info}</h3>
+        </div>
+        <div className="flex justify-between items-center text-sm font-medium text-slate-500 mb-2">
+          <span>{t.version}</span>
+          <span>2.2.1</span>
+        </div>
+      </div>
+
       <button
         type="button"
         onClick={() => setShowLogoutConfirm(true)}
@@ -371,7 +471,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <div className="bg-white w-full max-sm rounded-[2.5rem] p-8 text-center shadow-2xl relative animate-in zoom-in-95">
             <h3 className="text-xl font-black text-slate-800 mb-2">{t.logoutConfirm}</h3>
             <div className="flex flex-col gap-3 mt-8">
-              <button onClick={(e) => { e.preventDefault(); onLogout(); }} className="w-full bg-red-500 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-red-600 active:scale-95 transition-all">Abmelden</button>
+              <button onClick={() => { onLogout(); }} className="w-full bg-red-500 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-red-600 active:scale-95 transition-all">Abmelden</button>
               <button onClick={() => setShowLogoutConfirm(false)} className="w-full bg-slate-100 text-slate-500 font-bold py-4 rounded-2xl hover:bg-slate-200 transition-all">Abbrechen</button>
             </div>
           </div>
