@@ -9,7 +9,7 @@ export type ThemeColor =
 export type Language = 'de' | 'en' | 'hr' | 'tr' | 'ru' | 'hu';
 export type AppMode = 'kids' | 'adult';
 
-export const CUSTOM_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogo.png';
+export const CUSTOM_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/logowhitetrnsprnt.png';
 export const LOGIN_LOGO_URL = 'https://i.ibb.co/1fD3swCW/logo-tourquise-fade.png';
 
 export interface User {
