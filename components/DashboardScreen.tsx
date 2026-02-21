@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Plus, PiggyBank as PigIcon, Eye, Lock, Megaphone, Trash2, Wallet, CreditCard, ChevronRight, TrendingUp, PieChart, ArrowUpRight, ArrowDownLeft, Snowflake, Target, Percent, Info, AlertCircle, Check } from 'lucide-react';
 import { PiggyBank, ThemeColor, THEME_COLORS, Language, getTranslations, CUSTOM_LOGO_URL, AppMode, User, Goal } from '../types';
-import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, PieChart as RechartsPieChart, Pie } from 'recharts';
 
 interface DashboardScreenProps {
     piggyBanks: PiggyBank[];
@@ -30,6 +30,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 }) => {
     const [pigToDeleteId, setPigToDeleteId] = useState<string | null>(null);
     const [chartPeriod, setChartPeriod] = useState<'7D' | 'MTD'>('MTD');
+    const [chartView, setChartView] = useState<'history' | 'transactions'>('history');
 
     if (!user) return null;
 
@@ -72,31 +73,30 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         return { percent: Math.abs(diff).toFixed(1), isPositive: diff >= 0 };
     }, [aggregatedData]);
 
-    // Calculate stable Y-axis domain to prevent chart "swimming"
-    const chartYDomain = useMemo(() => {
-        if (!aggregatedData.length) return [0, 100];
-        const amounts = aggregatedData.map(d => d.amount);
-        const min = Math.min(...amounts);
-        const max = Math.max(...amounts);
-        const padding = (max - min) * 0.1 || 10;
-        return [Math.floor(min - padding), Math.ceil(max + padding)];
-    }, [aggregatedData]);
-
-    // State for active chart value (shown in header instead of tooltip)
-    const [activeChartValue, setActiveChartValue] = useState<{ amount: number; day: string } | null>(null);
-
-    const totalBalance = ownedPigs.reduce((acc, pig) => acc + pig.balance, 0);
+    const totalBalance = ownedPigs.reduce((acc, pig) => acc + (Number(pig.balance) || 0), 0);
     const activeCount = ownedPigs.length;
+
+    const transactionSummary = useMemo(() => {
+        let deposited = 0;
+        let withdrawn = 0;
+        piggyBanks.forEach(pig => {
+            pig.transactions.forEach(tx => {
+                if (tx.type === 'deposit') deposited += Number(tx.amount) || 0;
+                else if (tx.type === 'withdrawal') withdrawn += Math.abs(Number(tx.amount) || 0);
+            });
+        });
+        return { deposited, withdrawn };
+    }, [piggyBanks]);
 
     if (appMode === 'adult') {
         return (
             <div className="flex-1 overflow-y-auto no-scrollbar h-full bg-slate-100">
-                <div className="p-6 md:p-10 pb-40 max-w-7xl mx-auto w-full">
+                <div className="p-6 md:p-10 xl:p-12 pb-40 max-w-7xl mx-auto w-full">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
                         <div>
                             <p className="text-slate-400 font-bold text-sm uppercase tracking-widest mb-1">{t.balance}</p>
                             <div className="flex items-center gap-4">
-                                <span className="balance-text-fit font-black text-slate-900">€{totalBalance.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</span>
+                                <span className="text-5xl xl:text-6xl font-black text-slate-900">€{totalBalance.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</span>
                                 <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-black ${growthInfo.isPositive ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
                                     {growthInfo.isPositive ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
                                     {growthInfo.percent}%
@@ -115,72 +115,112 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             <h3 className="font-black text-slate-800 text-xl flex items-center gap-2">
                                 <TrendingUp size={24} className="text-indigo-500" /> {tDetail.history}
                             </h3>
-                            <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-100">
-                                <button
-                                    onClick={() => setChartPeriod('7D')}
-                                    className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartPeriod === '7D' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    7D
-                                </button>
-                                <button
-                                    onClick={() => setChartPeriod('MTD')}
-                                    className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartPeriod === 'MTD' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    MTD
-                                </button>
+                            <div className="flex gap-2">
+                                <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-100">
+                                    <button
+                                        onClick={() => setChartView('history')}
+                                        className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartView === 'history' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        Balance
+                                    </button>
+                                    <button
+                                        onClick={() => setChartView('transactions')}
+                                        className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartView === 'transactions' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        Transaktionen
+                                    </button>
+                                </div>
+                                {chartView === 'history' && (
+                                    <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-100">
+                                        <button
+                                            onClick={() => setChartPeriod('7D')}
+                                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartPeriod === '7D' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                        >
+                                            7D
+                                        </button>
+                                        <button
+                                            onClick={() => setChartPeriod('MTD')}
+                                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartPeriod === 'MTD' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                        >
+                                            MTD
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="h-[300px] w-full">
-                            {aggregatedData.length > 0 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart
-                                        data={aggregatedData}
-                                        onMouseMove={(e: any) => {
-                                            if (e?.activePayload?.[0]) {
-                                                setActiveChartValue({ amount: e.activePayload[0].value, day: e.activePayload[0].payload.day });
-                                            }
-                                        }}
-                                        onMouseLeave={() => setActiveChartValue(null)}
-                                    >
-                                        <defs>
-                                            <linearGradient id="adultGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
-                                                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                        <XAxis
-                                            dataKey="day"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }}
-                                            dy={10}
-                                            interval={chartPeriod === 'MTD' ? 4 : 0}
-                                        />
-                                        <YAxis
-                                            hide
-                                            domain={chartYDomain}
-                                        />
-                                        <Tooltip
-                                            position={{ y: -10 }}
-                                            contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontWeight: 'bold', pointerEvents: 'none' }}
-                                            cursor={{ stroke: '#6366f1', strokeWidth: 2 }}
-                                            formatter={(val: number) => [`€${val.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Equity']}
-                                        />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="amount"
-                                            stroke="#6366f1"
-                                            strokeWidth={4}
-                                            fill="url(#adultGradient)"
-                                            animationDuration={1000}
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
+                            {chartView === 'history' ? (
+                                <>
+                                    {aggregatedData.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={aggregatedData}>
+                                                <defs>
+                                                    <linearGradient id="adultGradient" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
+                                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                                <XAxis
+                                                    dataKey="day"
+                                                    axisLine={false}
+                                                    tickLine={false}
+                                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }}
+                                                    dy={10}
+                                                    interval={chartPeriod === 'MTD' ? 4 : 0}
+                                                />
+                                                <YAxis
+                                                    hide
+                                                    domain={['auto', 'auto']}
+                                                />
+                                                <Tooltip
+                                                    contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
+                                                    cursor={{ stroke: '#6366f1', strokeWidth: 2 }}
+                                                    formatter={(val: number) => [`€${val.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Equity']}
+                                                />
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="amount"
+                                                    stroke="#6366f1"
+                                                    strokeWidth={4}
+                                                    fill="url(#adultGradient)"
+                                                    animationDuration={1000}
+                                                />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-slate-400">
+                                            <p>Keine Daten vorhanden</p>
+                                        </div>
+                                    )}
+                                </>
                             ) : (
-                                <div className="flex items-center justify-center h-full text-slate-400">
-                                    <p>Keine Daten vorhanden</p>
-                                </div>
+                                <>
+                                    {transactionSummary.deposited + transactionSummary.withdrawn > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <RechartsPieChart>
+                                                <Pie
+                                                    data={[
+                                                        { name: 'Einzahlungen', value: transactionSummary.deposited, fill: '#10b981' },
+                                                        { name: 'Auszahlungen', value: transactionSummary.withdrawn, fill: '#ef4444' }
+                                                    ]}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    labelLine={false}
+                                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                                    outerRadius={80}
+                                                    fill="#8884d8"
+                                                    dataKey="value"
+                                                />
+                                                <Tooltip formatter={(value: number) => [`€${value.toLocaleString('de-DE', { minimumFractionDigits: 2 })}`, '']} />
+                                            </RechartsPieChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-slate-400">
+                                            <p>Keine Transaktionen vorhanden</p>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>
@@ -190,7 +230,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             <h3 className="text-2xl font-black text-slate-900 mb-6 px-2 flex items-center gap-2">
                                 <Wallet size={24} className="text-emerald-500" /> {t.myPigs}
                             </h3>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                                 {ownedPigs.map(pig => (
                                     <div key={pig.id} onClick={() => onSelectBank(pig.id)} className="bg-white p-6 rounded-[2.5rem] border border-white shadow-sm flex items-center justify-between hover:shadow-md cursor-pointer transition-all">
                                         <div className="flex items-center gap-4">
@@ -271,10 +311,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
             <div className="flex items-center space-x-6 pl-5 w-full relative z-10">
                 <div className={`
-            w-16 h-16 shrink-0 rounded-[1.2rem] flex items-center justify-center shadow-md transform transition-transform 
+            w-20 h-20 shrink-0 rounded-[1.2rem] flex items-center justify-center shadow-md transform transition-transform 
             ${isGuest ? 'bg-white text-slate-400 border border-slate-200' : `${THEME_COLORS[pig.color]} text-white group-hover:rotate-6`}
         `}>
-                    {isGuest ? <Eye size={32} /> : <PigIcon size={32} />}
+                    {isGuest ? <Eye size={40} /> : <PigIcon size={40} />}
                 </div>
                 <div className="flex-1 min-w-0">
                     <h4 className={`font-black text-2xl tracking-tight truncate ${isGuest ? 'text-slate-600' : 'text-slate-800'}`}>{pig.name}</h4>
@@ -286,7 +326,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
             <div className="text-right mt-4 sm:mt-0 pl-5 sm:pl-0 w-full sm:w-auto relative z-10">
                 <span className={`block font-black text-3xl ${isGuest ? 'text-slate-500' : 'text-slate-900'}`}>
-                    €{pig.balance.toFixed(2)}
+                    €{(Number(pig.balance) || 0).toFixed(2)}
                 </span>
             </div>
 
@@ -304,7 +344,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
     return (
         <div className="flex-1 overflow-y-auto no-scrollbar h-full">
-            <div className="p-6 pb-32 max-w-7xl mx-auto w-full">
+            <div className="p-6 xl:p-8 pb-32 max-w-7xl mx-auto w-full">
                 <div className="mb-8 w-full">
                     <div className="bg-slate-100 rounded-[1.5rem] border-2 border-dashed border-slate-200 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-slate-300 transition-colors cursor-pointer">
                         <span className="absolute top-2 right-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-200 px-2 py-0.5 rounded">{t.adLabel}</span>
@@ -324,10 +364,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     <div id="tutorial-balance" className={`lg:col-span-2 rounded-[2.5rem] p-8 relative overflow-hidden shadow-2xl shadow-slate-300 ${THEME_COLORS[accentColor]} transition-colors duration-500`}>
                         <div className="absolute top-0 right-0 w-48 h-48 bg-white opacity-20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                         <div className="flex justify-between items-center relative z-10">
-                            <div className="flex-1 min-w-0 mr-4">
+                            <div>
                                 <h2 className="text-white/90 text-sm font-bold uppercase tracking-wide mb-1">{t.balance}</h2>
-                                <div className="balance-text-fit font-black text-white mb-6 tracking-tight drop-shadow-md">
-                                    €{totalBalance.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                                <div className="text-5xl md:text-6xl xl:text-7xl font-black text-white mb-6 tracking-tight drop-shadow-md">
+                                    €{(Number(totalBalance) || 0).toFixed(2)}
                                 </div>
                                 <div className="flex gap-2">
                                     <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-sm">
@@ -336,8 +376,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                     </div>
                                 </div>
                             </div>
-                            <div className="pl-4 flex-shrink-0">
-                                <div className={`w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/10 backdrop-blur-md rounded-[2rem] p-3 sm:p-4 flex items-center justify-center shadow-inner border border-white/20`}>
+                            <div className="pl-4">
+                                <div className={`w-24 h-24 md:w-32 md:h-32 xl:w-40 xl:h-40 bg-white/10 backdrop-blur-md rounded-[2rem] p-4 flex items-center justify-center shadow-inner border border-white/20`}>
                                     <img
                                         src={CUSTOM_LOGO_URL}
                                         className="w-full h-full object-contain"
@@ -368,7 +408,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     </button>
                 </div>
 
-                <div id="tutorial-piggy-list" className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                <div id="tutorial-piggy-list" className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
                     {ownedPigs.length === 0 ? (
                         <div className="col-span-full text-center py-12 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 shadow-sm mx-2">
                             <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -387,7 +427,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             <Eye size={24} className="text-slate-400" />
                             <h3 className="text-xl font-black text-slate-500">{t.watchedPigs}</h3>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4 opacity-90">
+                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 opacity-90">
                             {guestPigs.map(pig => renderPigCard(pig, true))}
                         </div>
                     </>

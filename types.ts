@@ -9,35 +9,8 @@ export type ThemeColor =
 export type Language = 'de' | 'en' | 'hr' | 'tr' | 'ru' | 'hu';
 export type AppMode = 'kids' | 'adult';
 
-// Utility function for rounded corners based on app mode
-// Adult mode uses squared/minimal rounding, Kids mode uses playful rounded corners
-export const getRounded = (appMode: AppMode, size: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full' = 'lg'): string => {
-  if (appMode === 'adult') {
-    const adultMap: Record<string, string> = {
-      'sm': 'rounded',
-      'md': 'rounded-md',
-      'lg': 'rounded-lg',
-      'xl': 'rounded-xl',
-      '2xl': 'rounded-xl',
-      '3xl': 'rounded-2xl',
-      'full': 'rounded-xl'
-    };
-    return adultMap[size] || 'rounded-lg';
-  }
-  const kidsMap: Record<string, string> = {
-    'sm': 'rounded-lg',
-    'md': 'rounded-xl',
-    'lg': 'rounded-2xl',
-    'xl': 'rounded-[2rem]',
-    '2xl': 'rounded-[2.5rem]',
-    '3xl': 'rounded-[3rem]',
-    'full': 'rounded-full'
-  };
-  return kidsMap[size] || 'rounded-2xl';
-};
-
-export const CUSTOM_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogo.png';
-export const LOGIN_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogoBlau.png';
+export const CUSTOM_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/logowhitetrnsprnt.png';
+export const LOGIN_LOGO_URL = 'https://i.ibb.co/1fD3swCW/logo-tourquise-fade.png';
 
 export interface User {
   name: string;
@@ -329,7 +302,7 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     age: { title: 'Fast fertig!', subtitle: 'Wann hast du Geburtstag?', hint: 'Dies hat keinen Einfluss auf die Funktionen, es passt lediglich das Design der App an dich an.', confirm: 'Los geht\'s', years: 'Jahre', birthdate: 'Geburtsdatum' },
     dashboard: { balance: 'Kontostand', newPig: 'Neue Sparbox', myPigs: 'Meine Sparboxen', praiseMessages: ['Super!', 'Klasse!', 'Spitze!'], adLabel: 'Tipp', adTitle: 'Spar-Experte', adSubtitle: 'Jeder Cent zählt', moreSavings: 'Mehr sparen', noPigs: 'Keine Sparboxen vorhanden', watchedPigs: 'Beobachtete Sparboxen', removeGuestConfirm: 'Beobachtung beenden?', pigs: 'Sparboxen' },
-    detail: { history: 'Verlauf', confirm: 'Bestätigen', cancel: 'Abbrechen', errorNotEnough: 'Guthaben zu niedrig', withdrawal: 'Auszahlung', available: 'Verfügbar', payout: 'Auszahlen', newGoal: 'Neuer Wunsch', share: 'Aufteilung', noGoals: 'Keine Wünsche', transactions: 'Transaktionen', noTransactions: 'Keine Transaktionen', goal: 'Wunsch', achievements: 'Erfolge', achievementsDesc: 'Deine Belohnungen', editGoal: 'Wunsch bearbeiten', settingsTitle: 'Einstellungen', pigName: 'Name', color: 'Farbe', delete: 'Löschen', payoutTitle: 'Auszahlung', successTitle: 'Erfolg!', balanceLabel: 'Kontostand', reasonLabel: 'Wofür ist das?', wishLabel: 'Was wünschst du dir?', costLabel: 'Was kostet das?', save: 'Speichern' },
+    detail: { history: 'Verlauf', confirm: 'Bestätigen', cancel: 'Abbrechen', errorNotEnough: 'Guthaben zu niedrig', withdrawal: 'Auszahlung', available: 'Verfügbar', payout: 'Auszahlen', newGoal: 'Neuer Wunsch', share: 'Aufteilung', noGoals: 'Keine Wünsche', transactions: 'Transaktionen', noTransactions: 'Keine Transaktionen', goal: 'Wunsch', achievements: 'Erfolge', achievementsDesc: 'Deine Belohnungen', editGoal: 'Wunsch bearbeiten', settingsTitle: 'Einstellungen', pigName: 'Name', color: 'Farbe', delete: 'Löschen', payoutTitle: 'Auszahlung', successTitle: 'Erfolg!', balanceLabel: 'Kontostand', reasonLabel: 'Wofür ist das?', wishLabel: 'Was wünschst du dir?', costLabel: 'Was kostet das?', save: 'Speichern', deposit: 'Einzahlung' },
     scanner: { loading: 'Kamera lädt...', modeGuest: 'Zuschauer', title: 'QR Scan', modeOwner: 'Besitzer', manual: 'Code eingeben' },
     settings: {
       title: 'Einstellungen',
@@ -392,7 +365,7 @@ export const TRANSLATIONS: Record<Language, any> = {
     login: { slogan: 'Smart saving, big dreams.', title: 'Welcome back', email: 'Email', password: 'Password', button: 'Login', registerBtn: 'Register', forgotPassword: 'Forgot password?', resetTitle: 'Reset password', resetButton: 'Send link', backToLogin: 'Back to login', resetSuccess: 'Email sent!', loginError: 'That didn’t work. Please check your details.', resetError: 'Failed to send email.', registerTitle: 'Create account', alreadyHaveAccount: 'I already have an account', createNewAccount: 'Create new account', verifyTitle: 'Almost done!', verifySentTo: 'We sent an email to:', verifyHint: 'Please click the link in the email to activate your piggy bank!', goToLogin: 'Go to login' },
     age: { title: 'Almost there!', subtitle: 'When is your birthday?', hint: 'This doesn\'t affect features, it only adjusts the app design for you.', confirm: 'Let\'s go', years: 'years', birthdate: 'Birthdate' },
     dashboard: { balance: 'Balance', newPiggy: 'New Pig', myPigs: 'My Piggies', praiseMessages: ['Great!', 'Awesome!', 'Nice!'], adLabel: 'Ad', adTitle: 'Savings Expert', adSubtitle: 'Every cent counts', moreSavings: 'Save more', noPigs: 'No piggies yet', watchedPigs: 'Watched Piggies', removeGuestConfirm: 'Stop watching?', pigs: 'Piggies' },
-    detail: { history: 'History', confirm: 'Confirm', cancel: 'Cancel', errorNotEnough: 'Not enough balance', withdrawal: 'Withdrawal', available: 'Available', payout: 'Withdraw', newGoal: 'New Goal', share: 'Allocation', noGoals: 'No goals', transactions: 'Transactions', noTransactions: 'No transactions', goal: 'Goal', achievements: 'Achievements', achievementsDesc: 'Your rewards', editGoal: 'Edit goal', settingsTitle: 'Settings', pigName: 'Name', color: 'Color', delete: 'Delete', payoutTitle: 'Withdrawal', successTitle: 'Success!', balanceLabel: 'Balance', reasonLabel: 'Reason', wishLabel: 'Wish', costLabel: 'Cost', save: 'Save' },
+    detail: { history: 'History', confirm: 'Confirm', cancel: 'Cancel', errorNotEnough: 'Not enough balance', withdrawal: 'Withdrawal', available: 'Available', payout: 'Withdraw', newGoal: 'New Goal', share: 'Allocation', noGoals: 'No goals', transactions: 'Transactions', noTransactions: 'No transactions', goal: 'Goal', achievements: 'Achievements', achievementsDesc: 'Your rewards', editGoal: 'Edit goal', settingsTitle: 'Settings', pigName: 'Name', color: 'Color', delete: 'Delete', payoutTitle: 'Withdrawal', successTitle: 'Success!', balanceLabel: 'Balance', reasonLabel: 'Reason', wishLabel: 'Wish', costLabel: 'Cost', save: 'Save', deposit: 'Deposit' },
     scanner: { loading: 'Loading...', modeGuest: 'Guest', title: 'Scan QR', modeOwner: 'Owner', manual: 'Enter code' },
     settings: {
       title: 'Settings',
@@ -451,10 +424,258 @@ export const TRANSLATIONS: Record<Language, any> = {
       tag_future_boss: { label: 'Zukunfts-Boss', description: 'Große Träume erfordern große Disziplin.' }
     }
   },
-  hr: { login: { slogan: 'Pametna štednja, veliki snovi.', title: 'Dobrodošli natrag' }, age: { title: 'Skoro spremni!' }, dashboard: { balance: 'Saldo' }, common: { next: 'Dalje' }, help: { appTutorial: 'Pomoć' }, tutorial: { step0: { title: 'Dobrodošli!' } }, learn: { start: 'Kreni' }, shop: { title: 'Trgovina' } },
-  tr: { login: { slogan: 'Akıllı tasarruf, bükük hayaller.', title: 'Tekrar hoş geldiniz' }, age: { title: 'Neredeyse bitti!' }, dashboard: { balance: 'Bakiye' }, common: { next: 'İleri' }, help: { appTutorial: 'Yardım' }, tutorial: { step0: { title: 'Hoş geldiniz!' } }, learn: { start: 'Başla' }, shop: { title: 'Mağaza' } },
-  ru: { login: { slogan: 'Умная экономия, большие мечты.', title: 'С возвращением' }, age: { title: 'Почти готово!' }, dashboard: { balance: 'Баланс' }, common: { next: 'Далее' }, help: { appTutorial: 'Помощь' }, tutorial: { step0: { title: 'Добро пожаловать!' } }, learn: { start: 'Начать' }, shop: { title: 'Магазиn' } },
-  hu: { login: { slogan: 'Okos megtakarítás, nagy álmok.', title: 'Üdvözöljük újra' }, age: { title: 'Majdnem kész!' }, dashboard: { balance: 'Egyenleg' }, common: { next: 'Tovább' }, help: { appTutorial: 'Súgó' }, tutorial: { step0: { title: 'Üdvözöljük!' } }, learn: { start: 'Indítás' }, shop: { title: 'Bolt' } }
+  hr: {
+    login: { slogan: 'Smart saving, big dreams.', title: 'Welcome back', email: 'Email', password: 'Password', button: 'Login', registerBtn: 'Register', forgotPassword: 'Forgot password?', resetTitle: 'Reset password', resetButton: 'Send link', backToLogin: 'Back to login', resetSuccess: 'Email sent!', loginError: 'That didn\'t work. Please check your details.', resetError: 'Failed to send email.', registerTitle: 'Create account', alreadyHaveAccount: 'I already have an account', createNewAccount: 'Create new account', verifyTitle: 'Almost done!', verifySentTo: 'We sent an email to:', verifyHint: 'Please click the link in the email to activate your piggy bank!', goToLogin: 'Go to login' },
+    age: { title: 'Almost there!', subtitle: 'When is your birthday?', hint: 'This doesn\'t affect features, it only adjusts the app design for you.', confirm: 'Let\'s go', years: 'years', birthdate: 'Birthdate' },
+    dashboard: { balance: 'Balance', newPig: 'New Pig', myPigs: 'My Piggies', praiseMessages: ['Great!', 'Awesome!', 'Nice!'], adLabel: 'Ad', adTitle: 'Savings Expert', adSubtitle: 'Every cent counts', moreSavings: 'Save more', noPigs: 'No piggies yet', watchedPigs: 'Watched Piggies', removeGuestConfirm: 'Stop watching?', pigs: 'Piggies' },
+    detail: { history: 'History', confirm: 'Confirm', cancel: 'Cancel', errorNotEnough: 'Not enough balance', withdrawal: 'Withdrawal', available: 'Available', payout: 'Withdraw', newGoal: 'New Goal', share: 'Allocation', noGoals: 'No goals', transactions: 'Transactions', noTransactions: 'No transactions', goal: 'Goal', achievements: 'Achievements', achievementsDesc: 'Your rewards', editGoal: 'Edit goal', settingsTitle: 'Settings', pigName: 'Name', color: 'Color', delete: 'Delete', payoutTitle: 'Withdrawal', successTitle: 'Success!', balanceLabel: 'Balance', reasonLabel: 'Reason', wishLabel: 'Wish', costLabel: 'Cost', save: 'Save', deposit: 'Deposit' },
+    scanner: { loading: 'Loading...', modeGuest: 'Guest', title: 'Scan QR', modeOwner: 'Owner', manual: 'Enter code' },
+    settings: {
+      title: 'Settings',
+      security: 'Security',
+      newPassword: 'New Password',
+      passwordSaved: 'Password saved',
+      changePassword: 'Change password',
+      appMode: 'App Mode',
+      profile: 'Profile',
+      name: 'Name',
+      activeSpecials: 'Active items',
+      design: 'Design',
+      language: 'Language',
+      info: 'Info',
+      version: 'Version',
+      logout: 'Logout',
+      logoutConfirm: 'Logout?',
+      cancel: 'Cancel',
+      tags: 'Name Tags',
+      frames: 'Profile Frames',
+      preferences: 'Preferences',
+      avatarRings: 'Show avatar rings',
+      shopTitles: 'Show shop titles',
+      enabled: 'Enabled',
+      disabled: 'Disabled'
+    },
+    common: { showLess: 'Show less', showAll: 'Show all', showAllColors: 'Show colors', greeting: 'Hello', next: 'Next', prev: 'Back', skip: 'Skip', finish: 'Finish' },
+    sidebar: { dashboard: 'Dashboard', learn: 'Learn & Play', shop: 'Shop', settings: 'Settings', addAccount: 'Add account', streakProtected: 'Streak protected' },
+    help: { appTutorial: 'App Tutorial', boxTutorial: 'Box Tutorial' },
+    boxTutorial: [
+      { heading: "Wake up, little friend!", bodyText: "Connect your piggy to power via USB-C. As soon as the display lights up, it's ready for its first meal!" },
+      { heading: "Becoming a Team", bodyText: "Your app is now searching for your piggy bank. Listen for the happy beep – it tells you that the connection is established!" },
+      { heading: "Feeding Time!", bodyText: "Slide coins or bills into the slot. The display recognizes the value immediately and counts up for you in real time." },
+      { heading: "Safe like a Vault", bodyText: "Thanks to your digital lock, your savings stay protected. The display always shows you if everything is securely locked." },
+      { heading: "Build your World", bodyText: "Use colorful building blocks to make your piggy unique. Press Start now and fulfill your first dreams!" }
+    ],
+    tutorial: {
+      step0: { title: 'Welcome to Sparify!', text: 'Let us show you how to fulfill your dreams with your digital piggy bank.' },
+      step1: { title: 'Your Balance', text: 'Here you can see the total amount saved across all your piggy banks.' },
+      step2: { title: 'Your Piggies', text: 'This list shows all your piggies. Tap one to see details or withdraw money.' },
+      step3: { title: 'Scan & Add', text: 'Tap the Plus button to scan a new piggy bank or add one via code.' },
+      step4: { title: 'Navigation', text: 'Use the bottom bar to visit the shop, play games, or change settings.' }
+    },
+    learn: { sections: { basics: 'Basics', earning: 'Earning', spending: 'Spending', saving: 'Saving', safety: 'Safety' }, start: 'Start', streakFrozen: 'Streak Protected!' },
+    shop: { title: 'Shop', subtitle: 'Buy items', specials: 'Specials', owned: 'Owned', sectionAvatars: 'Avatars', sectionThemes: 'Themes', balance: 'Balance', discountActive: '50% Discount active!', couponAvailableTitle: 'Discount coupon available!', couponAvailableHintOn: 'Will be applied to your next purchase', couponAvailableHintOff: 'Click here to save 50%' },
+    shopItems: {
+      item_discount_coupon: { label: '50% Discount Coupon', description: 'Halves the price of your next purchase!' },
+      item_streak_freeze: { label: 'Streak Freezer', description: 'Freezes your streak for 24h.' },
+      frame_wood: { label: 'Wood Frame', description: 'A rustic frame for your profile.' },
+      frame_silver: { label: 'Silver Frame', description: 'A sleek silver frame.' },
+      frame_gold: { label: 'Gold Frame', description: 'The ultimate status frame.' },
+      tag_coin_master: { label: 'Münz-Meister', description: 'Du kennst jede Münze beim Namen.' },
+      tag_smart_fox: { label: 'Schlau-Fuchs', description: 'Clever sparen wie ein Fuchs.' },
+      tag_dream_catcher: { label: 'Traumfänger', description: 'Du erfüllst dir jeden Wunsch.' },
+      tag_diamond_hands: { label: 'Diamant-Hände', description: 'Du hältst dein Geld eisern fest!' },
+      tag_future_boss: { label: 'Zukunfts-Boss', description: 'Große Träume erfordern große Disziplin.' }
+    }
+  },
+  tr: {
+    login: { slogan: 'Smart saving, big dreams.', title: 'Welcome back', email: 'Email', password: 'Password', button: 'Login', registerBtn: 'Register', forgotPassword: 'Forgot password?', resetTitle: 'Reset password', resetButton: 'Send link', backToLogin: 'Back to login', resetSuccess: 'Email sent!', loginError: 'That didn\'t work. Please check your details.', resetError: 'Failed to send email.', registerTitle: 'Create account', alreadyHaveAccount: 'I already have an account', createNewAccount: 'Create new account', verifyTitle: 'Almost done!', verifySentTo: 'We sent an email to:', verifyHint: 'Please click the link in the email to activate your piggy bank!', goToLogin: 'Go to login' },
+    age: { title: 'Almost there!', subtitle: 'When is your birthday?', hint: 'This doesn\'t affect features, it only adjusts the app design for you.', confirm: 'Let\'s go', years: 'years', birthdate: 'Birthdate' },
+    dashboard: { balance: 'Balance', newPig: 'New Pig', myPigs: 'My Piggies', praiseMessages: ['Great!', 'Awesome!', 'Nice!'], adLabel: 'Ad', adTitle: 'Savings Expert', adSubtitle: 'Every cent counts', moreSavings: 'Save more', noPigs: 'No piggies yet', watchedPigs: 'Watched Piggies', removeGuestConfirm: 'Stop watching?', pigs: 'Piggies' },
+    detail: { history: 'History', confirm: 'Confirm', cancel: 'Cancel', errorNotEnough: 'Not enough balance', withdrawal: 'Withdrawal', available: 'Available', payout: 'Withdraw', newGoal: 'New Goal', share: 'Allocation', noGoals: 'No goals', transactions: 'Transactions', noTransactions: 'No transactions', goal: 'Goal', achievements: 'Achievements', achievementsDesc: 'Your rewards', editGoal: 'Edit goal', settingsTitle: 'Settings', pigName: 'Name', color: 'Color', delete: 'Delete', payoutTitle: 'Withdrawal', successTitle: 'Success!', balanceLabel: 'Balance', reasonLabel: 'Reason', wishLabel: 'Wish', costLabel: 'Cost', save: 'Save', deposit: 'Deposit' },
+    scanner: { loading: 'Loading...', modeGuest: 'Guest', title: 'Scan QR', modeOwner: 'Owner', manual: 'Enter code' },
+    settings: {
+      title: 'Settings',
+      security: 'Security',
+      newPassword: 'New Password',
+      passwordSaved: 'Password saved',
+      changePassword: 'Change password',
+      appMode: 'App Mode',
+      profile: 'Profile',
+      name: 'Name',
+      activeSpecials: 'Active items',
+      design: 'Design',
+      language: 'Language',
+      info: 'Info',
+      version: 'Version',
+      logout: 'Logout',
+      logoutConfirm: 'Logout?',
+      cancel: 'Cancel',
+      tags: 'Name Tags',
+      frames: 'Profile Frames',
+      preferences: 'Preferences',
+      avatarRings: 'Show avatar rings',
+      shopTitles: 'Show shop titles',
+      enabled: 'Enabled',
+      disabled: 'Disabled'
+    },
+    common: { showLess: 'Show less', showAll: 'Show all', showAllColors: 'Show colors', greeting: 'Hello', next: 'Next', prev: 'Back', skip: 'Skip', finish: 'Finish' },
+    sidebar: { dashboard: 'Dashboard', learn: 'Learn & Play', shop: 'Shop', settings: 'Settings', addAccount: 'Add account', streakProtected: 'Streak protected' },
+    help: { appTutorial: 'App Tutorial', boxTutorial: 'Box Tutorial' },
+    boxTutorial: [
+      { heading: "Wake up, little friend!", bodyText: "Connect your piggy to power via USB-C. As soon as the display lights up, it's ready for its first meal!" },
+      { heading: "Becoming a Team", bodyText: "Your app is now searching for your piggy bank. Listen for the happy beep – it tells you that the connection is established!" },
+      { heading: "Feeding Time!", bodyText: "Slide coins or bills into the slot. The display recognizes the value immediately and counts up for you in real time." },
+      { heading: "Safe like a Vault", bodyText: "Thanks to your digital lock, your savings stay protected. The display always shows you if everything is securely locked." },
+      { heading: "Build your World", bodyText: "Use colorful building blocks to make your piggy unique. Press Start now and fulfill your first dreams!" }
+    ],
+    tutorial: {
+      step0: { title: 'Welcome to Sparify!', text: 'Let us show you how to fulfill your dreams with your digital piggy bank.' },
+      step1: { title: 'Your Balance', text: 'Here you can see the total amount saved across all your piggy banks.' },
+      step2: { title: 'Your Piggies', text: 'This list shows all your piggies. Tap one to see details or withdraw money.' },
+      step3: { title: 'Scan & Add', text: 'Tap the Plus button to scan a new piggy bank or add one via code.' },
+      step4: { title: 'Navigation', text: 'Use the bottom bar to visit the shop, play games, or change settings.' }
+    },
+    learn: { sections: { basics: 'Basics', earning: 'Earning', spending: 'Spending', saving: 'Saving', safety: 'Safety' }, start: 'Start', streakFrozen: 'Streak Protected!' },
+    shop: { title: 'Shop', subtitle: 'Buy items', specials: 'Specials', owned: 'Owned', sectionAvatars: 'Avatars', sectionThemes: 'Themes', balance: 'Balance', discountActive: '50% Discount active!', couponAvailableTitle: 'Discount coupon available!', couponAvailableHintOn: 'Will be applied to your next purchase', couponAvailableHintOff: 'Click here to save 50%' },
+    shopItems: {
+      item_discount_coupon: { label: '50% Discount Coupon', description: 'Halves the price of your next purchase!' },
+      item_streak_freeze: { label: 'Streak Freezer', description: 'Freezes your streak for 24h.' },
+      frame_wood: { label: 'Wood Frame', description: 'A rustic frame for your profile.' },
+      frame_silver: { label: 'Silver Frame', description: 'A sleek silver frame.' },
+      frame_gold: { label: 'Gold Frame', description: 'The ultimate status frame.' },
+      tag_coin_master: { label: 'Münz-Meister', description: 'Du kennst jede Münze beim Namen.' },
+      tag_smart_fox: { label: 'Schlau-Fuchs', description: 'Clever sparen wie ein Fuchs.' },
+      tag_dream_catcher: { label: 'Traumfänger', description: 'Du erfüllst dir jeden Wunsch.' },
+      tag_diamond_hands: { label: 'Diamant-Hände', description: 'Du hältst dein Geld eisern fest!' },
+      tag_future_boss: { label: 'Zukunfts-Boss', description: 'Große Träume erfordern große Disziplin.' }
+    }
+  },
+  ru: {
+    login: { slogan: 'Smart saving, big dreams.', title: 'Welcome back', email: 'Email', password: 'Password', button: 'Login', registerBtn: 'Register', forgotPassword: 'Forgot password?', resetTitle: 'Reset password', resetButton: 'Send link', backToLogin: 'Back to login', resetSuccess: 'Email sent!', loginError: 'That didn\'t work. Please check your details.', resetError: 'Failed to send email.', registerTitle: 'Create account', alreadyHaveAccount: 'I already have an account', createNewAccount: 'Create new account', verifyTitle: 'Almost done!', verifySentTo: 'We sent an email to:', verifyHint: 'Please click the link in the email to activate your piggy bank!', goToLogin: 'Go to login' },
+    age: { title: 'Almost there!', subtitle: 'When is your birthday?', hint: 'This doesn\'t affect features, it only adjusts the app design for you.', confirm: 'Let\'s go', years: 'years', birthdate: 'Birthdate' },
+    dashboard: { balance: 'Balance', newPig: 'New Pig', myPigs: 'My Piggies', praiseMessages: ['Great!', 'Awesome!', 'Nice!'], adLabel: 'Ad', adTitle: 'Savings Expert', adSubtitle: 'Every cent counts', moreSavings: 'Save more', noPigs: 'No piggies yet', watchedPigs: 'Watched Piggies', removeGuestConfirm: 'Stop watching?', pigs: 'Piggies' },
+    detail: { history: 'History', confirm: 'Confirm', cancel: 'Cancel', errorNotEnough: 'Not enough balance', withdrawal: 'Withdrawal', available: 'Available', payout: 'Withdraw', newGoal: 'New Goal', share: 'Allocation', noGoals: 'No goals', transactions: 'Transactions', noTransactions: 'No transactions', goal: 'Goal', achievements: 'Achievements', achievementsDesc: 'Your rewards', editGoal: 'Edit goal', settingsTitle: 'Settings', pigName: 'Name', color: 'Color', delete: 'Delete', payoutTitle: 'Withdrawal', successTitle: 'Success!', balanceLabel: 'Balance', reasonLabel: 'Reason', wishLabel: 'Wish', costLabel: 'Cost', save: 'Save', deposit: 'Deposit' },
+    scanner: { loading: 'Loading...', modeGuest: 'Guest', title: 'Scan QR', modeOwner: 'Owner', manual: 'Enter code' },
+    settings: {
+      title: 'Settings',
+      security: 'Security',
+      newPassword: 'New Password',
+      passwordSaved: 'Password saved',
+      changePassword: 'Change password',
+      appMode: 'App Mode',
+      profile: 'Profile',
+      name: 'Name',
+      activeSpecials: 'Active items',
+      design: 'Design',
+      language: 'Language',
+      info: 'Info',
+      version: 'Version',
+      logout: 'Logout',
+      logoutConfirm: 'Logout?',
+      cancel: 'Cancel',
+      tags: 'Name Tags',
+      frames: 'Profile Frames',
+      preferences: 'Preferences',
+      avatarRings: 'Show avatar rings',
+      shopTitles: 'Show shop titles',
+      enabled: 'Enabled',
+      disabled: 'Disabled'
+    },
+    common: { showLess: 'Show less', showAll: 'Show all', showAllColors: 'Show colors', greeting: 'Hello', next: 'Next', prev: 'Back', skip: 'Skip', finish: 'Finish' },
+    sidebar: { dashboard: 'Dashboard', learn: 'Learn & Play', shop: 'Shop', settings: 'Settings', addAccount: 'Add account', streakProtected: 'Streak protected' },
+    help: { appTutorial: 'App Tutorial', boxTutorial: 'Box Tutorial' },
+    boxTutorial: [
+      { heading: "Wake up, little friend!", bodyText: "Connect your piggy to power via USB-C. As soon as the display lights up, it's ready for its first meal!" },
+      { heading: "Becoming a Team", bodyText: "Your app is now searching for your piggy bank. Listen for the happy beep – it tells you that the connection is established!" },
+      { heading: "Feeding Time!", bodyText: "Slide coins or bills into the slot. The display recognizes the value immediately and counts up for you in real time." },
+      { heading: "Safe like a Vault", bodyText: "Thanks to your digital lock, your savings stay protected. The display always shows you if everything is securely locked." },
+      { heading: "Build your World", bodyText: "Use colorful building blocks to make your piggy unique. Press Start now and fulfill your first dreams!" }
+    ],
+    tutorial: {
+      step0: { title: 'Welcome to Sparify!', text: 'Let us show you how to fulfill your dreams with your digital piggy bank.' },
+      step1: { title: 'Your Balance', text: 'Here you can see the total amount saved across all your piggy banks.' },
+      step2: { title: 'Your Piggies', text: 'This list shows all your piggies. Tap one to see details or withdraw money.' },
+      step3: { title: 'Scan & Add', text: 'Tap the Plus button to scan a new piggy bank or add one via code.' },
+      step4: { title: 'Navigation', text: 'Use the bottom bar to visit the shop, play games, or change settings.' }
+    },
+    learn: { sections: { basics: 'Basics', earning: 'Earning', spending: 'Spending', saving: 'Saving', safety: 'Safety' }, start: 'Start', streakFrozen: 'Streak Protected!' },
+    shop: { title: 'Shop', subtitle: 'Buy items', specials: 'Specials', owned: 'Owned', sectionAvatars: 'Avatars', sectionThemes: 'Themes', balance: 'Balance', discountActive: '50% Discount active!', couponAvailableTitle: 'Discount coupon available!', couponAvailableHintOn: 'Will be applied to your next purchase', couponAvailableHintOff: 'Click here to save 50%' },
+    shopItems: {
+      item_discount_coupon: { label: '50% Discount Coupon', description: 'Halves the price of your next purchase!' },
+      item_streak_freeze: { label: 'Streak Freezer', description: 'Freezes your streak for 24h.' },
+      frame_wood: { label: 'Wood Frame', description: 'A rustic frame for your profile.' },
+      frame_silver: { label: 'Silver Frame', description: 'A sleek silver frame.' },
+      frame_gold: { label: 'Gold Frame', description: 'The ultimate status frame.' },
+      tag_coin_master: { label: 'Münz-Meister', description: 'Du kennst jede Münze beim Namen.' },
+      tag_smart_fox: { label: 'Schlau-Fuchs', description: 'Clever sparen wie ein Fuchs.' },
+      tag_dream_catcher: { label: 'Traumfänger', description: 'Du erfüllst dir jeden Wunsch.' },
+      tag_diamond_hands: { label: 'Diamant-Hände', description: 'Du hältst dein Geld eisern fest!' },
+      tag_future_boss: { label: 'Zukunfts-Boss', description: 'Große Träume erfordern große Disziplin.' }
+    }
+  },
+  hu: {
+    login: { slogan: 'Smart saving, big dreams.', title: 'Welcome back', email: 'Email', password: 'Password', button: 'Login', registerBtn: 'Register', forgotPassword: 'Forgot password?', resetTitle: 'Reset password', resetButton: 'Send link', backToLogin: 'Back to login', resetSuccess: 'Email sent!', loginError: 'That didn\'t work. Please check your details.', resetError: 'Failed to send email.', registerTitle: 'Create account', alreadyHaveAccount: 'I already have an account', createNewAccount: 'Create new account', verifyTitle: 'Almost done!', verifySentTo: 'We sent an email to:', verifyHint: 'Please click the link in the email to activate your piggy bank!', goToLogin: 'Go to login' },
+    age: { title: 'Almost there!', subtitle: 'When is your birthday?', hint: 'This doesn\'t affect features, it only adjusts the app design for you.', confirm: 'Let\'s go', years: 'years', birthdate: 'Birthdate' },
+    dashboard: { balance: 'Balance', newPig: 'New Pig', myPigs: 'My Piggies', praiseMessages: ['Great!', 'Awesome!', 'Nice!'], adLabel: 'Ad', adTitle: 'Savings Expert', adSubtitle: 'Every cent counts', moreSavings: 'Save more', noPigs: 'No piggies yet', watchedPigs: 'Watched Piggies', removeGuestConfirm: 'Stop watching?', pigs: 'Piggies' },
+    detail: { history: 'History', confirm: 'Confirm', cancel: 'Cancel', errorNotEnough: 'Not enough balance', withdrawal: 'Withdrawal', available: 'Available', payout: 'Withdraw', newGoal: 'New Goal', share: 'Allocation', noGoals: 'No goals', transactions: 'Transactions', noTransactions: 'No transactions', goal: 'Goal', achievements: 'Achievements', achievementsDesc: 'Your rewards', editGoal: 'Edit goal', settingsTitle: 'Settings', pigName: 'Name', color: 'Color', delete: 'Delete', payoutTitle: 'Withdrawal', successTitle: 'Success!', balanceLabel: 'Balance', reasonLabel: 'Reason', wishLabel: 'Wish', costLabel: 'Cost', save: 'Save', deposit: 'Deposit' },
+    scanner: { loading: 'Loading...', modeGuest: 'Guest', title: 'Scan QR', modeOwner: 'Owner', manual: 'Enter code' },
+    settings: {
+      title: 'Settings',
+      security: 'Security',
+      newPassword: 'New Password',
+      passwordSaved: 'Password saved',
+      changePassword: 'Change password',
+      appMode: 'App Mode',
+      profile: 'Profile',
+      name: 'Name',
+      activeSpecials: 'Active items',
+      design: 'Design',
+      language: 'Language',
+      info: 'Info',
+      version: 'Version',
+      logout: 'Logout',
+      logoutConfirm: 'Logout?',
+      cancel: 'Cancel',
+      tags: 'Name Tags',
+      frames: 'Profile Frames',
+      preferences: 'Preferences',
+      avatarRings: 'Show avatar rings',
+      shopTitles: 'Show shop titles',
+      enabled: 'Enabled',
+      disabled: 'Disabled'
+    },
+    common: { showLess: 'Show less', showAll: 'Show all', showAllColors: 'Show colors', greeting: 'Hello', next: 'Next', prev: 'Back', skip: 'Skip', finish: 'Finish' },
+    sidebar: { dashboard: 'Dashboard', learn: 'Learn & Play', shop: 'Shop', settings: 'Settings', addAccount: 'Add account', streakProtected: 'Streak protected' },
+    help: { appTutorial: 'App Tutorial', boxTutorial: 'Box Tutorial' },
+    boxTutorial: [
+      { heading: "Wake up, little friend!", bodyText: "Connect your piggy to power via USB-C. As soon as the display lights up, it's ready for its first meal!" },
+      { heading: "Becoming a Team", bodyText: "Your app is now searching for your piggy bank. Listen for the happy beep – it tells you that the connection is established!" },
+      { heading: "Feeding Time!", bodyText: "Slide coins or bills into the slot. The display recognizes the value immediately and counts up for you in real time." },
+      { heading: "Safe like a Vault", bodyText: "Thanks to your digital lock, your savings stay protected. The display always shows you if everything is securely locked." },
+      { heading: "Build your World", bodyText: "Use colorful building blocks to make your piggy unique. Press Start now and fulfill your first dreams!" }
+    ],
+    tutorial: {
+      step0: { title: 'Welcome to Sparify!', text: 'Let us show you how to fulfill your dreams with your digital piggy bank.' },
+      step1: { title: 'Your Balance', text: 'Here you can see the total amount saved across all your piggy banks.' },
+      step2: { title: 'Your Piggies', text: 'This list shows all your piggies. Tap one to see details or withdraw money.' },
+      step3: { title: 'Scan & Add', text: 'Tap the Plus button to scan a new piggy bank or add one via code.' },
+      step4: { title: 'Navigation', text: 'Use the bottom bar to visit the shop, play games, or change settings.' }
+    },
+    learn: { sections: { basics: 'Basics', earning: 'Earning', spending: 'Spending', saving: 'Saving', safety: 'Safety' }, start: 'Start', streakFrozen: 'Streak Protected!' },
+    shop: { title: 'Shop', subtitle: 'Buy items', specials: 'Specials', owned: 'Owned', sectionAvatars: 'Avatars', sectionThemes: 'Themes', balance: 'Balance', discountActive: '50% Discount active!', couponAvailableTitle: 'Discount coupon available!', couponAvailableHintOn: 'Will be applied to your next purchase', couponAvailableHintOff: 'Click here to save 50%' },
+    shopItems: {
+      item_discount_coupon: { label: '50% Discount Coupon', description: 'Halves the price of your next purchase!' },
+      item_streak_freeze: { label: 'Streak Freezer', description: 'Freezes your streak for 24h.' },
+      frame_wood: { label: 'Wood Frame', description: 'A rustic frame for your profile.' },
+      frame_silver: { label: 'Silver Frame', description: 'A sleek silver frame.' },
+      frame_gold: { label: 'Gold Frame', description: 'The ultimate status frame.' },
+      tag_coin_master: { label: 'Münz-Meister', description: 'Du kennst jede Münze beim Namen.' },
+      tag_smart_fox: { label: 'Schlau-Fuchs', description: 'Clever sparen wie ein Fuchs.' },
+      tag_dream_catcher: { label: 'Traumfänger', description: 'Du erfüllst dir jeden Wunsch.' },
+      tag_diamond_hands: { label: 'Diamant-Hände', description: 'Du hältst dein Geld eisern fest!' },
+      tag_future_boss: { label: 'Zukunfts-Boss', description: 'Große Träume erfordern große Disziplin.' }
+    }
+  }
 };
 
 const isObject = (v: any) => typeof v === 'object' && v !== null && !Array.isArray(v);

@@ -85,3 +85,13 @@ body {
 	}
 }
 
+/* Adult mode: make corners more squared across the UI */
+.adult-mode [class*="rounded-"] {
+	border-radius: 10px !important;
+}
+
+/* Preserve fully rounded elements (avatars, FAB, etc.) */
+.adult-mode .rounded-full {
+	border-radius: 9999px !important;
+}
+

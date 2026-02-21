@@ -9,12 +9,12 @@
   "theme_color": "#f8fafc",
   "icons": [
     {
-      "src": "https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogo.png",
+      "src": "https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/logowhitetrnsprnt.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogo.png",
+      "src": "https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/logowhitetrnsprnt.png",
       "sizes": "512x512",
       "type": "image/png"
     }
