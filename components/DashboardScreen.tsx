@@ -72,6 +72,19 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         return { percent: Math.abs(diff).toFixed(1), isPositive: diff >= 0 };
     }, [aggregatedData]);
 
+    // Calculate stable Y-axis domain to prevent chart "swimming"
+    const chartYDomain = useMemo(() => {
+        if (!aggregatedData.length) return [0, 100];
+        const amounts = aggregatedData.map(d => d.amount);
+        const min = Math.min(...amounts);
+        const max = Math.max(...amounts);
+        const padding = (max - min) * 0.1 || 10;
+        return [Math.floor(min - padding), Math.ceil(max + padding)];
+    }, [aggregatedData]);
+
+    // State for active chart value (shown in header instead of tooltip)
+    const [activeChartValue, setActiveChartValue] = useState<{ amount: number; day: string } | null>(null);
+
     const totalBalance = ownedPigs.reduce((acc, pig) => acc + pig.balance, 0);
     const activeCount = ownedPigs.length;
 
@@ -83,7 +96,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                         <div>
                             <p className="text-slate-400 font-bold text-sm uppercase tracking-widest mb-1">{t.balance}</p>
                             <div className="flex items-center gap-4">
-                                <span className="text-5xl font-black text-slate-900">€{totalBalance.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</span>
+                                <span className="balance-text-fit font-black text-slate-900">€{totalBalance.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</span>
                                 <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-black ${growthInfo.isPositive ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
                                     {growthInfo.isPositive ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
                                     {growthInfo.percent}%
@@ -120,7 +133,15 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                         <div className="h-[300px] w-full">
                             {aggregatedData.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={aggregatedData}>
+                                    <AreaChart
+                                        data={aggregatedData}
+                                        onMouseMove={(e: any) => {
+                                            if (e?.activePayload?.[0]) {
+                                                setActiveChartValue({ amount: e.activePayload[0].value, day: e.activePayload[0].payload.day });
+                                            }
+                                        }}
+                                        onMouseLeave={() => setActiveChartValue(null)}
+                                    >
                                         <defs>
                                             <linearGradient id="adultGradient" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
@@ -138,10 +159,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                         />
                                         <YAxis
                                             hide
-                                            domain={['auto', 'auto']}
+                                            domain={chartYDomain}
                                         />
                                         <Tooltip
-                                            contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
+                                            position={{ y: -10 }}
+                                            contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontWeight: 'bold', pointerEvents: 'none' }}
                                             cursor={{ stroke: '#6366f1', strokeWidth: 2 }}
                                             formatter={(val: number) => [`€${val.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Equity']}
                                         />
@@ -302,10 +324,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     <div id="tutorial-balance" className={`lg:col-span-2 rounded-[2.5rem] p-8 relative overflow-hidden shadow-2xl shadow-slate-300 ${THEME_COLORS[accentColor]} transition-colors duration-500`}>
                         <div className="absolute top-0 right-0 w-48 h-48 bg-white opacity-20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                         <div className="flex justify-between items-center relative z-10">
-                            <div>
+                            <div className="flex-1 min-w-0 mr-4">
                                 <h2 className="text-white/90 text-sm font-bold uppercase tracking-wide mb-1">{t.balance}</h2>
-                                <div className="text-5xl md:text-6xl font-black text-white mb-6 tracking-tight drop-shadow-md">
-                                    €{totalBalance.toFixed(2)}
+                                <div className="balance-text-fit font-black text-white mb-6 tracking-tight drop-shadow-md">
+                                    €{totalBalance.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
                                 </div>
                                 <div className="flex gap-2">
                                     <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-sm">
@@ -314,8 +336,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                     </div>
                                 </div>
                             </div>
-                            <div className="pl-4">
-                                <div className={`w-24 h-24 md:w-32 md:h-32 bg-white/10 backdrop-blur-md rounded-[2rem] p-4 flex items-center justify-center shadow-inner border border-white/20`}>
+                            <div className="pl-4 flex-shrink-0">
+                                <div className={`w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/10 backdrop-blur-md rounded-[2rem] p-3 sm:p-4 flex items-center justify-center shadow-inner border border-white/20`}>
                                     <img
                                         src={CUSTOM_LOGO_URL}
                                         className="w-full h-full object-contain"

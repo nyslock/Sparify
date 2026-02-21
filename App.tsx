@@ -50,6 +50,70 @@ export default function App() {
     userRef.current = user;
   }, [user]);
 
+  // Set data-mode attribute on body for CSS-based adult mode styling
+  useEffect(() => {
+    document.body.setAttribute('data-mode', appMode);
+  }, [appMode]);
+
+  // Handle share link parameter - add piggy as guest when URL contains ?share=PIGGY_ID
+  useEffect(() => {
+    const handleShareLink = async () => {
+      if (!userId || !user) return;
+
+      const params = new URLSearchParams(window.location.search);
+      const shareId = params.get('share');
+
+      if (shareId) {
+        // Clear the URL parameter
+        window.history.replaceState({}, '', window.location.pathname);
+
+        try {
+          // Check if this piggy exists
+          const { data: pig } = await supabase
+            .from('piggy_banks')
+            .select('id, user_id')
+            .eq('id', shareId)
+            .maybeSingle();
+
+          if (pig) {
+            // Don't add if user is the owner
+            if (pig.user_id === userId) {
+              console.log('User is already owner of this piggy');
+              return;
+            }
+
+            // Check if already a guest
+            const { data: existingGuest } = await supabase
+              .from('piggy_bank_guests')
+              .select('id')
+              .eq('piggy_bank_id', shareId)
+              .eq('user_id', userId)
+              .maybeSingle();
+
+            if (existingGuest) {
+              console.log('User is already a guest');
+              return;
+            }
+
+            // Add as guest
+            await supabase.from('piggy_bank_guests').insert({
+              piggy_bank_id: shareId,
+              user_id: userId,
+              access_code: `share_${shareId}`
+            });
+
+            // Reload data to show the new guest piggy
+            await loadUserData(userId, user.email, false);
+          }
+        } catch (err) {
+          console.error('Error handling share link:', err);
+        }
+      }
+    };
+
+    handleShareLink();
+  }, [userId, user]);
+
   const tAge = useMemo(() => getTranslations(language).age, [language]);
 
   const getPrefsKey = (uid: string) => `sparify_prefs_${uid}`;
@@ -759,7 +823,7 @@ export default function App() {
       />
       <main className="flex-1 flex flex-col h-full relative overflow-hidden">
         {view !== 'LEARN' && view !== 'SHOP' && view !== 'DETAIL' && view !== 'BOX_TUTORIAL' && view !== 'SCANNER' && !isLevelActive && (
-          <div className="px-6 pt-12 pb-4 flex justify-between items-center z-10 bg-slate-50/90 backdrop-blur-md sticky top-0 md:hidden">
+          <div className="px-6 safe-area-top pb-4 flex justify-between items-center z-10 bg-slate-50/90 backdrop-blur-md sticky top-0 md:hidden">
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 ${THEME_COLORS[accentColor]} rounded-xl flex items-center justify-center p-1.5 shadow-sm`}>
                 <img src={CUSTOM_LOGO_URL} className="w-full h-full object-contain" alt="Logo" />
@@ -810,6 +874,9 @@ export default function App() {
         }} onDeleteGoal={async (pigId, goal) => {
           await supabase.from('goals').delete().eq('id', goal.id);
           await loadUserData(userId!, user.email, false);
+        }} onRemoveAllGuests={async (pigId) => {
+          await supabase.from('piggy_bank_guests').delete().eq('piggy_bank_id', pigId);
+          await loadUserData(userId!, user.email, false);
         }} onUpdateGoal={handleUpdateGoal} onAddGoal={handleAddGoal} language={language} appMode={appMode} onUpdateUser={updateUserProfile} />}
 
         {view === 'LEARN' && <LearnScreen language={language} accentColor={accentColor} user={user} onCompleteLevel={handleLevelComplete} onLevelStart={() => setIsLevelActive(true)} onLevelEnd={() => setIsLevelActive(false)} appMode={appMode} />}
@@ -818,6 +885,7 @@ export default function App() {
         {view === 'SETTINGS' && (
           <SettingsScreen
             user={user}
+            userId={userId || undefined}
             onUpdateUser={updateUserProfile}
             accentColor={accentColor}
             onUpdateAccent={(color) => {

@@ -9,6 +9,33 @@ export type ThemeColor =
 export type Language = 'de' | 'en' | 'hr' | 'tr' | 'ru' | 'hu';
 export type AppMode = 'kids' | 'adult';
 
+// Utility function for rounded corners based on app mode
+// Adult mode uses squared/minimal rounding, Kids mode uses playful rounded corners
+export const getRounded = (appMode: AppMode, size: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full' = 'lg'): string => {
+  if (appMode === 'adult') {
+    const adultMap: Record<string, string> = {
+      'sm': 'rounded',
+      'md': 'rounded-md',
+      'lg': 'rounded-lg',
+      'xl': 'rounded-xl',
+      '2xl': 'rounded-xl',
+      '3xl': 'rounded-2xl',
+      'full': 'rounded-xl'
+    };
+    return adultMap[size] || 'rounded-lg';
+  }
+  const kidsMap: Record<string, string> = {
+    'sm': 'rounded-lg',
+    'md': 'rounded-xl',
+    'lg': 'rounded-2xl',
+    'xl': 'rounded-[2rem]',
+    '2xl': 'rounded-[2.5rem]',
+    '3xl': 'rounded-[3rem]',
+    'full': 'rounded-full'
+  };
+  return kidsMap[size] || 'rounded-2xl';
+};
+
 export const CUSTOM_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogo.png';
 export const LOGIN_LOGO_URL = 'https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/SparifyLogoBlau.png';
 

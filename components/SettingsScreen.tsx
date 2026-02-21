@@ -1,11 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-// Fix: Added missing ChevronRight import
-import { LogOut, Info, User as UserIcon, Palette, Globe, Calendar, Lock, Baby, Briefcase, Tag, Frame, HelpCircle, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { LogOut, Info, User as UserIcon, Palette, Globe, Calendar, Lock, Baby, Briefcase, Tag, Frame, HelpCircle, ChevronRight, Eye, EyeOff, KeyRound, Bell, BellOff } from 'lucide-react';
 import { ThemeColor, THEME_COLORS, AVATARS, User, Language, getTranslations, AppMode, SPECIALS_DATABASE, ViewState } from '../types';
+import { PasswordResetModal } from './PasswordResetModal';
+import { supabase } from '../lib/supabaseClient';
+import { isPushSupported, isSubscribed, subscribeToPush, unsubscribeFromPush, getNotificationPermission } from '../lib/pushNotifications';
 
 interface SettingsScreenProps {
   user: User;
+  userId?: string;
   onUpdateUser: (user: User) => void;
   accentColor: ThemeColor;
   onUpdateAccent: (color: ThemeColor) => void;
@@ -35,6 +38,7 @@ const languages: { code: Language; label: string; flag: string }[] = [
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   user,
+  userId,
   onUpdateUser,
   accentColor,
   onUpdateAccent,
@@ -49,6 +53,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [showAllColors, setShowAllColors] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [columnsPerRow, setColumnsPerRow] = useState(4);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+
+  // Push Notification State
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+  const [pushSupported, setPushSupported] = useState(false);
 
   const tr = getTranslations(language);
   const t = tr.settings;
@@ -70,6 +82,46 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Check Push Notification Status
+  useEffect(() => {
+    const checkPushStatus = async () => {
+      const supported = isPushSupported();
+      setPushSupported(supported);
+      if (supported) {
+        const subscribed = await isSubscribed();
+        setPushEnabled(subscribed);
+      }
+    };
+    checkPushStatus();
+  }, []);
+
+  // Handle Push Toggle
+  const handlePushToggle = async () => {
+    if (!userId) return;
+    setPushLoading(true);
+    try {
+      if (pushEnabled) {
+        const result = await unsubscribeFromPush(userId);
+        if (result.success) {
+          setPushEnabled(false);
+        } else {
+          console.error('Failed to unsubscribe:', result.error);
+        }
+      } else {
+        const result = await subscribeToPush(userId);
+        if (result.success) {
+          setPushEnabled(true);
+        } else {
+          console.error('Failed to subscribe:', result.error);
+        }
+      }
+    } catch (err) {
+      console.error('Push toggle error:', err);
+    } finally {
+      setPushLoading(false);
+    }
+  };
 
   const calculateAge = (birthDateString: string) => {
     if (!birthDateString) return 0;
@@ -139,6 +191,33 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       case 'frame_silver': return 'ring-4 ring-slate-300 ring-offset-2';
       case 'frame_gold': return 'ring-4 ring-yellow-400 ring-offset-2';
       default: return '';
+    }
+  };
+
+  const handlePasswordChange = async (oldPassword: string, newPassword: string) => {
+    setPasswordLoading(true);
+    setPasswordError('');
+
+    try {
+      // First verify old password by re-authenticating
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email || '',
+        password: oldPassword
+      });
+
+      if (signInError) {
+        throw new Error('Altes Passwort ist falsch');
+      }
+
+      // Update to new password
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+
+    } catch (err: any) {
+      setPasswordError(err.message || 'Fehler beim Ändern');
+      throw err;
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -331,6 +410,57 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         )}
       </div>
 
+      {/* Security / Password Section */}
+      <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-red-50 rounded-xl text-red-500"><KeyRound size={20} /></div>
+          <h3 className="font-bold text-slate-800">{t.security || 'Sicherheit'}</h3>
+        </div>
+        <button
+          onClick={() => setShowPasswordModal(true)}
+          className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between group active:scale-95 transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform"><Lock size={20} /></div>
+            <span className="font-bold text-slate-800">{t.changePassword || 'Passwort ändern'}</span>
+          </div>
+          <ChevronRight size={18} className="text-slate-300" />
+        </button>
+      </div>
+
+      {/* Push Notifications Section */}
+      {pushSupported && (
+        <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-blue-50 rounded-xl text-blue-500"><Bell size={20} /></div>
+            <h3 className="font-bold text-slate-800">{t.notifications || 'Benachrichtigungen'}</h3>
+          </div>
+          <button
+            onClick={handlePushToggle}
+            disabled={pushLoading || !userId}
+            className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between group active:scale-95 transition-all disabled:opacity-50"
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl shadow-sm flex items-center justify-center transition-all ${pushEnabled ? 'bg-blue-500 text-white' : 'bg-white text-slate-400'}`}>
+                {pushEnabled ? <Bell size={20} /> : <BellOff size={20} />}
+              </div>
+              <div className="text-left">
+                <span className="font-bold text-slate-800 block">{t.pushNotifications || 'Push-Benachrichtigungen'}</span>
+                <span className="text-xs text-slate-400">{pushEnabled ? (t.pushEnabled || 'Aktiviert') : (t.pushDisabled || 'Deaktiviert')}</span>
+              </div>
+            </div>
+            <div className={`w-14 h-8 rounded-full p-1 transition-all ${pushEnabled ? 'bg-blue-500' : 'bg-slate-200'}`}>
+              <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform ${pushEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+            </div>
+          </button>
+          {getNotificationPermission() === 'denied' && (
+            <p className="text-xs text-red-500 mt-3 px-2">
+              {t.notificationsDenied || 'Benachrichtigungen wurden im Browser blockiert. Bitte aktiviere sie in den Browser-Einstellungen.'}
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-emerald-50 rounded-xl text-emerald-500"><Globe size={20} /></div>
@@ -377,6 +507,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           </div>
         </div>
       )}
+
+      <PasswordResetModal
+        isOpen={showPasswordModal}
+        onClose={() => {
+          setShowPasswordModal(false);
+          setPasswordError('');
+        }}
+        onSubmit={handlePasswordChange}
+        isLoading={passwordLoading}
+        error={passwordError}
+      />
     </div>
   );
 };

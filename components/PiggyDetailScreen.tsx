@@ -1,8 +1,8 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Settings, ArrowUpRight, Target, Trophy, CheckCircle2, PiggyBank as PigIcon, Trash2, Signal, ArrowDownLeft, Wallet, Star, Flag, ArrowRightLeft, PieChart, Check, Sparkles, Gift, ShoppingBag, AlertCircle, PlusCircle, X, Percent, TrendingUp, Info, Lock, Loader2 } from 'lucide-react';
+import { ArrowLeft, Settings, ArrowUpRight, Target, Trophy, CheckCircle2, PiggyBank as PigIcon, Trash2, Signal, ArrowDownLeft, Wallet, Star, Flag, ArrowRightLeft, PieChart as PieChartIcon, Check, Sparkles, Gift, ShoppingBag, AlertCircle, PlusCircle, X, Percent, TrendingUp, Info, Lock, Loader2, Share2, Copy, CheckCircle } from 'lucide-react';
 import { PiggyBank, ThemeColor, THEME_COLORS, Language, getTranslations, Goal, Transaction, User, AppMode, SPECIALS_DATABASE } from '../types';
-import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import { AchievementsScreen } from './AchievementsScreen';
 
 interface PiggyDetailScreenProps {
@@ -17,16 +17,20 @@ interface PiggyDetailScreenProps {
     onUpdateGoal?: (pigId: string, goal: Goal) => void;
     onAddGoal?: (pigId: string, goal: Goal) => void;
     onUpdateUser: (user: User) => void;
+    onRemoveAllGuests?: (pigId: string) => Promise<void>;
     language: Language;
     appMode?: AppMode;
 }
 
-export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user, piggyBanks, onBack, onUpdateBank, onTransaction, onDeleteBank, onDeleteGoal, onUpdateGoal, onAddGoal, onUpdateUser, language, appMode = 'kids' }) => {
+export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user, piggyBanks, onBack, onUpdateBank, onTransaction, onDeleteBank, onDeleteGoal, onUpdateGoal, onAddGoal, onUpdateUser, onRemoveAllGuests, language, appMode = 'kids' }) => {
     const [showSettings, setShowSettings] = useState(false);
     const [showPayout, setShowPayout] = useState(false);
     const [showGoalModal, setShowGoalModal] = useState(false);
     const [showAchievements, setShowAchievements] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showRemoveGuestsConfirm, setShowRemoveGuestsConfirm] = useState(false);
+    const [isRemovingGuests, setIsRemovingGuests] = useState(false);
+    const [linkCopied, setLinkCopied] = useState(false);
     const [isProcessingTransaction, setIsProcessingTransaction] = useState(false);
     const [transactionSuccess, setTransactionSuccess] = useState(false);
 
@@ -50,9 +54,33 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
 
     const [showAllocationModal, setShowAllocationModal] = useState<{ goal: Goal } | null>(null);
     const [tempAllocation, setTempAllocation] = useState<string>('0');
+    const [displayedTransactionCount, setDisplayedTransactionCount] = useState(6);
 
     const colors: ThemeColor[] = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
+
+    // Pagination for transactions
+    const visibleTransactions = useMemo(() => {
+        return (bank.transactions || []).slice(0, displayedTransactionCount);
+    }, [bank.transactions, displayedTransactionCount]);
+
+    const hasMoreTransactions = (bank.transactions?.length || 0) > displayedTransactionCount;
+    const remainingTransactions = (bank.transactions?.length || 0) - displayedTransactionCount;
     const t = getTranslations(language).detail;
+
+    // Calculate deposit/withdrawal totals for pie chart
+    const transactionBreakdown = useMemo(() => {
+        const deposits = (bank.transactions || [])
+            .filter(tx => tx.type === 'deposit')
+            .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+        const withdrawals = (bank.transactions || [])
+            .filter(tx => tx.type === 'withdrawal')
+            .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+
+        return [
+            { name: 'Einzahlung', value: deposits, color: '#10b981' },
+            { name: 'Auszahlung', value: withdrawals, color: '#ef4444' }
+        ];
+    }, [bank.transactions]);
 
     const ownedPigSpecials = SPECIALS_DATABASE.filter(item =>
         item.category === 'piggy' && user.inventory.includes(item.id)
@@ -204,6 +232,19 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
 
     const chartData = bank.history || [];
 
+    // Calculate stable Y-axis domain to prevent chart "swimming"
+    const chartYDomain = useMemo(() => {
+        if (!chartData.length) return [0, 100];
+        const amounts = chartData.map(d => d.amount);
+        const min = Math.min(...amounts);
+        const max = Math.max(...amounts);
+        const padding = (max - min) * 0.1 || 10;
+        return [Math.floor(min - padding), Math.ceil(max + padding)];
+    }, [chartData]);
+
+    // State for active chart value (shown above chart instead of tooltip)
+    const [activeChartValue, setActiveChartValue] = useState<{ amount: number; day: string } | null>(null);
+
     if (appMode === 'adult') {
         return (
             <div className="flex-1 flex flex-col h-screen bg-slate-100 overflow-hidden relative w-full items-center">
@@ -242,13 +283,27 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-md border border-white">
-                                <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center justify-between mb-2">
                                     <h3 className="font-bold text-slate-800 flex items-center gap-2"><Signal size={18} className="text-indigo-500" /> {t.history}</h3>
+                                    {activeChartValue && (
+                                        <div className="text-right">
+                                            <span className="font-black text-indigo-600">€{activeChartValue.amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</span>
+                                            <span className="text-xs text-slate-400 ml-2">{activeChartValue.day}</span>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="h-[200px]">
                                     {chartData.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <AreaChart data={chartData}>
+                                            <AreaChart
+                                                data={chartData}
+                                                onMouseMove={(e: any) => {
+                                                    if (e?.activePayload?.[0]) {
+                                                        setActiveChartValue({ amount: e.activePayload[0].value, day: e.activePayload[0].payload.day });
+                                                    }
+                                                }}
+                                                onMouseLeave={() => setActiveChartValue(null)}
+                                            >
                                                 <defs>
                                                     <linearGradient id="adultColor" x1="0" y1="0" x2="0" y2="1">
                                                         <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1} />
@@ -256,9 +311,10 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                                     </linearGradient>
                                                 </defs>
                                                 <XAxis dataKey="day" hide />
-                                                <YAxis hide domain={['auto', 'auto']} />
+                                                <YAxis hide domain={chartYDomain} />
                                                 <Tooltip
-                                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                                                    position={{ y: -10 }}
+                                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', pointerEvents: 'none' }}
                                                     formatter={(v: number) => [`€${v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Equity']}
                                                 />
                                                 <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={3} fill="url(#adultColor)" />
@@ -271,6 +327,54 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                     )}
                                 </div>
                             </div>
+
+                            {/* Pie Chart - Adult Mode */}
+                            {(transactionBreakdown[0].value > 0 || transactionBreakdown[1].value > 0) && (
+                                <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-md border border-white">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                            <PieChartIcon size={18} className="text-purple-500" /> {t.breakdown || 'Übersicht'}
+                                        </h3>
+                                    </div>
+                                    <div className="h-[160px]">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={transactionBreakdown.filter(d => d.value > 0)}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={40}
+                                                    outerRadius={60}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                >
+                                                    {transactionBreakdown.filter(d => d.value > 0).map((entry, index) => (
+                                                        <Cell key={`cell-adult-${index}`} fill={entry.color} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip
+                                                    formatter={(value: number) => `€${value.toLocaleString('de-DE', { minimumFractionDigits: 2 })}`}
+                                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                                                />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                    <div className="flex justify-center gap-3 mt-3 flex-wrap">
+                                        <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-lg">
+                                            <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                                            <span className="font-bold text-emerald-700 text-xs">
+                                                {t.deposits || 'Einzahlung'}: €{transactionBreakdown[0].value.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-red-50 px-3 py-1.5 rounded-lg">
+                                            <div className="w-2 h-2 bg-red-500 rounded-full" />
+                                            <span className="font-bold text-red-700 text-xs">
+                                                {t.withdrawals || 'Auszahlung'}: €{transactionBreakdown[1].value.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-md border border-white">
                                 <div className="flex items-center justify-between mb-6">
@@ -312,23 +416,31 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                         <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-md border border-white">
                             <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2"><Signal size={18} className="text-emerald-500" /> {t.transactions}</h3>
                             <div className="space-y-2">
-                                {bank.transactions?.length > 0 ? bank.transactions.map((t) => (
-                                    <div key={t.id} className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl transition-colors border-b border-slate-50 last:border-0">
+                                {bank.transactions?.length > 0 ? visibleTransactions.map((tx) => (
+                                    <div key={tx.id} className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl transition-colors border-b border-slate-50 last:border-0">
                                         <div className="flex items-center gap-3 sm:gap-4">
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${t.type === 'deposit' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                                                {t.type === 'deposit' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.type === 'deposit' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                                {tx.type === 'deposit' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-slate-800 text-sm line-clamp-2 leading-tight">{t.title || (t.type === 'deposit' ? 'Deposit' : 'Withdrawal')}</h4>
-                                                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t.date}</p>
+                                                <h4 className="font-bold text-slate-800 text-sm line-clamp-2 leading-tight">{tx.title || (tx.type === 'deposit' ? 'Deposit' : 'Withdrawal')}</h4>
+                                                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{tx.date}</p>
                                             </div>
                                         </div>
-                                        <span className={`font-black text-sm sm:text-base whitespace-nowrap shrink-0 ${t.type === 'deposit' ? 'text-emerald-600' : 'text-slate-900'}`}>
-                                            {t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        <span className={`font-black text-sm sm:text-base whitespace-nowrap shrink-0 ${tx.type === 'deposit' ? 'text-emerald-600' : 'text-slate-900'}`}>
+                                            {tx.type === 'deposit' ? '+' : '-'}€{Math.abs(tx.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </div>
                                 )) : <p className="text-slate-400 text-center py-10">{t.noTransactions}</p>}
                             </div>
+                            {hasMoreTransactions && (
+                                <button
+                                    onClick={() => setDisplayedTransactionCount(prev => prev + 30)}
+                                    className="w-full mt-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all active:scale-95"
+                                >
+                                    Mehr laden ({remainingTransactions} weitere)
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -362,8 +474,8 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                             <div className="inline-block bg-black/10 backdrop-blur-md px-5 py-2 rounded-full mb-3 border border-white/20 shadow-sm">
                                 <h1 className="text-white text-xs font-black uppercase tracking-widest flex items-center gap-2"><PigIcon size={14} /> {bank.name}</h1>
                             </div>
-                            <h2 className={`text-7xl md:text-8xl font-black text-white tracking-tighter drop-shadow-sm flex items-center justify-center gap-4 ${bank.safeLockEnabled ? 'scale-90' : ''}`}>
-                                {bank.safeLockEnabled && <Lock size={48} className="opacity-80" />}
+                            <h2 className={`balance-detail-fit font-black text-white tracking-tighter drop-shadow-sm flex items-center justify-center gap-4 ${bank.safeLockEnabled ? 'scale-90' : ''}`}>
+                                {bank.safeLockEnabled && <Lock size={36} className="opacity-80 flex-shrink-0" />}
                                 €{bank.balance.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </h2>
                             <p className="text-white/80 font-bold mt-2 text-sm bg-black/5 inline-block px-3 py-1 rounded-lg">{t.available}</p>
@@ -386,16 +498,35 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                     </div>
 
                     <div id="tutorial-piggy-history" className="mx-6 mb-8 md:mx-0 md:mb-0 bg-white rounded-[2.5rem] p-6 border border-slate-100 shadow-xl shadow-slate-200/50 flex-1 min-h-[220px] relative z-20">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-2">
                             <h3 className="font-black text-slate-800 flex items-center gap-3 text-lg"><div className="bg-indigo-100 p-2 rounded-xl text-indigo-500"><Signal size={20} /></div> {t.history}</h3>
+                            {activeChartValue && (
+                                <div className="bg-indigo-50 px-3 py-1 rounded-xl">
+                                    <span className="font-black text-indigo-600">€{activeChartValue.amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                            )}
                         </div>
                         <div style={{ width: '100%', height: 140 }}>
                             {chartData.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={chartData}>
+                                    <AreaChart
+                                        data={chartData}
+                                        onMouseMove={(e: any) => {
+                                            if (e?.activePayload?.[0]) {
+                                                setActiveChartValue({ amount: e.activePayload[0].value, day: e.activePayload[0].payload.day });
+                                            }
+                                        }}
+                                        onMouseLeave={() => setActiveChartValue(null)}
+                                    >
                                         <defs><linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} /><stop offset="95%" stopColor="#6366f1" stopOpacity={0} /></linearGradient></defs>
                                         <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }} dy={10} />
-                                        <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', color: '#1e293b' }} itemStyle={{ color: '#6366f1', fontWeight: 'bold' }} formatter={(value: number) => [`€${value.toFixed(2)}`, 'Betrag']} />
+                                        <YAxis hide domain={chartYDomain} />
+                                        <Tooltip
+                                            position={{ y: -10 }}
+                                            contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', color: '#1e293b', pointerEvents: 'none' }}
+                                            itemStyle={{ color: '#6366f1', fontWeight: 'bold' }}
+                                            formatter={(value: number) => [`€${value.toFixed(2)}`, 'Betrag']}
+                                        />
                                         <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
                                     </AreaChart>
                                 </ResponsiveContainer>
@@ -406,6 +537,58 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                             )}
                         </div>
                     </div>
+
+                    {/* Pie Chart - Deposit/Withdrawal Breakdown */}
+                    {(transactionBreakdown[0].value > 0 || transactionBreakdown[1].value > 0) && (
+                        <div className="mx-6 mb-8 md:mx-0 bg-white rounded-[2.5rem] p-6 border border-slate-100 shadow-xl shadow-slate-200/50 relative z-20">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="bg-purple-100 p-2 rounded-xl text-purple-500">
+                                    <PieChartIcon size={20} />
+                                </div>
+                                <h3 className="font-black text-slate-800 text-lg">{t.breakdown || 'Übersicht'}</h3>
+                            </div>
+
+                            <div className="h-[180px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={transactionBreakdown.filter(d => d.value > 0)}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={50}
+                                            outerRadius={75}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                        >
+                                            {transactionBreakdown.filter(d => d.value > 0).map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            formatter={(value: number) => `€${value.toLocaleString('de-DE', { minimumFractionDigits: 2 })}`}
+                                            contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+
+                            {/* Legend blocks below chart */}
+                            <div className="flex justify-center gap-4 mt-4 flex-wrap">
+                                <div className="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-xl">
+                                    <div className="w-3 h-3 bg-emerald-500 rounded-full" />
+                                    <span className="font-bold text-emerald-700 text-sm">
+                                        {t.deposits || 'Einzahlung'}: €{transactionBreakdown[0].value.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2 bg-red-50 px-4 py-2 rounded-xl">
+                                    <div className="w-3 h-3 bg-red-500 rounded-full" />
+                                    <span className="font-bold text-red-700 text-sm">
+                                        {t.withdrawals || 'Auszahlung'}: €{transactionBreakdown[1].value.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="w-full px-6 md:px-0 pb-40 md:pb-0 md:w-1/2 md:flex md:flex-col md:gap-6 md:overflow-y-auto md:no-scrollbar relative z-20">
@@ -440,19 +623,37 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                             </div>
                         ) : <div className="bg-white rounded-[2rem] p-10 text-center border-2 border-dashed border-slate-200"><p className="text-slate-800 font-bold text-lg mb-1">{t.noGoals}</p></div>}
                     </div>
-                    <div id="tutorial-piggy-transactions" className="mb-6 md:mb-0 md:flex-1"><h3 className="font-black text-slate-800 mb-5 ml-4 text-xl">{t.transactions}</h3><div className="space-y-4">{bank.transactions?.length > 0 ? bank.transactions.map((t) => (
-                        <div key={t.id} className="bg-white p-5 rounded-[2rem] flex items-center justify-between border border-slate-100 shadow-lg shadow-slate-100">
-                            <div className="flex items-center gap-4 min-w-0">
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${t.type === 'deposit' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>
-                                    {t.type === 'deposit' ? <ArrowDownLeft size={28} /> : <ArrowUpRight size={28} />}
+                    <div id="tutorial-piggy-transactions" className="mb-6 md:mb-0 md:flex-1">
+                        <h3 className="font-black text-slate-800 mb-5 ml-4 text-xl">{t.transactions}</h3>
+                        <div className="space-y-4">
+                            {bank.transactions?.length > 0 ? visibleTransactions.map((tx) => (
+                                <div key={tx.id} className="bg-white p-5 rounded-[2rem] flex items-center justify-between border border-slate-100 shadow-lg shadow-slate-100">
+                                    <div className="flex items-center gap-4 min-w-0">
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${tx.type === 'deposit' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>
+                                            {tx.type === 'deposit' ? <ArrowDownLeft size={28} /> : <ArrowUpRight size={28} />}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <h4 className="font-black text-slate-800 text-base line-clamp-2 leading-tight">{tx.title}</h4>
+                                            <p className="text-slate-400 text-xs font-bold">{tx.date}</p>
+                                        </div>
+                                    </div>
+                                    <span className={`font-black text-xl whitespace-nowrap shrink-0 ml-2 ${tx.type === 'deposit' ? 'text-emerald-500' : 'text-slate-800'}`}>
+                                        {tx.type === 'deposit' ? '+' : '-'}€{Math.abs(tx.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
                                 </div>
-                                <div className="min-w-0">
-                                    <h4 className="font-black text-slate-800 text-base line-clamp-2 leading-tight">{t.title}</h4>
-                                    <p className="text-slate-400 text-xs font-bold">{t.date}</p>
-                                </div>
-                            </div>
-                            <span className={`font-black text-xl whitespace-nowrap shrink-0 ml-2 ${t.type === 'deposit' ? 'text-emerald-500' : 'text-slate-800'}`}>{t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </div>)) : <div className="text-center py-12 text-slate-400 font-bold bg-white rounded-[2rem] border-2 border-dashed border-slate-200">{t.noTransactions}</div>}</div></div>
+                            )) : (
+                                <div className="text-center py-12 text-slate-400 font-bold bg-white rounded-[2rem] border-2 border-dashed border-slate-200">{t.noTransactions}</div>
+                            )}
+                            {hasMoreTransactions && (
+                                <button
+                                    onClick={() => setDisplayedTransactionCount(prev => prev + 30)}
+                                    className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black rounded-2xl transition-all active:scale-95"
+                                >
+                                    Mehr laden ({remainingTransactions} weitere)
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -491,6 +692,46 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                         <div className="flex flex-col gap-3">
                             <button onClick={() => { setShowDeleteConfirm(false); onDeleteBank(bank.id); }} className="w-full bg-red-500 text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition-all text-lg">Alles löschen & trennen</button>
                             <button onClick={() => setShowDeleteConfirm(false)} className="w-full bg-slate-100 text-slate-500 font-bold py-4 rounded-2xl active:scale-95 transition-all">Abbrechen</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* REMOVE ALL GUESTS CONFIRMATION MODAL */}
+            {showRemoveGuestsConfirm && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl border-4 border-white relative overflow-hidden">
+                        <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6 text-amber-500 shadow-xl border-4 border-white">
+                            {isRemovingGuests ? <Loader2 size={36} className="animate-spin" /> : <Trash2 size={36} strokeWidth={2.5} />}
+                        </div>
+                        <h3 className="text-2xl font-black text-slate-800 mb-4 leading-tight">
+                            {t.removeAllGuestsTitle || 'Alle Zuschauer entfernen?'}
+                        </h3>
+                        <p className="text-slate-500 mb-6">
+                            {t.removeAllGuestsDesc || 'Alle Nutzer, die dieses Sparschwein als Gast hinzugefügt haben, verlieren den Zugriff.'}
+                        </p>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={async () => {
+                                    if (onRemoveAllGuests) {
+                                        setIsRemovingGuests(true);
+                                        await onRemoveAllGuests(bank.id);
+                                        setIsRemovingGuests(false);
+                                        setShowRemoveGuestsConfirm(false);
+                                        setShowSettings(false);
+                                    }
+                                }}
+                                disabled={isRemovingGuests}
+                                className="w-full bg-amber-500 text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition-all text-lg disabled:opacity-50"
+                            >
+                                {isRemovingGuests ? 'Wird entfernt...' : (t.removeAllGuestsConfirm || 'Ja, alle entfernen')}
+                            </button>
+                            <button
+                                onClick={() => setShowRemoveGuestsConfirm(false)}
+                                className="w-full bg-slate-100 text-slate-500 font-bold py-4 rounded-2xl active:scale-95 transition-all"
+                            >
+                                Abbrechen
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -623,6 +864,50 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                         });
                                         setShowSettings(false);
                                     }} className="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl active:scale-95 transition-all mb-3">{t.save}</button>
+
+                                    {/* Share Link Button - Only for owners */}
+                                    {bank.role === 'owner' && (
+                                        <button
+                                            onClick={async () => {
+                                                const shareUrl = `${window.location.origin}${window.location.pathname}?share=${bank.id}`;
+                                                try {
+                                                    await navigator.clipboard.writeText(shareUrl);
+                                                    setLinkCopied(true);
+                                                    setTimeout(() => setLinkCopied(false), 2000);
+                                                } catch (err) {
+                                                    // Fallback for older browsers
+                                                    const textArea = document.createElement('textarea');
+                                                    textArea.value = shareUrl;
+                                                    document.body.appendChild(textArea);
+                                                    textArea.select();
+                                                    document.execCommand('copy');
+                                                    document.body.removeChild(textArea);
+                                                    setLinkCopied(true);
+                                                    setTimeout(() => setLinkCopied(false), 2000);
+                                                }
+                                            }}
+                                            className={`w-full py-5 rounded-2xl border-2 font-bold flex items-center justify-center gap-3 mb-3 transition-all ${
+                                                linkCopied
+                                                    ? 'border-emerald-200 bg-emerald-50 text-emerald-600'
+                                                    : 'border-blue-100 bg-blue-50 text-blue-600'
+                                            }`}
+                                        >
+                                            {linkCopied ? (
+                                                <><CheckCircle size={20} /> {t.linkCopied || 'Link kopiert!'}</>
+                                            ) : (
+                                                <><Share2 size={20} /> {t.shareLink || 'Link teilen'}</>
+                                            )}
+                                        </button>
+                                    )}
+
+                                    {bank.role === 'owner' && onRemoveAllGuests && (
+                                        <button
+                                            onClick={() => setShowRemoveGuestsConfirm(true)}
+                                            className="w-full py-5 rounded-2xl border-2 border-amber-100 bg-amber-50 text-amber-600 font-bold flex items-center justify-center gap-3 mb-3"
+                                        >
+                                            <Trash2 size={20} /> {t.removeAllGuests || 'Alle Zuschauer entfernen'}
+                                        </button>
+                                    )}
                                     <button onClick={() => setShowDeleteConfirm(true)} className="w-full py-5 rounded-2xl border-2 border-red-100 bg-red-50 text-red-500 font-bold flex items-center justify-center gap-3"><Trash2 size={20} /> {t.delete}</button>
                                 </div>
                             </div>
