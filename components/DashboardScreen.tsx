@@ -280,7 +280,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             key={pig.id}
             onClick={() => handleBankClick(pig)}
             className={`
-        bg-white rounded-[2.5rem] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border relative overflow-hidden transition-all duration-300
+        bg-white rounded-[2.5rem] p-8 md:p-10 lg:min-h-[280px] flex flex-col sm:flex-row items-start sm:items-center justify-between border relative overflow-hidden transition-all duration-300
         ${isGuest
                     ? 'border-slate-200 border-2 bg-slate-50/50 cursor-default'
                     : `border-slate-100 shadow-[0_15px_30px_-10px_rgba(148,163,184,0.3)] hover:scale-[1.02] active:scale-95 cursor-pointer group hover:shadow-xl`
@@ -361,23 +361,23 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-10">
-                    <div id="tutorial-balance" className={`lg:col-span-2 rounded-[2.5rem] p-8 relative overflow-hidden shadow-2xl shadow-slate-300 ${THEME_COLORS[accentColor]} transition-colors duration-500`}>
+                    <div id="tutorial-balance" className={`lg:col-span-2 rounded-[2.5rem] p-4 sm:p-6 md:p-8 relative overflow-hidden shadow-2xl shadow-slate-300 ${THEME_COLORS[accentColor]} transition-colors duration-500`}>
                         <div className="absolute top-0 right-0 w-48 h-48 bg-white opacity-20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-                        <div className="flex justify-between items-center relative z-10">
-                            <div>
-                                <h2 className="text-white/90 text-sm font-bold uppercase tracking-wide mb-1">{t.balance}</h2>
-                                <div className="text-5xl md:text-6xl xl:text-7xl font-black text-white mb-6 tracking-tight drop-shadow-md">
+                        <div className="flex justify-between items-center gap-3 sm:gap-4 relative z-10">
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-white/90 text-xs sm:text-sm font-bold uppercase tracking-wide mb-1">{t.balance}</h2>
+                                <div className="text-3xl sm:text-4xl md:text-6xl xl:text-7xl font-black text-white mb-4 sm:mb-6 tracking-tight drop-shadow-md break-words">
                                     €{(Number(totalBalance) || 0).toFixed(2)}
                                 </div>
                                 <div className="flex gap-2">
-                                    <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-sm">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></div>
+                                    <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-white/10 shadow-sm">
+                                        <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-white animate-pulse"></div>
                                         <span className="text-xs font-bold text-white">{activeCount} {t.pigs}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="pl-4">
-                                <div className={`w-24 h-24 md:w-32 md:h-32 xl:w-40 xl:h-40 bg-white/10 backdrop-blur-md rounded-[2rem] p-4 flex items-center justify-center shadow-inner border border-white/20`}>
+                            <div className="shrink-0 pl-2 sm:pl-4">
+                                <div className={`w-16 h-16 sm:w-20 sm:h-20 md:w-32 md:h-32 xl:w-40 xl:h-40 bg-white/10 backdrop-blur-md rounded-[2rem] p-2 sm:p-4 flex items-center justify-center shadow-inner border border-white/20`}>
                                     <img
                                         src={CUSTOM_LOGO_URL}
                                         className="w-full h-full object-contain"
@@ -408,7 +408,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     </button>
                 </div>
 
-                <div id="tutorial-piggy-list" className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
+                <div id="tutorial-piggy-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6 mb-10">
                     {ownedPigs.length === 0 ? (
                         <div className="col-span-full text-center py-12 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 shadow-sm mx-2">
                             <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
