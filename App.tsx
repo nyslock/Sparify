@@ -16,6 +16,7 @@ import { QRScanner } from './components/QRScanner';
 import { SpotlightTutorial, TutorialStep } from './components/SpotlightTutorial';
 import { Trophy, RotateCcw, AlertTriangle, RefreshCw, PiggyBank as PigIcon, HelpCircle, BookOpen, Smartphone, Baby, Briefcase, ChevronRight, ChevronLeft, X, ArrowRight, Snowflake } from 'lucide-react';
 import { AppHelpModal } from './components/AppHelpModal';
+import { ToastContainer, ToastNotification } from './components/ToastNotification';
 import { supabase } from './lib/supabaseClient';
 import { decryptAmount, encryptAmount } from './lib/crypto';
 import { syncBalance, getTotalBalance } from './lib/piggyBank';
@@ -44,6 +45,7 @@ export default function App() {
   const [selectedBirthdate, setSelectedBirthdate] = useState('');
   const [tutorialBeforeView, setTutorialBeforeView] = useState<ViewState | null>(null);
   const [showSpotlight, setShowSpotlight] = useState(false);
+  const [notifications, setNotifications] = useState<ToastNotification[]>([]);
 
   const dataLoadedRef = useRef(false);
   const isRefreshingRef = useRef(false);
@@ -102,6 +104,32 @@ export default function App() {
     d.setDate(d.getDate() - 1);
     return d.toISOString().split('T')[0];
   };
+
+  // Notification management
+  const addNotification = useCallback((notification: Omit<ToastNotification, 'id'>) => {
+    const id = Math.random().toString(36).substring(2, 11);
+    const newNotification: ToastNotification = {
+      ...notification,
+      id,
+      duration: notification.duration || 4000
+    };
+    setNotifications(prev => [...prev, newNotification]);
+    
+    // Show browser notification if permission granted
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(notification.title, {
+        body: `${notification.message}\n€${notification.amount?.toFixed(2) || '0.00'} • ${notification.pigName || 'Sparbox'}`,
+        tag: 'sparify-transaction',
+        badge: '/images/sparify-logo.png'
+      });
+    }
+
+    return id;
+  }, []);
+
+  const removeNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
 
   const loadUserData = useCallback(async (uid: string, email: string, showLoadingSpinner = true) => {
     if (showLoadingSpinner) setLoading(true);
@@ -409,6 +437,133 @@ export default function App() {
     };
     flushPending();
   }, [userId]);
+
+  // Set up real-time balance updates
+  useEffect(() => {
+    if (!userId) return;
+
+    const processPig = async (pig: any, role: 'owner' | 'guest', shouldSync = false): Promise<PiggyBank> => {
+      let decBalance = 0;
+      if (shouldSync) {
+        const syncedBalance = await syncBalance(pig.id);
+        decBalance = syncedBalance !== null ? syncedBalance : 0;
+      } else {
+        decBalance = await decryptAmount(pig.balance);
+      }
+
+      const [decTxs, decGoals] = await Promise.all([
+        Promise.all((pig.transactions || []).map(async (t: any) => ({
+          id: t.id, title: t.title, amount: Number(t.amount) || 0, type: t.type,
+          date: new Date(t.created_at).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }),
+          rawDate: new Date(t.created_at)
+        }))),
+        Promise.all((pig.goals || []).map(async (g: any) => ({
+          id: g.id, title: g.title, targetAmount: await decryptAmount(g.target_amount),
+          savedAmount: await decryptAmount(g.saved_amount), allocation_percent: g.allocation_percent || 0
+        })))
+      ]);
+      decTxs.sort((a, b) => (b.rawDate?.getTime() || 0) - (a.rawDate?.getTime() || 0));
+      const history: { day: string; amount: number }[] = [];
+      try {
+        let running = decBalance;
+        for (const tx of decTxs) {
+          history.push({ day: tx.date, amount: running });
+          if (tx.type === 'deposit') {
+            running -= tx.amount;
+          } else {
+            running += Math.abs(tx.amount);
+          }
+        }
+        history.push({ day: new Date(pig.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }), amount: running });
+        history.reverse();
+        const dayMap = new Map<string, number>();
+        history.forEach(h => dayMap.set(h.day, h.amount));
+        const finalHistory = Array.from(dayMap.entries()).map(([day, amount]) => ({ day, amount }));
+
+        return {
+          id: pig.id, name: pig.name || 'Sparbox', balance: decBalance, color: pig.color || 'blue',
+          role, connectedDate: new Date(pig.created_at).toLocaleDateString(), history: finalHistory,
+          transactions: decTxs, goals: decGoals, glitterEnabled: pig.glitter_enabled || false,
+          rainbowEnabled: pig.rainbow_enabled || false, safeLockEnabled: pig.safe_lock_enabled || false,
+          diamondSkinEnabled: pig.diamond_skin_enabled || false
+        };
+      } catch (e) { console.error(e); }
+
+      return {
+        id: pig.id, name: pig.name || 'Sparbox', balance: 0, color: pig.color || 'blue',
+        role, connectedDate: new Date(pig.created_at).toLocaleDateString(), history: [],
+        transactions: decTxs, goals: decGoals, glitterEnabled: pig.glitter_enabled || false,
+        rainbowEnabled: pig.rainbow_enabled || false, safeLockEnabled: pig.safe_lock_enabled || false,
+        diamondSkinEnabled: pig.diamond_skin_enabled || false
+      };
+    };
+
+    // Set up real-time subscription
+    const subscriptionsRef = { current: [] as any[] };
+    const setupSubscriptions = () => {
+      try {
+        const transactionSub = supabase
+          .channel(`transactions-user-${userId}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'transactions',
+              filter: `piggy_bank_id=in.(SELECT id FROM piggy_banks WHERE user_id=eq.${userId})`
+            },
+            async (payload) => {
+              try {
+                const { data: allPigs } = await supabase
+                  .from('piggy_banks')
+                  .select('*, transactions(*), goals(*)')
+                  .eq('user_id', userId);
+
+                if (allPigs) {
+                  const ownedOnly = allPigs.filter(p => p.user_id === userId);
+                  const processed = await Promise.all(ownedOnly.map(p => processPig(p, 'owner', false)));
+                  setPiggyBanks(processed);
+
+                  const transaction = payload.new;
+                  if (transaction) {
+                    const isDeposit = transaction.type === 'deposit';
+                    const amount = Math.abs(Number(transaction.amount) || 0);
+                    const pigId = transaction.piggy_bank_id;
+                    const pigName = allPigs.find(p => p.id === pigId)?.name || 'Sparbox';
+
+                    addNotification({
+                      title: isDeposit ? '💰 Einzahlung erhalten!' : '💸 Auszahlung getätigt!',
+                      message: transaction.title || (isDeposit ? 'Neue Einzahlung' : 'Auszahlung'),
+                      type: 'success',
+                      amount: amount,
+                      pigName: pigName,
+                      duration: 5000
+                    });
+                  }
+                }
+              } catch (err) {
+                console.error('Error handling realtime update:', err);
+              }
+            }
+          )
+          .subscribe();
+
+        subscriptionsRef.current.push(transactionSub);
+      } catch (err) {
+        console.error('Error setting up real-time subscriptions:', err);
+      }
+    };
+
+    setupSubscriptions();
+
+    return () => {
+      subscriptionsRef.current.forEach(sub => {
+        if (sub && typeof sub.unsubscribe === 'function') {
+          sub.unsubscribe().catch(console.error);
+        }
+      });
+    };
+  }, [userId, addNotification]);
 
   const updateUserProfile = async (updatedUser: User) => {
     setUser(updatedUser);
@@ -1015,6 +1170,7 @@ export default function App() {
       {showAppHelp && (
         <AppHelpModal language={language} onClose={() => setShowAppHelp(false)} />
       )}
+      <ToastContainer notifications={notifications} onRemove={removeNotification} />
     </div>
   );
 }

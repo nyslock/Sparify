@@ -280,7 +280,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             key={pig.id}
             onClick={() => handleBankClick(pig)}
             className={`
-        bg-white rounded-[2.5rem] p-8 md:p-10 lg:min-h-[280px] flex flex-col sm:flex-row items-start sm:items-center justify-between border relative overflow-hidden transition-all duration-300
+        bg-white rounded-[2.5rem] p-4 sm:p-6 md:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between border relative overflow-hidden transition-all duration-300
         ${isGuest
                     ? 'border-slate-200 border-2 bg-slate-50/50 cursor-default'
                     : `border-slate-100 shadow-[0_15px_30px_-10px_rgba(148,163,184,0.3)] hover:scale-[1.02] active:scale-95 cursor-pointer group hover:shadow-xl`
@@ -309,23 +309,23 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 </button>
             )}
 
-            <div className="flex items-center space-x-6 pl-5 w-full relative z-10">
+            <div className="flex items-center space-x-4 pl-2 sm:pl-3 w-full relative z-10">
                 <div className={`
-            w-20 h-20 shrink-0 rounded-[1.2rem] flex items-center justify-center shadow-md transform transition-transform 
+            w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 shrink-0 rounded-[1.2rem] flex items-center justify-center shadow-md transform transition-transform 
             ${isGuest ? 'bg-white text-slate-400 border border-slate-200' : `${THEME_COLORS[pig.color]} text-white group-hover:rotate-6`}
         `}>
-                    {isGuest ? <Eye size={40} /> : <PigIcon size={40} />}
+                    {isGuest ? <Eye size={28} className="sm:w-8 sm:h-8 md:w-10 md:h-10" /> : <PigIcon size={28} className="sm:w-8 sm:h-8 md:w-10 md:h-10" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h4 className={`font-black text-2xl tracking-tight truncate ${isGuest ? 'text-slate-600' : 'text-slate-800'}`}>{pig.name}</h4>
+                    <h4 className={`font-black text-lg sm:text-xl tracking-tight truncate ${isGuest ? 'text-slate-600' : 'text-slate-800'}`}>{pig.name}</h4>
                     {!isGuest && (
-                        <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">{getPraiseMessage(pig.id)}</p>
+                        <p className="text-xs font-bold text-slate-400 mt-0.5 uppercase tracking-wider">{getPraiseMessage(pig.id)}</p>
                     )}
                 </div>
             </div>
 
-            <div className="text-right mt-4 sm:mt-0 pl-5 sm:pl-0 w-full sm:w-auto relative z-10">
-                <span className={`block font-black text-3xl ${isGuest ? 'text-slate-500' : 'text-slate-900'}`}>
+            <div className="text-right mt-2 sm:mt-0 pl-2 sm:pl-0 w-full sm:w-auto relative z-10">
+                <span className={`block font-black text-2xl sm:text-3xl ${isGuest ? 'text-slate-500' : 'text-slate-900'}`}>
                     €{(Number(pig.balance) || 0).toFixed(2)}
                 </span>
             </div>
@@ -361,7 +361,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-10">
-                    <div id="tutorial-balance" className={`lg:col-span-2 rounded-[2.5rem] p-4 sm:p-6 md:p-8 relative overflow-hidden shadow-2xl shadow-slate-300 ${THEME_COLORS[accentColor]} transition-colors duration-500`}>
+                    <div id="tutorial-balance" className={`lg:col-span-2 rounded-3xl sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8 relative overflow-hidden shadow-2xl shadow-slate-300 ${THEME_COLORS[accentColor]} transition-colors duration-500`}>
                         <div className="absolute top-0 right-0 w-48 h-48 bg-white opacity-20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                         <div className="flex justify-between items-center gap-3 sm:gap-4 relative z-10">
                             <div className="flex-1 min-w-0">

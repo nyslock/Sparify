@@ -263,7 +263,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                 <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 pt-0 max-w-6xl mx-auto w-full pb-40">
                     <div className="space-y-6">
                         <div className={`bg-white rounded-[2rem] p-5 sm:p-8 shadow-xl shadow-slate-200/50 border border-white flex flex-col items-center text-center gap-6 sm:gap-8 ${bank.safeLockEnabled ? 'border-2 border-slate-900 shadow-slate-400' : ''}`}>
-                            <div className="text-5xl md:text-6xl drop-shadow-sm"><PigIcon size={80} className="text-slate-800" /></div>
+                            <div className="flex justify-center"><PigIcon size={56} className="text-slate-800 sm:w-16 sm:h-16 md:w-20 md:h-20" style={{ transform: 'none' }} /></div>
                             <div>
                                 <p className="text-slate-400 font-bold text-[10px] sm:text-xs uppercase tracking-widest mb-1">{t.available}</p>
                                 <div className="flex flex-col items-center gap-2">
@@ -286,14 +286,14 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-md border border-white">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="font-bold text-slate-800 flex items-center gap-2"><Signal size={18} className="text-indigo-500" /> {t.history}</h3>
-                                    <div className="flex gap-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                                    <h3 className="font-bold text-slate-800 flex items-center gap-2 shrink-0"><Signal size={18} className="text-indigo-500" /> {t.history}</h3>
+                                    <div className="flex flex-wrap gap-2">
                                         {(['week', 'month', 'all'] as const).map(period => (
                                             <button
                                                 key={period}
                                                 onClick={() => setTimePeriod(period)}
-                                                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                                                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
                                                     timePeriod === period
                                                         ? 'bg-indigo-500 text-white'
                                                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -379,7 +379,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                             </div>
                                             <div>
                                                 <h4 className="font-bold text-slate-800 text-sm line-clamp-2 leading-tight">{t.title ? (t.title.length > 30 ? t.title.slice(0, 30) + '...' : t.title) : (t.type === 'deposit' ? t.deposit : t.withdrawal)}</h4>
-                                                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t.date}</p>
+                                                <p className="text-slate-400 text-sm font-semibold">{t.date}</p>
                                             </div>
                                         </div>
                                         <span className={`font-black text-sm sm:text-base whitespace-nowrap shrink-0 ${t.type === 'deposit' ? 'text-emerald-600' : 'text-slate-900'}`}>
@@ -418,9 +418,8 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-20 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
                         <div className="absolute bottom-0 left-0 w-48 h-48 bg-black opacity-10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none"></div>
                         <div className="text-center relative z-10">
-                            <div className="text-6xl md:text-7xl mb-4 drop-shadow-lg"><PigIcon size={80} className="text-white opacity-90" /></div>
                             <div className="inline-block bg-black/10 backdrop-blur-md px-5 py-2 rounded-full mb-3 border border-white/20 shadow-sm">
-                                <h1 className="text-white text-xs font-black uppercase tracking-widest flex items-center gap-2"><PigIcon size={14} /> {bank.name}</h1>
+                                <h1 className="text-white text-xs font-black uppercase tracking-widest">{bank.name}</h1>
                             </div>
                             <h2 className={`text-7xl md:text-8xl font-black text-white tracking-tighter drop-shadow-sm flex items-center justify-center gap-4 ${bank.safeLockEnabled ? 'scale-90' : ''}`}>
                                 {bank.safeLockEnabled && <Lock size={48} className="opacity-80" />}
@@ -446,14 +445,14 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                     </div>
 
                     <div id="tutorial-piggy-history" className="mx-6 mb-8 md:mx-0 md:mb-0 bg-white rounded-[2.5rem] p-6 border border-slate-100 shadow-xl shadow-slate-200/50 flex-1 min-h-[220px] relative z-20">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-black text-slate-800 flex items-center gap-3 text-lg"><div className="bg-indigo-100 p-2 rounded-xl text-indigo-500"><Signal size={20} /></div> {t.history}</h3>
-                            <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                            <h3 className="font-black text-slate-800 flex items-center gap-3 text-lg shrink-0"><div className="bg-indigo-100 p-2 rounded-xl text-indigo-500"><Signal size={20} /></div> {t.history}</h3>
+                            <div className="flex flex-wrap gap-2">
                                 {(['week', 'month', 'all'] as const).map(period => (
                                     <button
                                         key={period}
                                         onClick={() => setTimePeriod(period)}
-                                        className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-all ${
+                                        className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-all whitespace-nowrap ${
                                             timePeriod === period
                                                 ? 'bg-indigo-500 text-white'
                                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -464,15 +463,15 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                 ))}
                             </div>
                         </div>
-                        <div style={{ width: '100%', height: 140 }}>
+                        <div className="w-full h-40 overflow-hidden">
                             {chartData.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={chartData}>
                                         <defs><linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} /><stop offset="95%" stopColor="#6366f1" stopOpacity={0} /></linearGradient></defs>
-                                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }} dy={10} />
+                                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 'bold' }} dy={8} interval={Math.max(0, Math.floor(chartData.length / 4))} />
                                         <YAxis hide type="number" domain={[0, 'auto']} />
                                         <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', color: '#1e293b' }} itemStyle={{ color: '#6366f1', fontWeight: 'bold' }} formatter={(value: number) => [`€${value.toFixed(2)}`, 'Betrag']} />
-                                        <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
+                                        <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             ) : (
@@ -544,18 +543,18 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                         </div>
                     )}
                     
-                    <div id="tutorial-piggy-transactions" className="mb-6 md:mb-0 md:flex-1"><h3 className="font-black text-slate-800 mb-5 ml-4 text-xl">{t.transactions}</h3><div className="space-y-4">{bank.transactions?.length > 0 ? bank.transactions.map((t) => (
-                        <div key={t.id} className="bg-white p-5 rounded-[2rem] flex items-center justify-between border border-slate-100 shadow-lg shadow-slate-100">
+                    <div id="tutorial-piggy-transactions" className="mb-6 md:mb-0 md:flex-1"><h3 className="font-black text-slate-800 mb-5 ml-4 text-xl">{t.transactions}</h3><div className="space-y-4 px-4">{bank.transactions?.length > 0 ? bank.transactions.map((t) => (
+                        <div key={t.id} className="bg-white p-4 sm:p-5 rounded-[2rem] flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between border border-slate-100 shadow-lg shadow-slate-100">
                             <div className="flex items-center gap-4 min-w-0">
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${t.type === 'deposit' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>
-                                    {t.type === 'deposit' ? <ArrowDownLeft size={28} /> : <ArrowUpRight size={28} />}
+                                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 ${t.type === 'deposit' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>
+                                    {t.type === 'deposit' ? <ArrowDownLeft size={24} className="sm:w-7 sm:h-7" /> : <ArrowUpRight size={24} className="sm:w-7 sm:h-7" />}
                                 </div>
                                 <div className="min-w-0">
-                                    <h4 className="font-black text-slate-800 text-base line-clamp-2 leading-tight">{t.title ? (t.title.length > 50 ? t.title.slice(0, 50) + '...' : t.title) : (t.type === 'deposit' ? t.deposit : t.withdrawal)}</h4>
-                                    <p className="text-slate-400 text-xs font-bold">{t.date}</p>
+                                    <h4 className="font-black text-slate-800 text-sm sm:text-base line-clamp-2 leading-tight">{t.title ? (t.title.length > 50 ? t.title.slice(0, 50) + '...' : t.title) : (t.type === 'deposit' ? t.deposit : t.withdrawal)}</h4>
+                                    <p className="text-slate-400 text-xs sm:text-sm font-bold">{t.date}</p>
                                 </div>
                             </div>
-                            <span className={`font-black text-xl whitespace-nowrap shrink-0 ml-2 ${t.type === 'deposit' ? 'text-emerald-500' : 'text-slate-800'}`}>{t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}</span>
+                            <span className={`font-black text-lg sm:text-xl whitespace-nowrap shrink-0 ${t.type === 'deposit' ? 'text-emerald-500' : 'text-slate-800'}`}>{t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}</span>
                         </div>)) : <div className="text-center py-12 text-slate-400 font-bold bg-white rounded-[2rem] border-2 border-dashed border-slate-200">{t.noTransactions}</div>}</div></div>
                 </div>
             </div>
