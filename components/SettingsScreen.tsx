@@ -29,11 +29,7 @@ const colors: ThemeColor[] = [
 
 const languages: { code: Language; label: string; flag: string }[] = [
   { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
-  { code: 'en', label: 'English', flag: '🇺🇸' },
-  { code: 'hr', label: 'Hrvatski', flag: '🇭🇷' },
-  { code: 'tr', label: 'Türkçe', flag: '🇹🇷' },
-  { code: 'ru', label: 'Русский', flag: '🇷🇺' },
-  { code: 'hu', label: 'Magyar', flag: '🇭🇺' }
+  { code: 'en', label: 'English', flag: '🇺🇸' }
 ];
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({

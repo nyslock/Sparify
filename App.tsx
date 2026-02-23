@@ -311,7 +311,7 @@ export default function App() {
             role, connectedDate: new Date(pig.created_at).toLocaleDateString(), history: finalHistory,
             transactions: decTxs, goals: decGoals, glitterEnabled: pig.glitter_enabled || false,
             rainbowEnabled: pig.rainbow_enabled || false, safeLockEnabled: pig.safe_lock_enabled || false,
-            diamondSkinEnabled: pig.diamond_skin_enabled || false
+            diamondSkinEnabled: pig.diamond_skin_enabled || false, lock_state: pig.lock_state
           };
         } catch (e) { console.error(e); }
 
@@ -320,7 +320,7 @@ export default function App() {
           role, connectedDate: new Date(pig.created_at).toLocaleDateString(), history: [],
           transactions: decTxs, goals: decGoals, glitterEnabled: pig.glitter_enabled || false,
           rainbowEnabled: pig.rainbow_enabled || false, safeLockEnabled: pig.safe_lock_enabled || false,
-          diamondSkinEnabled: pig.diamond_skin_enabled || false
+          diamondSkinEnabled: pig.diamond_skin_enabled || false, lock_state: pig.lock_state
         };
       };
 
@@ -485,7 +485,7 @@ export default function App() {
           role, connectedDate: new Date(pig.created_at).toLocaleDateString(), history: finalHistory,
           transactions: decTxs, goals: decGoals, glitterEnabled: pig.glitter_enabled || false,
           rainbowEnabled: pig.rainbow_enabled || false, safeLockEnabled: pig.safe_lock_enabled || false,
-          diamondSkinEnabled: pig.diamond_skin_enabled || false
+          diamondSkinEnabled: pig.diamond_skin_enabled || false, lock_state: pig.lock_state
         };
       } catch (e) { console.error(e); }
 
@@ -494,7 +494,7 @@ export default function App() {
         role, connectedDate: new Date(pig.created_at).toLocaleDateString(), history: [],
         transactions: decTxs, goals: decGoals, glitterEnabled: pig.glitter_enabled || false,
         rainbowEnabled: pig.rainbow_enabled || false, safeLockEnabled: pig.safe_lock_enabled || false,
-        diamondSkinEnabled: pig.diamond_skin_enabled || false
+        diamondSkinEnabled: pig.diamond_skin_enabled || false, lock_state: pig.lock_state
       };
     };
 
@@ -972,7 +972,7 @@ export default function App() {
       />
       <main className="flex-1 flex flex-col h-full relative overflow-hidden">
         {view !== 'LEARN' && view !== 'SHOP' && view !== 'DETAIL' && view !== 'BOX_TUTORIAL' && view !== 'SCANNER' && !isLevelActive && (
-          <div className="px-6 pt-12 pb-4 flex justify-between items-center z-10 bg-slate-50/90 backdrop-blur-md sticky top-0 md:hidden">
+          <div className="px-8 pt-6 pb-4 flex justify-between items-center z-10 bg-slate-50/90 backdrop-blur-md sticky top-0 md:hidden">
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 ${THEME_COLORS[accentColor]} rounded-xl flex items-center justify-center p-1.5 shadow-sm`}>
                 <img src={CUSTOM_LOGO_URL} className="w-full h-full object-contain" alt="Logo" />

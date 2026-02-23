@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, PiggyBank as PigIcon, Eye, Lock, Megaphone, Trash2, Wallet, CreditCard, ChevronRight, TrendingUp, PieChart, ArrowUpRight, ArrowDownLeft, Snowflake, Target, Percent, Info, AlertCircle, Check } from 'lucide-react';
+import { Plus, PiggyBank as PigIcon, Eye, Lock, LockOpen, Megaphone, Trash2, Wallet, CreditCard, ChevronRight, TrendingUp, PieChart, ArrowUpRight, ArrowDownLeft, Snowflake, Target, Percent, Info, AlertCircle, Check } from 'lucide-react';
 import { PiggyBank, ThemeColor, THEME_COLORS, Language, getTranslations, CUSTOM_LOGO_URL, AppMode, User, Goal } from '../types';
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, PieChart as RechartsPieChart, Pie } from 'recharts';
 
@@ -296,6 +296,17 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             )}
 
             <div className={`absolute left-0 top-0 bottom-0 w-4 ${THEME_COLORS[pig.color]} ${isGuest ? 'opacity-50' : ''} z-10`}></div>
+
+            {!isGuest && pig.lock_state && (
+                <div className={`absolute top-3 right-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
+                    pig.lock_state === 'closed' 
+                        ? 'bg-red-50 text-red-600' 
+                        : 'bg-emerald-50 text-emerald-600'
+                }`}>
+                    {pig.lock_state === 'closed' ? <Lock size={12} /> : <LockOpen size={12} />}
+                    <span className="uppercase tracking-wider">{pig.lock_state === 'closed' ? 'Zu' : 'Offen'}</span>
+                </div>
+            )}
 
             {isGuest && (
                 <button
