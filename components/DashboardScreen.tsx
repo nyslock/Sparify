@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, PiggyBank as PigIcon, Eye, Lock, LockOpen, Megaphone, Trash2, Wallet, CreditCard, ChevronRight, TrendingUp, PieChart, ArrowUpRight, ArrowDownLeft, Snowflake, Target, Percent, Info, AlertCircle, Check } from 'lucide-react';
+import { Plus, PiggyBank as PigIcon, Eye, Lock, LockOpen, Megaphone, Trash2, Wallet, CreditCard, ChevronRight, TrendingUp, PieChart, ArrowUpRight, ArrowDownLeft, Snowflake, Target, Percent, Info, AlertCircle, Check, X } from 'lucide-react';
 import { PiggyBank, ThemeColor, THEME_COLORS, Language, getTranslations, CUSTOM_LOGO_URL, AppMode, User, Goal } from '../types';
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, PieChart as RechartsPieChart, Pie } from 'recharts';
 
@@ -31,6 +31,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     const [pigToDeleteId, setPigToDeleteId] = useState<string | null>(null);
     const [chartPeriod, setChartPeriod] = useState<'7D' | 'MTD'>('MTD');
     const [chartView, setChartView] = useState<'history' | 'transactions'>('history');
+    const [showAdTip, setShowAdTip] = useState(true);
+    const [swipeStartX, setSwipeStartX] = useState(0);
+    const [swipeCurrentX, setSwipeCurrentX] = useState(0);
+    const [isSwiping, setIsSwiping] = useState(false);
 
     if (!user) return null;
 
@@ -87,6 +91,43 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         });
         return { deposited, withdrawn };
     }, [piggyBanks]);
+
+    // Swipe handlers for ad tip
+    const handleTouchStart = (e: React.TouchEvent) => {
+        setSwipeStartX(e.touches[0].clientX);
+        setIsSwiping(true);
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!isSwiping) return;
+        setSwipeCurrentX(e.touches[0].clientX);
+    };
+
+    const handleTouchEnd = () => {
+        if (!isSwiping) return;
+        const swipeDistance = swipeCurrentX - swipeStartX;
+        const threshold = 80; // Minimum swipe distance to dismiss
+
+        if (Math.abs(swipeDistance) > threshold) {
+            setShowAdTip(false);
+        }
+
+        setIsSwiping(false);
+        setSwipeStartX(0);
+        setSwipeCurrentX(0);
+    };
+
+    const getSwipeTransform = () => {
+        if (!isSwiping) return 'translateX(0)';
+        const distance = swipeCurrentX - swipeStartX;
+        return `translateX(${distance}px)`;
+    };
+
+    const getSwipeOpacity = () => {
+        if (!isSwiping) return 1;
+        const distance = Math.abs(swipeCurrentX - swipeStartX);
+        return Math.max(0, 1 - distance / 150);
+    };
 
     if (appMode === 'adult') {
         return (
@@ -356,20 +397,39 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     return (
         <div className="flex-1 overflow-y-auto no-scrollbar h-full">
             <div className="p-6 xl:p-8 pb-32 max-w-7xl mx-auto w-full">
-                <div className="mb-8 w-full">
-                    <div className="bg-slate-100 rounded-[1.5rem] border-2 border-dashed border-slate-200 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-slate-300 transition-colors cursor-pointer">
-                        <span className="absolute top-2 right-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-200 px-2 py-0.5 rounded">{t.adLabel}</span>
-                        <div className="py-2 flex items-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                            <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-400">
-                                <Megaphone size={20} />
-                            </div>
-                            <div className="text-left">
-                                <p className="text-slate-500 font-bold text-sm">{t.adTitle}</p>
-                                <p className="text-slate-400 text-xs">{t.adSubtitle}</p>
+                {showAdTip && (
+                    <div 
+                        className="mb-8 w-full transition-all duration-300"
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                        style={{
+                            transform: getSwipeTransform(),
+                            opacity: getSwipeOpacity(),
+                            transition: isSwiping ? 'none' : 'all 0.3s ease-out'
+                        }}
+                    >
+                        <div className="bg-slate-100 rounded-[1.5rem] border-2 border-dashed border-slate-200 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-slate-300 transition-colors cursor-pointer">
+                            <span className="absolute top-2 right-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-200 px-2 py-0.5 rounded">{t.adLabel}</span>
+                            <button
+                                onClick={() => setShowAdTip(false)}
+                                className="absolute top-2 left-2 w-6 h-6 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all active:scale-90 z-10"
+                                aria-label="Tipp ausblenden"
+                            >
+                                <X size={14} />
+                            </button>
+                            <div className="py-2 flex items-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
+                                <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-400">
+                                    <Megaphone size={20} />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-slate-500 font-bold text-sm">{t.adTitle}</p>
+                                    <p className="text-slate-400 text-xs">{t.adSubtitle}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-10">
                     <div id="tutorial-balance" className={`lg:col-span-2 rounded-3xl sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8 relative overflow-hidden shadow-2xl shadow-slate-300 ${THEME_COLORS[accentColor]} transition-colors duration-500`}>
