@@ -434,19 +434,19 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <button
             onClick={handlePushToggle}
             disabled={pushLoading || !userId}
-            className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between group active:scale-95 transition-all disabled:opacity-50"
+            className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between gap-4 group active:scale-95 transition-all disabled:opacity-50"
           >
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl shadow-sm flex items-center justify-center transition-all ${pushEnabled ? 'bg-blue-500 text-white' : 'bg-white text-slate-400'}`}>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className={`w-10 h-10 flex-shrink-0 rounded-xl shadow-sm flex items-center justify-center transition-all ${pushEnabled ? 'bg-blue-500 text-white' : 'bg-white text-slate-400'}`}>
                 {pushEnabled ? <Bell size={20} /> : <BellOff size={20} />}
               </div>
-              <div className="text-left">
-                <span className="font-bold text-slate-800 block">{t.pushNotifications || 'Push-Benachrichtigungen'}</span>
+              <div className="text-left min-w-0">
+                <span className="font-bold text-slate-800 block truncate">{t.pushNotifications || 'Push-Benachrichtigungen'}</span>
                 <span className="text-xs text-slate-400">{pushEnabled ? (t.pushEnabled || 'Aktiviert') : (t.pushDisabled || 'Deaktiviert')}</span>
               </div>
             </div>
-            <div className={`w-14 h-8 rounded-full p-1 transition-all ${pushEnabled ? 'bg-blue-500' : 'bg-slate-200'}`}>
-              <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform ${pushEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+            <div className={`relative w-14 h-8 flex-shrink-0 rounded-full transition-all ${pushEnabled ? 'bg-blue-500' : 'bg-slate-300'}`}>
+              <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ease-in-out ${pushEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
             </div>
           </button>
           {getNotificationPermission() === 'denied' && (

@@ -147,6 +147,7 @@ export default function App() {
       if (profileRes.data) {
         const p = profileRes.data;
         if (p.language && showLoadingSpinner) setLanguage(p.language);
+        if (p.color && showLoadingSpinner) setAccentColor(p.color as ThemeColor);
 
         const calcAge = p.birthdate ? calculateAge(p.birthdate) : null;
         if (p.birthdate === null && !isRefreshingRef.current) {
@@ -190,11 +191,13 @@ export default function App() {
             age: calcAge,
             birthdate: p.birthdate,
             hasSeenTutorial: p.has_seen_tutorial || false,
+            color: p.color || 'primary',
             activeFrames: prefs.activeFrames,
             activeTitles: prefs.activeTitles
           };
           setUser(userData);
-          if (prefs.theme) setAccentColor(prefs.theme);
+          if (p.color) setAccentColor(p.color as ThemeColor);
+          else if (prefs.theme) setAccentColor(prefs.theme);
 
           // Only auto-open tutorial during initial load (not background refresh)
           // BUT: Don't do it here, let the view effect handle it
@@ -221,7 +224,8 @@ export default function App() {
           last_completed_date: null,
           language: 'de',
           birthdate: null,
-          has_seen_tutorial: false
+          has_seen_tutorial: false,
+          color: 'primary'
         });
         if (insertRes.error) console.error('Profile create failed:', insertRes.error);
 
@@ -242,6 +246,7 @@ export default function App() {
           age: null,
           birthdate: null,
           hasSeenTutorial: false,
+          color: 'primary',
           activeFrames: [],
           activeTitles: []
         });
@@ -613,7 +618,8 @@ export default function App() {
           streak_freeze_until: updatedUser.streakFreezeUntil || null,
           language: updatedUser.language,
           birthdate: updatedUser.birthdate || null,
-          has_seen_tutorial: updatedUser.hasSeenTutorial
+          has_seen_tutorial: updatedUser.hasSeenTutorial,
+          color: updatedUser.color || 'primary'
         };
 
         const res = await supabase.from('profiles').update(payload).eq('id', uid);
@@ -645,7 +651,8 @@ export default function App() {
             streak_freeze_until: updatedUser.streakFreezeUntil || null,
             language: updatedUser.language,
             birthdate: updatedUser.birthdate || null,
-            has_seen_tutorial: updatedUser.hasSeenTutorial
+            has_seen_tutorial: updatedUser.hasSeenTutorial,
+            color: updatedUser.color || 'primary'
           };
 
           const retryRes = await supabase.from('profiles').update(payload).eq('id', uid);
@@ -1070,7 +1077,8 @@ export default function App() {
               accentColor={accentColor}
               onUpdateAccent={(color) => {
                 setAccentColor(color);
-                if (userId) {
+                if (user && userId) {
+                  updateUserProfile({ ...user, color });
                   savePrefs(userId, {
                     activeFrames: user?.activeFrames || [],
                     activeTitles: user?.activeTitles || [],
