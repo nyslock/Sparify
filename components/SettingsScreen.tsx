@@ -4,7 +4,7 @@ import { LogOut, Info, User as UserIcon, Palette, Globe, Calendar, Lock, Baby, B
 import { ThemeColor, THEME_COLORS, AVATARS, User, Language, getTranslations, AppMode, SPECIALS_DATABASE, ViewState } from '../types';
 import { PasswordResetModal } from './PasswordResetModal';
 import { supabase } from '../lib/supabaseClient';
-import { isPushSupported, isSubscribed, subscribeToPush, unsubscribeFromPush, getNotificationPermission } from '../lib/pushNotifications';
+import { usePushNotifications } from '../lib/usePushNotifications';
 
 interface SettingsScreenProps {
   user: User;
@@ -40,6 +40,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onUpdateAccent,
   onLogout,
   language,
+  setLanguage,
   appMode,
   onChangeView,
   onOpenAppHelp
@@ -53,10 +54,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
 
-  // Push Notification State
-  const [pushEnabled, setPushEnabled] = useState(false);
-  const [pushLoading, setPushLoading] = useState(false);
-  const [pushSupported, setPushSupported] = useState(false);
+  // Firebase Cloud Messaging Push Notifications
+  const { 
+    isSupported: pushSupported, 
+    isPermissionGranted: pushEnabled, 
+    isLoading: pushLoading,
+    error: pushError,
+    requestPermission 
+  } = usePushNotifications({ userId });
 
   const tr = getTranslations(language);
   const t = tr.settings;
@@ -79,44 +84,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Check Push Notification Status
-  useEffect(() => {
-    const checkPushStatus = async () => {
-      const supported = isPushSupported();
-      setPushSupported(supported);
-      if (supported) {
-        const subscribed = await isSubscribed();
-        setPushEnabled(subscribed);
-      }
-    };
-    checkPushStatus();
-  }, []);
-
-  // Handle Push Toggle
+  // Handle Firebase Push Notifications Toggle
   const handlePushToggle = async () => {
     if (!userId) return;
-    setPushLoading(true);
-    try {
-      if (pushEnabled) {
-        const result = await unsubscribeFromPush(userId);
-        if (result.success) {
-          setPushEnabled(false);
-        } else {
-          console.error('Failed to unsubscribe:', result.error);
-        }
-      } else {
-        const result = await subscribeToPush(userId);
-        if (result.success) {
-          setPushEnabled(true);
-        } else {
-          console.error('Failed to subscribe:', result.error);
-        }
-      }
-    } catch (err) {
-      console.error('Push toggle error:', err);
-    } finally {
-      setPushLoading(false);
+    
+    // Если уже включено, показываем warning что нельзя отключить (можно только через браузер)
+    if (pushEnabled) {
+      alert(tr.settings?.notificationDisableWarning || 'Чтобы отключить уведомления, измените настройки в вашем браузере.');
+      return;
     }
+    
+    // Запрашиваем разрешение на уведомления
+    await requestPermission();
   };
 
   const calculateAge = (birthDateString: string) => {
@@ -449,11 +428,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ease-in-out ${pushEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
             </div>
           </button>
-          {getNotificationPermission() === 'denied' && (
-            <p className="text-xs text-red-500 mt-3 px-2">
-              {t.notificationsDenied || 'Benachrichtigungen wurden im Browser blockiert. Bitte aktiviere sie in den Browser-Einstellungen.'}
-            </p>
-          )}
         </div>
       )}
 
@@ -464,7 +438,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {languages.map((l) => (
-            <button key={l.code} onClick={() => onUpdateUser({ ...user, language: l.code })} className={`p-4 rounded-2xl flex items-center gap-3 border transition-all ${user.language === l.code ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-50 text-slate-600'}`}>
+            <button 
+              key={l.code} 
+              onClick={() => {
+                setLanguage(l.code);
+                onUpdateUser({ ...user, language: l.code });
+              }} 
+              className={`p-4 rounded-2xl flex items-center gap-3 border transition-all ${user.language === l.code ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-50 text-slate-600'}`}
+            >
               <span className="text-2xl">{l.flag}</span>
               <span className="font-bold">{l.label}</span>
             </button>
