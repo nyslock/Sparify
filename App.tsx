@@ -701,10 +701,22 @@ export default function App() {
 
     const title = 'Admin: Einzahlung';
     try {
+      // Insert transaction
       await supabase.from('transactions').insert([
         { piggy_bank_id: targetPig.id, title, amount, type: 'deposit' }
       ]);
-      await loadUserData(userId, user.email, false);
+      
+      // Immediately sync balance for this piggy bank only
+      const newBalance = await syncBalance(targetPig.id);
+      
+      // Update state optimistically without full reload
+      if (newBalance !== null) {
+        setPiggyBanks(prev => prev.map(p => 
+          p.id === targetPig.id ? { ...p, balance: newBalance } : p
+        ));
+        setTotalBalance(await getTotalBalance(userId));
+      }
+      
       return { ok: true };
     } catch (e) {
       console.error('Admin add money failed:', e);
@@ -1045,24 +1057,57 @@ export default function App() {
               await supabase.from('piggy_banks').update({ name: upd.name, color: upd.color }).eq('id', upd.id);
               await loadUserData(userId!, user.email, false);
             }} onTransaction={async (pigId, newBal, newTxs) => {
-  // 1. Просто вставляем транзакцию. Не обновляем баланс вручную.
-  // База данных (или функция syncBalance при следующем вызове) сама пересчитает итог.
-  if (newTxs.length > 0) {
-    await supabase.from('transactions').insert(
-      newTxs.map(t => ({ 
-        piggy_bank_id: pigId, 
-        title: t.title, 
-        amount: t.amount, 
-        type: t.type 
-      }))
-    );
-  }
-  
-  // 2. Перезагружаем данные. 
-  // loadUserData вызовет syncBalance, который увидит новую транзакцию 
-  // и корректно отнимет сумму от текущего баланса в базе.
-  await loadUserData(userId!, user.email, false);
-}} onDeleteBank={async (id) => {
+              // 1. Insert transactions
+              if (newTxs.length > 0) {
+                await supabase.from('transactions').insert(
+                  newTxs.map(t => ({ 
+                    piggy_bank_id: pigId, 
+                    title: t.title, 
+                    amount: t.amount, 
+                    type: t.type 
+                  }))
+                );
+              }
+              
+              // 2. Immediately sync balance for this piggy bank only (fast)
+              const updatedBalance = await syncBalance(pigId);
+              
+              // 3. Fetch updated transactions for this piggy bank
+              const { data: updatedPig } = await supabase
+                .from('piggy_banks')
+                .select('*, transactions(*), goals(*)')
+                .eq('id', pigId)
+                .single();
+              
+              if (updatedBalance !== null && updatedPig) {
+                // 4. Update only this piggy bank in state (instant UI update)
+                setPiggyBanks(prev => prev.map(p => {
+                  if (p.id === pigId && updatedPig) {
+                    return {
+                      ...p,
+                      balance: updatedBalance,
+                      transactions: (updatedPig.transactions || []).map((t: any) => ({
+                        id: t.id,
+                        title: t.title,
+                        amount: Number(t.amount) || 0,
+                        type: t.type,
+                        date: new Date(t.created_at).toLocaleString('de-DE', { 
+                          day: '2-digit', 
+                          month: '2-digit', 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        }),
+                        rawDate: new Date(t.created_at)
+                      })).sort((a, b) => (b.rawDate?.getTime() || 0) - (a.rawDate?.getTime() || 0))
+                    };
+                  }
+                  return p;
+                }));
+                
+                // 5. Update total balance
+                setTotalBalance(await getTotalBalance(userId!));
+              }
+            }} onDeleteBank={async (id) => {
               await supabase.rpc('reset_piggy_bank', { pig_id: id, zero_balance: await encryptAmount(0) });
               await loadUserData(userId!, user.email, false); setView('DASHBOARD');
             }} onDeleteGoal={async (pigId, goal) => {

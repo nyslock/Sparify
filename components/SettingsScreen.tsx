@@ -404,6 +404,28 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       </div>
 
       {/* Push Notifications Section */}
+      {!pushSupported && pushError && (
+        <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-amber-50 rounded-xl text-amber-500"><Bell size={20} /></div>
+            <h3 className="font-bold text-slate-800">{t.notifications || 'Benachrichtigungen'}</h3>
+          </div>
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100">
+            <div className="flex items-start gap-3">
+              <div className="text-2xl">📱</div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-amber-900 mb-2">
+                  {language === 'de' ? 'Installation erforderlich' : 'Installation Required'}
+                </p>
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  {pushError}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {pushSupported && (
         <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
           <div className="flex items-center gap-3 mb-4">
@@ -428,6 +450,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ease-in-out ${pushEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
             </div>
           </button>
+          {pushError && (
+            <div className="mt-3 p-3 rounded-xl bg-blue-50 border border-blue-100">
+              <p className="text-xs text-blue-700 font-medium">{pushError}</p>
+            </div>
+          )}
         </div>
       )}
 

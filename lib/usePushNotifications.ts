@@ -33,14 +33,30 @@ export const usePushNotifications = ({
   // Check browser support for notifications
   useEffect(() => {
     const checkSupport = () => {
-      const supported =
+      // Detect iOS devices
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      
+      // Check if running as PWA (standalone mode)
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                          (window.navigator as any).standalone === true;
+      
+      // Basic feature detection
+      const hasBasicSupport = 
         'Notification' in window &&
         'serviceWorker' in navigator &&
         'PushManager' in window;
       
-      setIsSupported(supported);
+      // iOS only supports notifications in PWA standalone mode
+      if (isIOS && !isStandalone) {
+        setIsSupported(false);
+        setError('On iPhone: Install this app to home screen for notifications (Safari → Share → Add to Home Screen)');
+        return;
+      }
       
-      if (supported && Notification.permission === 'granted') {
+      setIsSupported(hasBasicSupport);
+      
+      if (hasBasicSupport && Notification.permission === 'granted') {
         setIsPermissionGranted(true);
       }
     };
@@ -76,6 +92,17 @@ export const usePushNotifications = ({
 
   // Request notification permission
   const requestPermission = useCallback(async () => {
+    // Check for iOS not in standalone mode
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                        (window.navigator as any).standalone === true;
+    
+    if (isIOS && !isStandalone) {
+      setError('Install this app to your home screen first: Safari → Share → Add to Home Screen');
+      return;
+    }
+    
     if (!isSupported) {
       const msg = 'Notifications are not supported in this browser';
       setError(msg);
