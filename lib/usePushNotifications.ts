@@ -29,6 +29,7 @@ export const usePushNotifications = ({
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentDeviceToken, setCurrentDeviceToken] = useState<string | null>(null);
 
   // Check browser support for notifications
   useEffect(() => {
@@ -67,23 +68,31 @@ export const usePushNotifications = ({
   // Save FCM token to Supabase
   const saveFCMTokenToSupabase = useCallback(async (token: string, currentUserId: string) => {
     try {
-      const { data, error: upsertError } = await supabase
+      // Check if token already exists for this user
+      const { data: existingTokens } = await supabase
         .from('fcm_tokens')
-        .upsert(
-          {
+        .select('id')
+        .eq('user_id', currentUserId)
+        .eq('token', token)
+        .maybeSingle();
+
+      // If token doesn't exist, insert it
+      if (!existingTokens) {
+        const { error: insertError } = await supabase
+          .from('fcm_tokens')
+          .insert({
             user_id: currentUserId,
             token: token,
-          },
-          {
-            onConflict: 'user_id,token',
-          }
-        )
-        .select();
+          });
 
-      if (upsertError) {
-        console.error('Error saving FCM token:', upsertError);
-        throw upsertError;
+        if (insertError) {
+          console.error('Error saving FCM token:', insertError);
+          throw insertError;
+        }
       }
+      
+      // Store current device token in state
+      setCurrentDeviceToken(token);
     } catch (err: any) {
       console.error('Error saving token:', err);
       throw err;
@@ -153,15 +162,46 @@ export const usePushNotifications = ({
   useEffect(() => {
     if (!userId || !isSupported) return;
 
-    const currentPermission = Notification.permission;
+    const checkTokenStatus = async () => {
+      const currentPermission = Notification.permission;
+      
+      if (currentPermission === 'granted') {
+        // Get current device FCM token
+        try {
+          initializeFirebase();
+          const token = await getFCMToken();
+          
+          if (token) {
+            // Check if this specific token exists in database
+            const { data: existingToken } = await supabase
+              .from('fcm_tokens')
+              .select('id')
+              .eq('user_id', userId)
+              .eq('token', token)
+              .maybeSingle();
+            
+            if (existingToken) {
+              // Token exists in DB - notifications are enabled for THIS device
+              setIsPermissionGranted(true);
+              setCurrentDeviceToken(token);
+            } else {
+              // Permission granted but token not saved for this device
+              setIsPermissionGranted(false);
+            }
+          } else {
+            setIsPermissionGranted(false);
+          }
+        } catch (err) {
+          console.error('Error checking token status:', err);
+          setIsPermissionGranted(false);
+        }
+      } else {
+        setIsPermissionGranted(false);
+      }
+    };
     
-    if (currentPermission === 'granted') {
-      setIsPermissionGranted(true);
-      requestPermission();
-    } else {
-      setIsPermissionGranted(false);
-    }
-  }, [userId, isSupported, requestPermission]);
+    checkTokenStatus();
+  }, [userId, isSupported]);
 
   // Set up foreground message listener
   useEffect(() => {

@@ -42,6 +42,13 @@ CREATE POLICY "Users can insert their own FCM tokens"
   FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+-- Политика: пользователи могут обновлять только свои токены
+CREATE POLICY "Users can update their own FCM tokens"
+  ON fcm_tokens
+  FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
 -- Политика для service role (для Edge Functions и Supabase functions)
 CREATE POLICY "Service role can read all FCM tokens"
   ON fcm_tokens
