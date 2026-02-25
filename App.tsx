@@ -47,6 +47,10 @@ export default function App() {
   const [tutorialBeforeView, setTutorialBeforeView] = useState<ViewState | null>(null);
   const [showSpotlight, setShowSpotlight] = useState(false);
   const [notifications, setNotifications] = useState<ToastNotification[]>([]);
+  
+  // Recovery password handling
+  const [isPasswordRecoveryMode, setIsPasswordRecoveryMode] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState<string | null>(null);
 
   const dataLoadedRef = useRef(false);
   const isRefreshingRef = useRef(false);
@@ -69,6 +73,40 @@ export default function App() {
       }
     },
   });
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  // Handle password reset link from email - check for recovery code in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const type = params.get('type');
+
+    if (code && type === 'recovery') {
+      // User clicked password reset link from email
+      setIsPasswordRecoveryMode(true);
+      
+      // Exchange code for session
+      supabase.auth.exchangeCodeForSession(code)
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Recovery code error:', error);
+            setInitError('Ссылка восстановления истекла или неверна. Попробуйте запросить новое письмо.');
+            setIsPasswordRecoveryMode(false);
+          } else if (data.session && data.user) {
+            setRecoveryEmail(data.user.email);
+            // Don't log user in, just prepare recovery mode
+          }
+        })
+        .catch(err => {
+          console.error('Recovery code exchange error:', err);
+          setInitError('Ошибка при обработке ссылки восстановления.');
+          setIsPasswordRecoveryMode(false);
+        });
+    }
+  }, []);
 
   useEffect(() => {
     userRef.current = user;
@@ -883,20 +921,59 @@ export default function App() {
       <LoginScreen
         onLogin={async (email, password, isRegister) => {
           if (isRegister) {
-            const { data, error } = await supabase.auth.signUp({ email, password });
+            const { data, error } = await supabase.auth.signUp({ 
+              email, 
+              password,
+              options: {
+                emailRedirectTo: `${window.location.origin}`,
+                data: {
+                  registration_source: 'sparify_app',
+                  timestamp: new Date().toISOString()
+                }
+              }
+            });
             if (error) throw error;
             const needsVerification = !data.session;
-          return { success: true, needsVerification };
-        }
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        return { success: true };
-      }}
+            return { success: true, needsVerification };
+          }
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          return { success: true };
+        }}
       onResetPassword={async (email) => {
         const { error } = await supabase.auth.resetPasswordForEmail(email);
         if (error) throw error;
         return { success: true };
       }}
+      onRecoverySubmit={async (newPassword: string) => {
+        try {
+          // Update password
+          const { error } = await supabase.auth.updateUser({
+            password: newPassword
+          });
+          
+          if (error) throw error;
+          
+          // Clear recovery state
+          setIsPasswordRecoveryMode(false);
+          setRecoveryEmail(null);
+          
+          // Clear URL parameters
+          window.history.replaceState({}, document.title, window.location.pathname);
+          
+          // The existing onAuthStateChange will handle auto-login and user data loading
+          return { success: true };
+        } catch (err: any) {
+          throw err;
+        }
+      }}
+      onRecoveryCancel={() => {
+        setIsPasswordRecoveryMode(false);
+        setRecoveryEmail(null);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }}
+      isPasswordRecoveryMode={isPasswordRecoveryMode}
+      recoveryEmail={recoveryEmail}
       language={language}
       accentColor={accentColor}
     />

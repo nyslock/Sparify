@@ -53,6 +53,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [showSMTPTest, setShowSMTPTest] = useState(false);
 
   // Firebase Cloud Messaging Push Notifications
   const { 
@@ -522,6 +523,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         isLoading={passwordLoading}
         error={passwordError}
       />
+
     </div>
   );
 };
