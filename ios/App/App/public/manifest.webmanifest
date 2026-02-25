@@ -1,0 +1,22 @@
+{
+  "name": "Sparify",
+  "short_name": "Sparify",
+  "description": "Sparify — Spare, lerne und hab Spaß mit Sparify",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#f8fafc",
+  "icons": [
+    {
+      "src": "https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/logowhitetrnsprnt.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://bejlqwebcujfklavoecm.supabase.co/storage/v1/object/public/Logo/logowhitetrnsprnt.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

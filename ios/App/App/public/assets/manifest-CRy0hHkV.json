@@ -1,0 +1,30 @@
+{
+  "name": "Sparify - Deine digitale Sparbox",
+  "short_name": "Sparify",
+  "description": "Verwalte deine physischen Sparboxen digital mit Echtzeit-Tracking und Sparzielen.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "https://i.ibb.co/1fD3swCW/logo-tourquise-fade.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://i.ibb.co/1fD3swCW/logo-tourquise-fade.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "https://i.ibb.co/1fD3swCW/logo-tourquise-fade.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "orientation": "portrait"
+}

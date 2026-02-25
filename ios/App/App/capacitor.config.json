@@ -1,0 +1,8 @@
+{
+	"appId": "com.sparify.app",
+	"appName": "Sparify",
+	"webDir": "dist",
+	"packageClassList": [
+		"PushNotificationsPlugin"
+	]
+}

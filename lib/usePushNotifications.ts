@@ -1,6 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from './supabaseClient';
 import { initializeFirebase, getFCMToken, onForegroundMessage } from './firebase';
+import {
+  isNativePlatform,
+  getPlatform,
+  initializeNativePush,
+  unregisterNativePush,
+  checkNativePermissions
+} from './nativePushNotifications';
 
 interface UsePushNotificationsProps {
   userId?: string | null;
@@ -31,24 +38,34 @@ export const usePushNotifications = ({
   const [error, setError] = useState<string | null>(null);
   const [currentDeviceToken, setCurrentDeviceToken] = useState<string | null>(null);
 
-  // Check browser support for notifications
+  // Check support for notifications (native or web)
   useEffect(() => {
-    const checkSupport = () => {
-      // Detect iOS devices
+    const checkSupport = async () => {
+      // Check if running on native platform (iOS/Android via Capacitor)
+      if (isNativePlatform()) {
+        const platform = getPlatform();
+        console.log('Running on native platform:', platform);
+        setIsSupported(true);
+        
+        // Check current permissions on native
+        const hasPermission = await checkNativePermissions();
+        setIsPermissionGranted(hasPermission);
+        return;
+      }
+      
+      // Web platform - check browser support
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       
-      // Check if running as PWA (standalone mode)
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
                           (window.navigator as any).standalone === true;
       
-      // Basic feature detection
       const hasBasicSupport = 
         'Notification' in window &&
         'serviceWorker' in navigator &&
         'PushManager' in window;
       
-      // iOS only supports notifications in PWA standalone mode
+      // iOS web only supports notifications in PWA standalone mode
       if (isIOS && !isStandalone) {
         setIsSupported(false);
         setError('On iPhone: Install this app to home screen for notifications (Safari → Share → Add to Home Screen)');
@@ -101,17 +118,6 @@ export const usePushNotifications = ({
 
   // Request notification permission
   const requestPermission = useCallback(async () => {
-    // Check for iOS not in standalone mode
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                        (window.navigator as any).standalone === true;
-    
-    if (isIOS && !isStandalone) {
-      setError('Install this app to your home screen first: Safari → Share → Add to Home Screen');
-      return;
-    }
-    
     if (!isSupported) {
       const msg = 'Notifications are not supported in this browser';
       setError(msg);
@@ -128,6 +134,38 @@ export const usePushNotifications = ({
     setError(null);
 
     try {
+      // Native platform (iOS/Android)
+      if (isNativePlatform()) {
+        console.log('Requesting native push permissions for platform:', getPlatform());
+        
+        const result = await initializeNativePush(userId, onNotificationReceived);
+        
+        if (!result.success) {
+          setError(result.error || 'Failed to enable notifications');
+          setIsPermissionGranted(false);
+          setIsLoading(false);
+          return;
+        }
+        
+        setIsPermissionGranted(true);
+        console.log('Native push notifications enabled successfully');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Web platform - check for iOS not in standalone mode
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                          (window.navigator as any).standalone === true;
+      
+      if (isIOS && !isStandalone) {
+        setError('Install this app to your home screen first: Safari → Share → Add to Home Screen');
+        setIsLoading(false);
+        return;
+      }
+
+      // Web platform - use Firebase
       const permission = await Notification.requestPermission();
 
       if (permission !== 'granted') {
@@ -150,29 +188,36 @@ export const usePushNotifications = ({
       }
 
       await saveFCMTokenToSupabase(token, userId);
+      console.log('Web push notifications enabled successfully');
     } catch (err: any) {
       console.error('Error setting up notifications:', err);
       setError(err.message || 'Error setting up notifications');
     } finally {
       setIsLoading(false);
     }
-  }, [isSupported, userId, saveFCMTokenToSupabase]);
+  }, [isSupported, userId, saveFCMTokenToSupabase, onNotificationReceived]);
 
   // Auto-registration when user logs in (only if permission already granted)
   useEffect(() => {
     if (!userId || !isSupported) return;
 
     const checkTokenStatus = async () => {
+      // Native platform
+      if (isNativePlatform()) {
+        const hasPermission = await checkNativePermissions();
+        setIsPermissionGranted(hasPermission);
+        return;
+      }
+      
+      // Web platform
       const currentPermission = Notification.permission;
       
       if (currentPermission === 'granted') {
-        // Get current device FCM token
         try {
           initializeFirebase();
           const token = await getFCMToken();
           
           if (token) {
-            // Check if this specific token exists in database
             const { data: existingToken } = await supabase
               .from('fcm_tokens')
               .select('id')
@@ -181,11 +226,9 @@ export const usePushNotifications = ({
               .maybeSingle();
             
             if (existingToken) {
-              // Token exists in DB - notifications are enabled for THIS device
               setIsPermissionGranted(true);
               setCurrentDeviceToken(token);
             } else {
-              // Permission granted but token not saved for this device
               setIsPermissionGranted(false);
             }
           } else {
@@ -203,9 +246,9 @@ export const usePushNotifications = ({
     checkTokenStatus();
   }, [userId, isSupported]);
 
-  // Set up foreground message listener
+  // Set up foreground message listener (web only - native handles this internally)
   useEffect(() => {
-    if (!isPermissionGranted || !onNotificationReceived) return;
+    if (!isPermissionGranted || !onNotificationReceived || isNativePlatform()) return;
 
     onForegroundMessage((payload) => {
       onNotificationReceived(payload);

@@ -131,7 +131,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
     if (appMode === 'adult') {
         return (
-            <div className="flex-1 overflow-y-auto no-scrollbar h-full bg-slate-100">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar h-full bg-slate-100">
                 <div className="p-6 md:p-10 xl:p-12 pb-40 max-w-7xl mx-auto w-full">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
                         <div>
@@ -151,12 +151,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-white mb-10">
-                        <div className="flex items-center justify-between mb-8">
+                    <div className="bg-white rounded-[2.5rem] p-4 sm:p-6 md:p-8 shadow-xl shadow-slate-200/50 border border-white mb-10">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                             <h3 className="font-black text-slate-800 text-xl flex items-center gap-2">
                                 <TrendingUp size={24} className="text-indigo-500" /> {tDetail.history}
                             </h3>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                                 <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-100">
                                     <button
                                         onClick={() => setChartView('history')}
@@ -189,7 +189,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                 )}
                             </div>
                         </div>
-                        <div className="h-[300px] w-full">
+                        <div className="h-[250px] sm:h-[300px] w-full overflow-hidden min-w-0">
                             {chartView === 'history' ? (
                                 <>
                                     {aggregatedData.length > 0 ? (
@@ -206,9 +206,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                                     dataKey="day"
                                                     axisLine={false}
                                                     tickLine={false}
-                                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }}
+                                                    tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 600 }}
                                                     dy={10}
-                                                    interval={chartPeriod === 'MTD' ? 4 : 0}
+                                                    angle={window.innerWidth < 640 && chartPeriod === 'MTD' ? -45 : 0}
+                                                    height={window.innerWidth < 640 && chartPeriod === 'MTD' ? 80 : 40}
+                                                    interval={chartPeriod === 'MTD' ? (window.innerWidth < 640 ? 6 : 4) : 0}
                                                 />
                                                 <YAxis
                                                     hide

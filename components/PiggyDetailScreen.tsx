@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Settings, ArrowUpRight, Target, Trophy, CheckCircle2, PiggyBank as PigIcon, Trash2, Signal, ArrowDownLeft, Wallet, Star, Flag, ArrowRightLeft, Check, Sparkles, Gift, ShoppingBag, AlertCircle, PlusCircle, X, Percent, TrendingUp, Info, Lock, Loader2 } from 'lucide-react';
+import { ArrowLeft, Settings, ArrowUpRight, Target, Trophy, CheckCircle2, PiggyBank as PigIcon, Trash2, Signal, ArrowDownLeft, Wallet, Star, Flag, ArrowRightLeft, Check, Sparkles, Gift, ShoppingBag, AlertCircle, PlusCircle, X, Percent, TrendingUp, Info, Lock, Loader2, Eye } from 'lucide-react';
 import { PiggyBank, ThemeColor, THEME_COLORS, Language, getTranslations, Goal, Transaction, User, AppMode, SPECIALS_DATABASE } from '../types';
 import { AreaChart, Area, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { AchievementsScreen } from './AchievementsScreen';
@@ -55,6 +55,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
     const colors: ThemeColor[] = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
     const t = getTranslations(language).detail;
     const NOTE_MAX_CHARS = 16;
+    const isGuest = bank.role === 'guest';
 
     const ownedPigSpecials = SPECIALS_DATABASE.filter(item =>
         item.category === 'piggy' && user.inventory.includes(item.id)
@@ -410,13 +411,22 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
 
             <div className="flex-1 overflow-y-auto no-scrollbar p-6 flex flex-col md:flex-row gap-8 max-w-6xl mx-auto w-full">
                 <div className="w-full md:w-1/2 md:flex md:flex-col md:gap-6">
-                    <div id="tutorial-piggy-balance" className={`relative ${bank.rainbowEnabled ? 'animate-rainbow-bg' : THEME_COLORS[bank.color]} rounded-b-[3.5rem] md:rounded-[2.5rem] pt-28 pb-12 px-6 shadow-2xl shadow-slate-300/50 z-10 transition-colors duration-500 overflow-hidden md:pt-12 md:flex-1 md:flex md:flex-col md:justify-center`}>
+                    <div id="tutorial-piggy-balance" className={`relative ${bank.rainbowEnabled ? 'animate-rainbow-bg' : THEME_COLORS[bank.color]} rounded-b-[3.5rem] md:rounded-[2.5rem] pt-28 pb-12 px-6 -mt-6 md:mt-0 shadow-2xl shadow-slate-300/50 z-10 transition-colors duration-500 overflow-hidden md:pt-12 md:flex-1 md:flex md:flex-col md:justify-center ${isGuest ? 'ring-1 ring-white/35' : ''}`}>
                         {bank.glitterEnabled && (
                             <div className="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay animate-glitter-bg z-0"
                                 style={{ backgroundImage: `radial-gradient(circle at 50% 50%, white 1.5px, transparent 1.5px)`, backgroundSize: '24px 24px' }} />
                         )}
+                        {isGuest && (
+                            <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/15 via-transparent to-black/20 z-0" />
+                        )}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-20 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
                         <div className="absolute bottom-0 left-0 w-48 h-48 bg-black opacity-10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none"></div>
+                        {isGuest && (
+                            <div className="absolute top-6 right-6 z-10 flex items-center gap-2 bg-white/15 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-white/30 backdrop-blur-md shadow-sm">
+                                <Eye size={14} />
+                                <span>Gastzugriff</span>
+                            </div>
+                        )}
                         <div className="text-center relative z-10">
                             <div className="inline-block bg-black/10 backdrop-blur-md px-5 py-2 rounded-full mb-3 border border-white/20 shadow-sm">
                                 <h1 className="text-white text-xs font-black uppercase tracking-widest">{bank.name}</h1>
@@ -527,7 +537,6 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                             cx="50%"
                                             cy="50%"
                                             labelLine={false}
-                                            label={({ name, value }) => `${name}: €${value.toFixed(2)}`}
                                             outerRadius={60}
                                             fill="#8884d8"
                                             dataKey="value"
@@ -539,6 +548,15 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                         <Tooltip formatter={(value: number) => `€${value.toFixed(2)}`} />
                                     </PieChart>
                                 </ResponsiveContainer>
+                            </div>
+                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {getGoalDistribution.map((entry, index) => (
+                                    <div key={`legend-${index}`} className="flex items-center gap-3 rounded-xl border border-slate-100 px-3 py-2 bg-slate-50/60">
+                                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}></span>
+                                        <span className="text-sm font-bold text-slate-700 truncate">{entry.name}</span>
+                                        <span className="ml-auto text-sm font-black text-slate-800 whitespace-nowrap">€{entry.value.toFixed(2)}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}
