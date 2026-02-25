@@ -51,6 +51,7 @@ export default function App() {
   // Recovery password handling
   const [isPasswordRecoveryMode, setIsPasswordRecoveryMode] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState<string | null>(null);
+  const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
 
   const dataLoadedRef = useRef(false);
   const isRefreshingRef = useRef(false);
@@ -87,23 +88,28 @@ export default function App() {
     if (code && type === 'recovery') {
       // User clicked password reset link from email
       setIsPasswordRecoveryMode(true);
+      setRecoveryCode(code);
       
-      // Exchange code for session
+      // Exchange code for session to get email, then sign out
       supabase.auth.exchangeCodeForSession(code)
-        .then(({ data, error }) => {
+        .then(async ({ data, error }) => {
           if (error) {
             console.error('Recovery code error:', error);
             setInitError('Ссылка восстановления истекла или неверна. Попробуйте запросить новое письмо.');
             setIsPasswordRecoveryMode(false);
+            setRecoveryCode(null);
           } else if (data.session && data.user) {
             setRecoveryEmail(data.user.email);
-            // Don't log user in, just prepare recovery mode
+            // Sign out immediately - don't keep user logged in
+            // They will only log in after changing password
+            await supabase.auth.signOut();
           }
         })
         .catch(err => {
           console.error('Recovery code exchange error:', err);
           setInitError('Ошибка при обработке ссылки восстановления.');
           setIsPasswordRecoveryMode(false);
+          setRecoveryCode(null);
         });
     }
   }, []);
@@ -947,21 +953,35 @@ export default function App() {
       }}
       onRecoverySubmit={async (newPassword: string) => {
         try {
-          // Update password
-          const { error } = await supabase.auth.updateUser({
+          if (!recoveryCode || !recoveryEmail) {
+            throw new Error('Recovery code or email missing');
+          }
+
+          // Verify OTP with recovery code to create session
+          const { error: verifyError } = await supabase.auth.verifyOtp({
+            email: recoveryEmail,
+            token: recoveryCode,
+            type: 'recovery'
+          });
+
+          if (verifyError) throw verifyError;
+
+          // Now update password with the active session
+          const { error: updateError } = await supabase.auth.updateUser({
             password: newPassword
           });
           
-          if (error) throw error;
+          if (updateError) throw updateError;
           
           // Clear recovery state
           setIsPasswordRecoveryMode(false);
           setRecoveryEmail(null);
+          setRecoveryCode(null);
           
           // Clear URL parameters
           window.history.replaceState({}, document.title, window.location.pathname);
           
-          // The existing onAuthStateChange will handle auto-login and user data loading
+          // The existing onAuthStateChange will handle user data loading
           return { success: true };
         } catch (err: any) {
           throw err;
@@ -970,6 +990,7 @@ export default function App() {
       onRecoveryCancel={() => {
         setIsPasswordRecoveryMode(false);
         setRecoveryEmail(null);
+        setRecoveryCode(null);
         window.history.replaceState({}, document.title, window.location.pathname);
       }}
       isPasswordRecoveryMode={isPasswordRecoveryMode}

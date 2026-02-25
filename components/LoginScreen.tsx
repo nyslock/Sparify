@@ -268,19 +268,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </>
         )}
 
-        {!isPasswordRecoveryMode && (
-            <button 
-                onClick={() => {
-                    setIsResetMode(false);
-                    setErrorMsg(null);
-                    setSuccessMsg(null);
-                }}
-                className="mb-4 text-slate-400 hover:text-slate-600 flex items-center gap-1 font-bold text-sm"
-            >
-                <ChevronLeft size={16} /> {t.backToLogin}
-            </button>
-        )}
-
         <h2 className="text-2xl font-bold text-center mb-1 flex items-center justify-center gap-2">
             {isResetMode ? (
                 <>
@@ -299,6 +286,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 </>
             )}
         </h2>
+
+        {isResetMode && (
+            <button 
+                onClick={() => {
+                    setIsResetMode(false);
+                    setErrorMsg(null);
+                    setSuccessMsg(null);
+                }}
+                className="mb-4 text-slate-400 hover:text-slate-600 flex items-center gap-1 font-bold text-sm"
+            >
+                <ChevronLeft size={16} /> {t.backToLogin}
+            </button>
+        )}
 
         {errorMsg && (
             <div className="mt-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 text-red-500 text-sm font-bold">
