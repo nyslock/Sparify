@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Settings, ArrowUpRight, Target, Trophy, CheckCircle2, PiggyBank as PigIcon, Trash2, Signal, ArrowDownLeft, Wallet, Star, Flag, ArrowRightLeft, Check, Sparkles, Gift, ShoppingBag, AlertCircle, PlusCircle, X, Percent, TrendingUp, Info, Lock, Loader2, Eye } from 'lucide-react';
+import { ArrowLeft, Settings, ArrowUpRight, Target, Trophy, CheckCircle2, Trash2, Signal, ArrowDownLeft, Wallet, Star, Flag, ArrowRightLeft, Check, Sparkles, Gift, ShoppingBag, AlertCircle, PlusCircle, X, Percent, TrendingUp, Info, Lock, Loader2, Eye } from 'lucide-react';
 import { PiggyBank, ThemeColor, THEME_COLORS, Language, getTranslations, Goal, Transaction, User, AppMode, SPECIALS_DATABASE } from '../types';
 import { AreaChart, Area, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { AchievementsScreen } from './AchievementsScreen';
@@ -222,7 +222,10 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
         
         const filtered = data.filter(item => {
             if (timePeriod === 'all') return true;
-            const itemDate = new Date(item.day?.split('.').reverse().join('-') || today);
+            // Parse date format "DD.MM" and create proper Date object with current year
+            if (!item.day) return false;
+            const [day, month] = item.day.split('.').map(Number);
+            const itemDate = new Date(today.getFullYear(), month - 1, day);
             return itemDate >= filterDate;
         });
         
@@ -236,17 +239,40 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
     const chartData = getFilteredChartData;
     
     const getGoalDistribution = useMemo(() => {
-        const goals = bank.goals || [];
-        if (goals.length === 0) return [];
+        // Use distributedGoals to show current allocation values
+        if (distributedGoals.length === 0) return [];
         
-        return goals.map(goal => ({
+        return distributedGoals.map(goal => ({
             name: goal.title,
-            value: Math.max(0, goal.targetAmount),
+            value: Math.max(0, goal.currentAmount), // Show actual allocated amount, not target
+            target: Math.max(0, goal.targetAmount),
             id: goal.id
         }));
-    }, [bank.goals]);
+    }, [distributedGoals]);
+
+    const getTransactionSummary = useMemo(() => {
+        const txs = bank.transactions || [];
+        const deposits = txs.filter(t => t.type === 'deposit').reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        const withdrawals = txs.filter(t => t.type === 'withdrawal').reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        
+        return [
+            { name: 'Einzahlungen', value: deposits, color: '#22c55e' },
+            { name: 'Auszahlungen', value: withdrawals, color: '#ef4444' }
+        ].filter(item => item.value > 0);
+    }, [bank.transactions]);
     
     const CHART_COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'];
+
+    // Custom X-Axis tick renderer - shows only day number
+    const renderCustomXAxisTick = (props: any) => {
+        const { x, y, payload } = props;
+        const dayOnly = payload.value?.split('.')[0] || '';
+        return (
+            <text x={x} y={y} textAnchor="middle" fill="#94a3b8" fontSize="7" fontWeight="bold">
+                {dayOnly}
+            </text>
+        );
+    };
 
     if (appMode === 'adult') {
         return (
@@ -264,7 +290,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                 <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 pt-0 max-w-6xl mx-auto w-full pb-40">
                     <div className="space-y-6">
                         <div className={`bg-white rounded-[2rem] p-5 sm:p-8 shadow-xl shadow-slate-200/50 border border-white flex flex-col items-center text-center gap-6 sm:gap-8 ${bank.safeLockEnabled ? 'border-2 border-slate-900 shadow-slate-400' : ''}`}>
-                            <div className="flex justify-center"><PigIcon size={56} className="text-slate-800 sm:w-16 sm:h-16 md:w-20 md:h-20" style={{ transform: 'none' }} /></div>
+                            <div className="flex justify-center"><img src="/images/sparify-logo.png" alt="Sparify" className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20" /></div>
                             <div>
                                 <p className="text-slate-400 font-bold text-[10px] sm:text-xs uppercase tracking-widest mb-1">{t.available}</p>
                                 <div className="flex flex-col items-center gap-2">
@@ -333,40 +359,130 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                             </div>
 
                             <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-md border border-white">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h3 className="font-bold text-slate-800 flex items-center gap-2"><Percent size={18} className="text-rose-500" /> {t.share}</h3>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="font-bold text-slate-800 flex items-center gap-2 text-sm sm:text-base"><Percent size={18} className="text-rose-500" /> {t.share}</h3>
                                 </div>
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     {distributedGoals.length === 0 ? (
                                         <div className="text-center py-10">
                                             <p className="text-slate-400 text-sm">{t.noGoals}</p>
                                             <button onClick={() => handleOpenGoalModal()} className="mt-4 text-indigo-500 font-bold text-sm">+ {t.newGoal}</button>
                                         </div>
                                     ) : (
-                                        distributedGoals.map((goal) => (
-                                            <div
-                                                key={goal.id}
-                                                onClick={() => {
-                                                    setShowAllocationModal({ goal });
-                                                    setTempAllocation((goal.allocationPercent || 0).toString());
-                                                }}
-                                                className="p-4 rounded-2xl border border-slate-50 bg-slate-50/50 hover:bg-slate-50 cursor-pointer group transition-all"
-                                            >
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-8 h-8 bg-white shadow-sm rounded-lg flex items-center justify-center text-slate-600 font-bold text-xs">{goal.allocationPercent || 0}%</div>
-                                                        <span className="font-bold text-slate-800 text-sm sm:text-base">{goal.title}</span>
+                                        (() => {
+                                            // Calculate total of all goals' current amounts
+                                            const totalCurrentAmount = distributedGoals.reduce((sum, g) => sum + g.currentAmount, 0);
+                                            // Calculate percentages properly
+                                            const goalPercentages = distributedGoals.map((goal, index) => {
+                                                if (totalCurrentAmount <= 0) return 0;
+                                                if (index === distributedGoals.length - 1) {
+                                                    // Last goal gets the remainder
+                                                    const sumPrevious = distributedGoals.slice(0, index).reduce((sum, g) => {
+                                                        return sum + Math.round((g.currentAmount / totalCurrentAmount) * 100);
+                                                    }, 0);
+                                                    return 100 - sumPrevious;
+                                                }
+                                                return Math.round((goal.currentAmount / totalCurrentAmount) * 100);
+                                            });
+
+                                            return distributedGoals.map((goal, goalIndex) => (
+                                                <div
+                                                    key={goal.id}
+                                                    className="p-4 rounded-2xl border border-slate-50 bg-slate-50/50 hover:bg-slate-50 transition-all group"
+                                                >
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-8 h-8 bg-white shadow-sm rounded-lg flex items-center justify-center text-slate-600 font-bold text-xs">{goalPercentages[goalIndex]}%</div>
+                                                            <span className="font-bold text-slate-800 text-sm sm:text-base">{goal.title}</span>
+                                                        </div>
+                                                        <span className="text-[10px] sm:text-xs font-black text-slate-400">€{goal.currentAmount.toFixed(2)}</span>
                                                     </div>
-                                                    <span className="text-[10px] sm:text-xs font-black text-slate-400">€{goal.currentAmount.toFixed(2)}</span>
+                                                    <div className="w-full bg-white h-1.5 rounded-full overflow-hidden mb-3">
+                                                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(goal.currentAmount / goal.targetAmount) * 100}%` }}></div>
+                                                    </div>
+                                                    <div className="flex gap-2 items-center">
+                                                        <button
+                                                            onClick={() => handleOpenGoalModal(goal)}
+                                                            type="button"
+                                                            className="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-bold py-2 rounded-lg transition-all active:scale-95 cursor-pointer"
+                                                        >
+                                                            ✏️ Bearbeiten
+                                                        </button>
+                                                        {goal.currentAmount >= goal.targetAmount && (
+                                                            <button
+                                                                onClick={() => setGoalToRedeem(goal)}
+                                                                type="button"
+                                                                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1 active:scale-95 transition-all cursor-pointer"
+                                                            >
+                                                                <Gift size={14} /> Einlösen
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <div className="w-full bg-white h-1.5 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(goal.currentAmount / goal.targetAmount) * 100}%` }}></div>
-                                                </div>
-                                            </div>
-                                        ))
+                                            ));
+                                        })()
                                     )}
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-md border border-white">
+                            <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2"><ArrowRightLeft size={18} className="text-blue-500" /> Transaktionsübersicht</h3>
+                            {getTransactionSummary.length > 0 ? (
+                                <>
+                                    <div style={{ width: '100%', height: 160 }}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={getTransactionSummary}
+                                                    cx="50%"
+                                                    cy="45%"
+                                                    label={false}
+                                                    labelLine={false}
+                                                    outerRadius={50}
+                                                    fill="#8884d8"
+                                                    dataKey="value"
+                                                >
+                                                    {getTransactionSummary.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip formatter={(value: number) => `€${value.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        {(() => {
+                                            const total = getTransactionSummary.reduce((sum, entry) => sum + entry.value, 0);
+                                            
+                                            // Calculate percentages with proper rounding
+                                            const percentages = getTransactionSummary.map((entry, index) => {
+                                                if (total <= 0) return 0;
+                                                if (index === getTransactionSummary.length - 1) {
+                                                    // Last item gets the remainder
+                                                    const sumPrevious = getTransactionSummary.slice(0, index).reduce((sum, e) => {
+                                                        return sum + Math.round((e.value / total) * 100);
+                                                    }, 0);
+                                                    return 100 - sumPrevious;
+                                                }
+                                                return Math.round((entry.value / total) * 100);
+                                            });
+                                            
+                                            return getTransactionSummary.map((entry, index) => (
+                                                <div key={`legend-${index}`} className="flex flex-col gap-1 rounded-xl border border-slate-100 px-3 py-2 bg-slate-50/60">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color }}></span>
+                                                        <span className="text-xs sm:text-sm font-bold text-slate-700 truncate flex-1">{entry.name}</span>
+                                                    </div>
+                                                    <div className="ml-4 text-xs font-black text-slate-600">€{entry.value.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} • {percentages[index]}%</div>
+                                                </div>
+                                            ));
+                                        })()}
+                                    </div>
+                                </>
+                            ) : (
+                                <p className="text-slate-400 text-center py-6 text-sm">{t.noTransactions}</p>
+                            )}
                         </div>
 
                         <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-md border border-white">
@@ -394,6 +510,47 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                 </div>
 
                 {renderCommonModals()}
+
+                {/* REDEEM CONFIRMATION MODAL */}
+                {goalToRedeem && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                        <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl border-4 border-white relative overflow-hidden">
+                            <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-500 shadow-xl border-4 border-white">
+                                {redeemSuccess ? <Check size={48} className="text-emerald-500 scale-125 transition-transform" /> : (isProcessingRedeem ? <Loader2 size={36} className="animate-spin" /> : <Gift size={36} strokeWidth={2.5} />)}
+                            </div>
+                            <h3 className="text-2xl font-black text-slate-800 mb-4 leading-tight">{redeemSuccess ? 'Wunsch erfüllt!' : 'Wunsch einlösen?'}</h3>
+                            {!redeemSuccess && (
+                                <div className="bg-emerald-50 p-6 rounded-3xl mb-8 border border-emerald-100">
+                                    <p className="text-sm font-bold text-emerald-700 uppercase tracking-widest mb-1">Du kaufst:</p>
+                                    <h4 className="text-xl font-black text-emerald-900 mb-4">{goalToRedeem.title}</h4>
+                                    <div className="flex items-center justify-center gap-2 text-2xl font-black text-emerald-600">
+                                        <span>-€{goalToRedeem.targetAmount.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            )}
+                            {redeemSuccess && <p className="text-emerald-600 font-bold mb-8">Das Geld wurde abgezogen und dein Wunsch archiviert!</p>}
+                            {!redeemSuccess && (
+                                <div className="flex flex-col gap-3">
+                                    <button
+                                        onClick={handleConfirmRedeem}
+                                        disabled={isProcessingRedeem}
+                                        className="w-full bg-emerald-500 text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition-all text-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:active:scale-100"
+                                    >
+                                        {isProcessingRedeem ? <Loader2 className="animate-spin" size={20} /> : <Check size={20} strokeWidth={3} />}
+                                        {isProcessingRedeem ? 'Verarbeite...' : 'Jetzt einlösen'}
+                                    </button>
+                                    <button
+                                        onClick={() => setGoalToRedeem(null)}
+                                        disabled={isProcessingRedeem}
+                                        className="w-full bg-slate-100 text-slate-500 font-bold py-4 rounded-2xl active:scale-95 transition-all disabled:opacity-50"
+                                    >
+                                        Noch warten
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
@@ -409,8 +566,8 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                 </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto no-scrollbar p-6 flex flex-col md:flex-row gap-8 max-w-6xl mx-auto w-full">
-                <div className="w-full md:w-1/2 md:flex md:flex-col md:gap-6">
+            <div className="flex-1 overflow-y-auto no-scrollbar p-3 sm:p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-8 w-full">
+                <div className="w-full md:w-1/2 md:flex md:flex-col md:gap-6 md:overflow-hidden">
                     <div id="tutorial-piggy-balance" className={`relative ${bank.rainbowEnabled ? 'animate-rainbow-bg' : THEME_COLORS[bank.color]} rounded-b-[3.5rem] md:rounded-[2.5rem] pt-28 pb-12 px-6 -mt-6 md:mt-0 shadow-2xl shadow-slate-300/50 z-10 transition-colors duration-500 overflow-hidden md:pt-12 md:flex-1 md:flex md:flex-col md:justify-center ${isGuest ? 'ring-1 ring-white/35' : ''}`}>
                         {bank.glitterEnabled && (
                             <div className="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay animate-glitter-bg z-0"
@@ -439,7 +596,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                         </div>
                     </div>
 
-                    <div className="px-6 pt-10 md:pt-0 pb-6 grid grid-cols-3 gap-3 relative z-20">
+                    <div className="px-3 sm:px-4 md:px-0 pt-6 md:pt-0 pb-4 md:pb-6 grid grid-cols-3 gap-2 sm:gap-3 relative z-20">
                         <button onClick={() => setShowPayout(true)} className="bg-white hover:bg-slate-50 active:scale-95 transition-all p-4 rounded-[2rem] shadow-xl shadow-slate-200/50 flex flex-col items-center justify-center gap-2 group border border-slate-100">
                             <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform"><ArrowUpRight size={24} strokeWidth={2.5} /></div>
                             <span className="font-black text-slate-800 text-[10px] uppercase tracking-wider">{t.payout}</span>
@@ -454,7 +611,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                         </button>
                     </div>
 
-                    <div id="tutorial-piggy-history" className="mx-6 mb-8 md:mx-0 md:mb-0 bg-white rounded-[2.5rem] p-6 border border-slate-100 shadow-xl shadow-slate-200/50 flex-1 min-h-[220px] relative z-20">
+                    <div id="tutorial-piggy-history" className="mx-3 sm:mx-4 md:mx-0 mb-6 md:mb-0 bg-white rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-6 border border-slate-100 shadow-xl shadow-slate-200/50 flex-1 min-h-[200px] md:min-h-[220px] relative z-20">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                             <h3 className="font-black text-slate-800 flex items-center gap-3 text-lg shrink-0"><div className="bg-indigo-100 p-2 rounded-xl text-indigo-500"><Signal size={20} /></div> {t.history}</h3>
                             <div className="flex flex-wrap gap-2">
@@ -473,12 +630,12 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                 ))}
                             </div>
                         </div>
-                        <div className="w-full h-40 overflow-hidden">
+                        <div className="w-full h-40 overflow-x-auto overflow-y-hidden">
                             {chartData.length > 0 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={chartData}>
+                                <ResponsiveContainer width="100%" height="100%" minWidth={200}>
+                                    <AreaChart data={chartData} margin={{ bottom: 18 }}>
                                         <defs><linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} /><stop offset="95%" stopColor="#6366f1" stopOpacity={0} /></linearGradient></defs>
-                                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 'bold' }} dy={8} interval={Math.max(0, Math.floor(chartData.length / 4))} />
+                                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={renderCustomXAxisTick} interval={Math.max(0, Math.floor(chartData.length / 4))} />
                                         <YAxis hide type="number" domain={[0, 'auto']} />
                                         <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', color: '#1e293b' }} itemStyle={{ color: '#6366f1', fontWeight: 'bold' }} formatter={(value: number) => [`€${value.toFixed(2)}`, 'Betrag']} />
                                         <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
@@ -493,18 +650,18 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                     </div>
                 </div>
 
-                <div className="w-full px-6 md:px-0 pb-40 md:pb-0 md:w-1/2 md:flex md:flex-col md:gap-6 md:overflow-y-auto md:no-scrollbar relative z-20">
-                    <div id="tutorial-piggy-goals" className="mb-6 md:mb-0">
-                        <h3 className="font-black text-slate-800 mb-5 ml-4 text-xl flex items-center gap-2"><Target size={20} className="text-emerald-500" /> {t.goals}</h3>
+                <div className="w-full px-3 sm:px-4 md:px-0 pb-40 md:pb-0 md:w-1/2 md:flex md:flex-col md:gap-6 md:overflow-y-auto md:no-scrollbar relative z-20">
+                    <div id="tutorial-piggy-goals" className="mb-6 md:mb-0 px-3 sm:px-4 md:px-0">
+                        <h3 className="font-black text-slate-800 mb-5 ml-0 sm:ml-2 md:ml-0 text-lg md:text-xl flex items-center gap-2"><Target size={20} className="text-emerald-500" /> {t.goals}</h3>
                         {distributedGoals.length > 0 ? (
-                            <div className="space-y-4">
+                            <div className="space-y-3 md:space-y-4">
                                 {distributedGoals.map((goal) => {
                                     const currentSavedAmount = goal.currentAmount;
                                     const progress = Math.min(100, (currentSavedAmount / goal.targetAmount) * 100);
                                     const isCompleted = progress >= 99.9;
                                     return (
-                                        <div key={goal.id} onClick={() => handleOpenGoalModal(goal)} className={`p-5 rounded-[2rem] border transition-transform cursor-pointer group hover:shadow-xl relative overflow-hidden ${isCompleted ? 'bg-emerald-500 border-emerald-500 shadow-xl shadow-emerald-200 text-white' : 'bg-white border-slate-100 shadow-lg shadow-slate-100 active:scale-95'}`}>
-                                            <div className="flex justify-between items-center mb-3 relative z-10">
+                                        <div key={goal.id} className={`p-5 rounded-[2rem] border transition-transform group relative overflow-hidden ${isCompleted ? 'bg-emerald-500 border-emerald-500 shadow-xl shadow-emerald-200 text-white' : 'bg-white border-slate-100 shadow-lg shadow-slate-100'}`}>
+                                            <div onClick={() => handleOpenGoalModal(goal)} className="flex justify-between items-center mb-3 relative z-10 cursor-pointer">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform ${isCompleted ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-500'}`}>{isCompleted ? <Check size={20} strokeWidth={4} /> : <Flag size={18} fill="currentColor" />}</div>
                                                     <div>
@@ -512,7 +669,12 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                                         {isCompleted && <div className="text-emerald-100 text-[10px] font-bold uppercase mt-1">Wunsch erfüllt!</div>}
                                                     </div>
                                                 </div>
-                                                <span className={`font-black px-3 py-1 rounded-xl text-sm ${isCompleted ? 'bg-white text-emerald-600' : 'text-emerald-500 bg-emerald-50'}`}>{goal.targetAmount.toFixed(2).replace('.', ',')} €</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`font-black px-3 py-1 rounded-xl text-sm ${isCompleted ? 'bg-white text-emerald-600' : 'text-emerald-500 bg-emerald-50'}`}>{goal.targetAmount.toFixed(2).replace('.', ',')} €</span>
+                                                    <button onClick={(e) => { e.stopPropagation(); setConfirmGoalDelete(true); setEditingGoal(goal); }} className={`w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${isCompleted ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-red-100 hover:bg-red-200 text-red-500'}`}>
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
                                             </div>
                                             {!isCompleted && (
                                                 <><div className="h-3 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-emerald-400 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div></div>
@@ -527,17 +689,17 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                     </div>
                     
                     {getGoalDistribution.length > 0 && (
-                        <div className="mb-6 md:mb-0 bg-white rounded-[2rem] p-6 border border-slate-100 shadow-xl shadow-slate-200/50">
-                            <h3 className="font-black text-slate-800 mb-5 text-lg flex items-center gap-2"><Target size={20} className="text-purple-500" /> Zielverteilung</h3>
-                            <div style={{ width: '100%', height: 200 }}>
+                        <div className="mb-6 md:mb-0 bg-white rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-6 border border-slate-100 shadow-xl shadow-slate-200/50 px-3 sm:px-4 md:px-0">
+                            <h3 className="font-black text-slate-800 mb-4 text-lg md:text-lg flex items-center gap-2"><Target size={20} className="text-purple-500" /> Zielverteilung</h3>
+                            <div style={{ width: '100%', height: 160 }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
                                             data={getGoalDistribution}
                                             cx="50%"
-                                            cy="50%"
+                                            cy="45%"
                                             labelLine={false}
-                                            outerRadius={60}
+                                            outerRadius={50}
                                             fill="#8884d8"
                                             dataKey="value"
                                         >
@@ -549,19 +711,21 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>
-                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {getGoalDistribution.map((entry, index) => (
-                                    <div key={`legend-${index}`} className="flex items-center gap-3 rounded-xl border border-slate-100 px-3 py-2 bg-slate-50/60">
-                                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}></span>
-                                        <span className="text-sm font-bold text-slate-700 truncate">{entry.name}</span>
-                                        <span className="ml-auto text-sm font-black text-slate-800 whitespace-nowrap">€{entry.value.toFixed(2)}</span>
+                                    <div key={`legend-${index}`} className="flex flex-col gap-1 rounded-xl border border-slate-100 px-3 py-2 bg-slate-50/60">
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}></span>
+                                            <span className="text-xs sm:text-sm font-bold text-slate-700 truncate flex-1">{entry.name}</span>
+                                        </div>
+                                        <div className="ml-4 text-xs font-black text-slate-600">€{entry.value.toFixed(2)} / €{entry.target.toFixed(2)}</div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
                     
-                    <div id="tutorial-piggy-transactions" className="mb-6 md:mb-0 md:flex-1"><h3 className="font-black text-slate-800 mb-5 ml-4 text-xl">{t.transactions}</h3><div className="space-y-4 px-4">{bank.transactions?.length > 0 ? bank.transactions.map((t) => (
+                    <div id="tutorial-piggy-transactions" className="mb-6 md:mb-0 md:flex-1 px-3 sm:px-4 md:px-0"><h3 className="font-black text-slate-800 mb-5 ml-0 sm:ml-2 md:ml-0 text-lg md:text-xl">{t.transactions}</h3><div className="space-y-3 md:space-y-4">{bank.transactions?.length > 0 ? bank.transactions.map((t) => (
                         <div key={t.id} className="bg-white p-4 sm:p-5 rounded-[2rem] flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between border border-slate-100 shadow-lg shadow-slate-100">
                             <div className="flex items-center gap-4 min-w-0">
                                 <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 ${t.type === 'deposit' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>
@@ -588,6 +752,22 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
             )}
 
             {renderCommonModals()}
+
+            {confirmGoalDelete && editingGoal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl border-4 border-white relative overflow-hidden">
+                        <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500 shadow-xl border-4 border-white">
+                            <Trash2 size={36} strokeWidth={2.5} />
+                        </div>
+                        <h3 className="text-2xl font-black text-slate-800 mb-4">Wunsch löschen?</h3>
+                        <p className="text-slate-500 font-bold mb-8">Der Wunsch <strong>{editingGoal.title}</strong> wird gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</p>
+                        <div className="flex flex-col gap-3">
+                            <button onClick={() => { onDeleteGoal(bank.id, editingGoal); setConfirmGoalDelete(false); setShowGoalModal(false); }} className="w-full bg-red-500 text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition-all">Ja, löschen</button>
+                            <button onClick={() => { setConfirmGoalDelete(false); }} className="w-full bg-slate-100 text-slate-500 font-bold py-4 rounded-2xl active:scale-95 transition-all">Abbrechen</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {showDeleteConfirm && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -794,6 +974,11 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                 </div>
                                 <div className="pt-4 flex flex-col gap-3">
                                     <button onClick={handleSaveGoal} className="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl active:scale-95 transition-all">{t.save}</button>
+                                    {editingGoal && (
+                                        <button onClick={() => { setConfirmGoalDelete(true); }} className="w-full py-4 rounded-2xl border-2 border-red-100 bg-red-50 text-red-500 font-bold flex items-center justify-center gap-2">
+                                            <Trash2 size={18} /> Wunsch löschen
+                                        </button>
+                                    )}
                                     <button onClick={() => setShowGoalModal(false)} className="w-full py-2 text-slate-400 font-bold">{t.cancel}</button>
                                 </div>
                             </div>

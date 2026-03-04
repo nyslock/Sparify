@@ -189,7 +189,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                                 )}
                             </div>
                         </div>
-                        <div className="h-[250px] sm:h-[300px] w-full overflow-hidden min-w-0">
+                        <div className={chartView === 'history' ? 'h-[250px] sm:h-[300px] w-full overflow-hidden min-w-0' : 'w-full'}>
                             {chartView === 'history' ? (
                                 <>
                                     {aggregatedData.length > 0 ? (
@@ -240,24 +240,60 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             ) : (
                                 <>
                                     {transactionSummary.deposited + transactionSummary.withdrawn > 0 ? (
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <RechartsPieChart>
-                                                <Pie
-                                                    data={[
+                                        <>
+                                            <div style={{ width: '100%', height: 160 }}>
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <RechartsPieChart>
+                                                    <Pie
+                                                        data={[
+                                                            { name: 'Einzahlungen', value: transactionSummary.deposited, fill: '#10b981' },
+                                                            { name: 'Auszahlungen', value: transactionSummary.withdrawn, fill: '#ef4444' }
+                                                        ]}
+                                                        cx="50%"
+                                                        cy="45%"
+                                                        labelLine={false}
+                                                        label={false}
+                                                        outerRadius={60}
+                                                        fill="#8884d8"
+                                                        dataKey="value"
+                                                    />
+                                                    <Tooltip formatter={(value: number) => [`€${value.toLocaleString('de-DE', { minimumFractionDigits: 2 })}`, '']} />
+                                                </RechartsPieChart>
+                                            </ResponsiveContainer>
+                                            </div>
+                                            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                {(() => {
+                                                    const total = transactionSummary.deposited + transactionSummary.withdrawn;
+                                                    const data = [
                                                         { name: 'Einzahlungen', value: transactionSummary.deposited, fill: '#10b981' },
                                                         { name: 'Auszahlungen', value: transactionSummary.withdrawn, fill: '#ef4444' }
-                                                    ]}
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    labelLine={false}
-                                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                                    outerRadius={80}
-                                                    fill="#8884d8"
-                                                    dataKey="value"
-                                                />
-                                                <Tooltip formatter={(value: number) => [`€${value.toLocaleString('de-DE', { minimumFractionDigits: 2 })}`, '']} />
-                                            </RechartsPieChart>
-                                        </ResponsiveContainer>
+                                                    ];
+                                                    
+                                                    // Calculate percentages with proper rounding
+                                                    const percentages = data.map((entry, index) => {
+                                                        if (total <= 0) return 0;
+                                                        if (index === data.length - 1) {
+                                                            // Last item gets the remainder
+                                                            const sumPrevious = data.slice(0, index).reduce((sum, e) => {
+                                                                return sum + Math.round((e.value / total) * 100);
+                                                            }, 0);
+                                                            return 100 - sumPrevious;
+                                                        }
+                                                        return Math.round((entry.value / total) * 100);
+                                                    });
+                                                    
+                                                    return data.map((entry, index) => (
+                                                        <div key={`legend-${index}`} className="flex flex-col gap-1 rounded-xl border border-slate-100 px-3 py-2 bg-slate-50/60">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.fill }}></span>
+                                                                <span className="text-xs sm:text-sm font-bold text-slate-700 truncate flex-1">{entry.name}</span>
+                                                            </div>
+                                                            <div className="ml-4 text-xs font-black text-slate-600">€{entry.value.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} • {percentages[index]}%</div>
+                                                        </div>
+                                                    ));
+                                                })()}
+                                            </div>
+                                        </>
                                     ) : (
                                         <div className="flex items-center justify-center h-full text-slate-400">
                                             <p>Keine Transaktionen vorhanden</p>

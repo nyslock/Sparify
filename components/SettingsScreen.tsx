@@ -16,6 +16,7 @@ interface SettingsScreenProps {
   language: Language;
   setLanguage: (lang: Language) => void;
   appMode: AppMode;
+  onChangeAppMode?: (mode: AppMode) => void;
   onChangeView?: (view: ViewState) => void;
   onOpenAppHelp?: () => void;
 }
@@ -42,6 +43,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   language,
   setLanguage,
   appMode,
+  onChangeAppMode,
   onChangeView,
   onOpenAppHelp
 }) => {
@@ -113,7 +115,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
   const handleBirthdateChange = (newDate: string) => {
     const age = calculateAge(newDate);
+    const newMode = age > 14 ? 'adult' : 'kids';
+    
+    // Update user with new birthdate and age
     onUpdateUser({ ...user, birthdate: newDate, age });
+    
+    // Update app mode if it changed
+    if (newMode !== appMode && onChangeAppMode) {
+      onChangeAppMode(newMode);
+    }
   };
 
   const activeFrame = user.activeFrames.find(id => id.startsWith('frame_'));
