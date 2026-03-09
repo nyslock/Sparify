@@ -28,7 +28,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onChangeView,
       }`}>
         
         {/* Home Tab */}
-        <button 
+        <button
+          id="tutorial-nav-home"
           onClick={() => onChangeView('DASHBOARD')}
           className={`flex-1 flex flex-col items-center justify-center h-full rounded-[2rem] transition-all duration-300 ${
             currentView === 'DASHBOARD' 
@@ -42,7 +43,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onChangeView,
         </button>
 
         {/* Learn Tab */}
-        <button 
+        <button
+          id="tutorial-nav-learn"
           onClick={() => onChangeView('LEARN')}
           className={`flex-1 flex flex-col items-center justify-center h-full rounded-[2rem] transition-all duration-300 ${
             currentView === 'LEARN' 
@@ -56,6 +58,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onChangeView,
         {/* FAB - In beiden Modi leicht versetzt */}
         <div className={`relative mx-2 transition-all duration-500 ${isFloating ? '-top-8' : '-top-10'}`}>
             <button
+            id="tutorial-nav-scanner"
             onClick={() => onChangeView('SCANNER')}
             className={`w-16 h-16 ${THEME_COLORS[accentColor]} rounded-full shadow-xl shadow-slate-400/40 flex items-center justify-center text-white active:scale-95 transition-transform ring-4 ring-white`}
             >
@@ -64,7 +67,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onChangeView,
         </div>
 
         {/* Shop Tab */}
-        <button 
+        <button
+          id="tutorial-nav-shop"
           onClick={() => onChangeView('SHOP')}
           className={`flex-1 flex flex-col items-center justify-center h-full rounded-[2rem] transition-all duration-300 ${
             currentView === 'SHOP' 
@@ -77,7 +81,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onChangeView,
         </button>
 
         {/* Settings Tab */}
-        <button 
+        <button
+          id="tutorial-nav-settings"
           onClick={() => onChangeView('SETTINGS')}
           className={`flex-1 flex flex-col items-center justify-center h-full rounded-[2rem] transition-all duration-300 ${
             currentView === 'SETTINGS' 

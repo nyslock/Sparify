@@ -874,50 +874,110 @@ export default function App() {
     });
   };
 
-  // Tutorial steps definition
+  // Tutorial steps – each step navigates to the right screen and highlights the relevant element
+  const tr = getTranslations(language);
   const tutorialSteps: TutorialStep[] = [
+    // ── Dashboard ──────────────────────────────────────────────────────
     {
       id: 'balance',
       elementId: 'tutorial-balance',
-      title: 'Dein Gesamtguthaben',
-      description: 'Hier siehst du, wie viel Geld du insgesamt in all deinen Sparboxen gespart hast.',
-      screen: 'DASHBOARD'
+      title: tr.tutorial.step1.title,
+      description: tr.tutorial.step1.text,
+      screen: 'DASHBOARD',
     },
     {
       id: 'piggy-list',
       elementId: 'tutorial-piggy-list',
-      title: 'Deine Sparboxen',
-      description: 'In dieser Liste findest du alle deine Sparboxen. Tippe auf eine, um Details zu sehen.',
-      screen: 'DASHBOARD'
+      title: tr.tutorial.step2.title,
+      description: tr.tutorial.step2.text,
+      screen: 'DASHBOARD',
     },
     {
       id: 'connect',
-      elementId: 'tutorial-connect',
-      title: 'Neue Sparbox hinzufügen',
-      description: 'Tippe hier, um eine neue Sparbox zu scannen oder per Code hinzuzufügen.',
-      screen: 'DASHBOARD'
+      elementId: 'tutorial-nav-scanner',
+      title: tr.tutorial.step3.title,
+      description: tr.tutorial.step3.text,
+      screen: 'DASHBOARD',
+      scrollBehavior: 'none',
     },
+    // ── Sparbox-Detail ────────────────────────────────────────────────
     {
       id: 'piggy-balance',
       elementId: 'tutorial-piggy-balance',
-      title: 'Sparbox-Guthaben',
-      description: 'Hier siehst du das Guthaben dieser Sparbox. Der Betrag wird in Echtzeit aktualisiert.',
-      screen: 'DETAIL'
+      title: language === 'en' ? 'Piggy Balance' : 'Sparbox-Guthaben',
+      description: language === 'en'
+        ? 'The current balance of this piggy bank – updated in real time when money is deposited.'
+        : 'Das aktuelle Guthaben dieser Sparbox – wird in Echtzeit aktualisiert, wenn Geld eingeworfen wird.',
+      screen: 'DETAIL',
+    },
+    {
+      id: 'piggy-history',
+      elementId: 'tutorial-piggy-history',
+      title: language === 'en' ? 'Balance History' : 'Verlauf',
+      description: language === 'en'
+        ? 'The chart shows how your balance has developed over time. Switch between week, month and all-time view.'
+        : 'Der Chart zeigt, wie dein Guthaben sich über die Zeit entwickelt hat. Wechsle zwischen Woche, Monat und Alles.',
+      screen: 'DETAIL',
     },
     {
       id: 'piggy-goals',
       elementId: 'tutorial-piggy-goals',
-      title: 'Deine Wünsche',
-      description: 'Erstelle Wünsche und verfolge deinen Fortschritt. Wenn du genug gespart hast, kannst du sie einlösen!',
-      screen: 'DETAIL'
+      title: language === 'en' ? 'Your Wishes / Goals' : 'Deine Wünsche',
+      description: language === 'en'
+        ? 'Set savings goals for things you want to buy. Once you\'ve saved enough, you can redeem them!'
+        : 'Lege Sparziele für Dinge fest, die du kaufen möchtest. Wenn du genug gespart hast, kannst du sie einlösen!',
+      screen: 'DETAIL',
     },
     {
       id: 'piggy-transactions',
       elementId: 'tutorial-piggy-transactions',
-      title: 'Transaktionen',
-      description: 'Hier siehst du alle Ein- und Auszahlungen dieser Sparbox.',
-      screen: 'DETAIL'
-    }
+      title: language === 'en' ? 'Transaction History' : 'Transaktionen',
+      description: language === 'en'
+        ? 'Every deposit and withdrawal is listed here. Tap "Load more" to see older transactions.'
+        : 'Jede Ein- und Auszahlung ist hier aufgelistet. Tippe auf "Weitere laden", um ältere Transaktionen zu sehen.',
+      screen: 'DETAIL',
+    },
+    // ── Navigation ────────────────────────────────────────────────────
+    {
+      id: 'nav-home',
+      elementId: 'tutorial-nav-home',
+      title: language === 'en' ? 'Home' : 'Startseite',
+      description: language === 'en'
+        ? 'Tap here to return to your dashboard with all your piggy banks.'
+        : 'Tippe hier, um zum Dashboard mit all deinen Sparboxen zurückzukehren.',
+      screen: 'DASHBOARD',
+      scrollBehavior: 'none',
+    },
+    {
+      id: 'nav-learn',
+      elementId: 'tutorial-nav-learn',
+      title: language === 'en' ? 'Learn & Play' : 'Lernen & Spielen',
+      description: language === 'en'
+        ? 'Fun lessons and quizzes about saving, spending and earning money. Complete levels to earn coins!'
+        : 'Spannende Lektionen und Quizze rund ums Sparen, Ausgeben und Geldverdienen. Schließe Level ab und verdiene Münzen!',
+      screen: 'DASHBOARD',
+      scrollBehavior: 'none',
+    },
+    {
+      id: 'nav-shop',
+      elementId: 'tutorial-nav-shop',
+      title: language === 'en' ? 'Shop' : 'Shop',
+      description: language === 'en'
+        ? 'Spend your earned coins here on avatars, colour themes, profile frames and special tags.'
+        : 'Gib hier deine verdienten Münzen für Avatare, Farbthemen, Profilrahmen und besondere Tags aus.',
+      screen: 'DASHBOARD',
+      scrollBehavior: 'none',
+    },
+    {
+      id: 'nav-settings',
+      elementId: 'tutorial-nav-settings',
+      title: language === 'en' ? 'Settings' : 'Einstellungen',
+      description: language === 'en'
+        ? 'Change your name, avatar, language, colour and more. You can also find help and the box tutorial here.'
+        : 'Ändere deinen Namen, Avatar, Sprache, Farbe und mehr. Hier findest du auch die Hilfe und das Box-Tutorial.',
+      screen: 'DASHBOARD',
+      scrollBehavior: 'none',
+    },
   ];
 
   if (loading) return <LoadingSkeleton />;
@@ -1307,14 +1367,15 @@ export default function App() {
         <SpotlightTutorial
           steps={tutorialSteps}
           language={language}
-          currentScreen={selectedBankId ? 'DETAIL' : 'DASHBOARD'}
+          currentScreen={view as ViewState}
           onNavigate={(screen) => {
-            if (screen === 'DETAIL' && piggyBanks.length > 0 && !selectedBankId) {
-              setSelectedBankId(piggyBanks[0].id);
+            if (screen === 'DETAIL' && piggyBanks.length > 0) {
+              if (!selectedBankId) setSelectedBankId(piggyBanks[0].id);
               setView('DETAIL');
             } else if (screen === 'DASHBOARD') {
-              setSelectedBankId(null);
               setView('DASHBOARD');
+            } else {
+              setView(screen);
             }
           }}
           onComplete={() => {
