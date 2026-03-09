@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { LogOut, Info, User as UserIcon, Palette, Globe, Calendar, Lock, Baby, Briefcase, Tag, Frame, HelpCircle, ChevronRight, Eye, EyeOff, KeyRound, Bell, BellOff } from 'lucide-react';
+import { LogOut, Info, User as UserIcon, Palette, Globe, Calendar, Lock, Baby, Briefcase, Tag, Frame, HelpCircle, ChevronRight, Eye, EyeOff, KeyRound } from 'lucide-react';
 import { ThemeColor, THEME_COLORS, AVATARS, User, Language, getTranslations, AppMode, SPECIALS_DATABASE, ViewState } from '../types';
 import { PasswordResetModal } from './PasswordResetModal';
 import { supabase } from '../lib/supabaseClient';
-import { usePushNotifications } from '../lib/usePushNotifications';
 
 interface SettingsScreenProps {
   user: User;
@@ -57,15 +56,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [passwordError, setPasswordError] = useState('');
   const [showSMTPTest, setShowSMTPTest] = useState(false);
 
-  // Firebase Cloud Messaging Push Notifications
-  const { 
-    isSupported: pushSupported, 
-    isPermissionGranted: pushEnabled, 
-    isLoading: pushLoading,
-    error: pushError,
-    requestPermission 
-  } = usePushNotifications({ userId });
-
   const tr = getTranslations(language);
   const t = tr.settings;
   const tHelp = tr.help;
@@ -86,20 +76,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // Handle Firebase Push Notifications Toggle
-  const handlePushToggle = async () => {
-    if (!userId) return;
-    
-    // Если уже включено, показываем warning что нельзя отключить (можно только через браузер)
-    if (pushEnabled) {
-      alert(tr.settings?.notificationDisableWarning || 'Um Benachrichtigungen zu deaktivieren, ändere bitte die Einstellungen in deinem Browser.');
-      return;
-    }
-    
-    // Запрашиваем разрешение на уведомления
-    await requestPermission();
-  };
 
   const calculateAge = (birthDateString: string) => {
     if (!birthDateString) return 0;
@@ -410,61 +386,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <ChevronRight size={18} className="text-slate-300" />
         </button>
       </div>
-
-      {/* Push Notifications Section */}
-      {!pushSupported && pushError && (
-        <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-amber-50 rounded-xl text-amber-500"><Bell size={20} /></div>
-            <h3 className="font-bold text-slate-800">{t.notifications || 'Benachrichtigungen'}</h3>
-          </div>
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100">
-            <div className="flex items-start gap-3">
-              <div className="text-2xl">📱</div>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-amber-900 mb-2">
-                  {language === 'de' ? 'Installation erforderlich' : 'Installation Required'}
-                </p>
-                <p className="text-xs text-amber-700 leading-relaxed">
-                  {pushError}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {pushSupported && (
-        <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-50 rounded-xl text-blue-500"><Bell size={20} /></div>
-            <h3 className="font-bold text-slate-800">{t.notifications || 'Benachrichtigungen'}</h3>
-          </div>
-          <button
-            onClick={handlePushToggle}
-            disabled={pushLoading || !userId}
-            className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between gap-4 group active:scale-95 transition-all disabled:opacity-50"
-          >
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className={`w-10 h-10 flex-shrink-0 rounded-xl shadow-sm flex items-center justify-center transition-all ${pushEnabled ? 'bg-blue-500 text-white' : 'bg-white text-slate-400'}`}>
-                {pushEnabled ? <Bell size={20} /> : <BellOff size={20} />}
-              </div>
-              <div className="text-left min-w-0">
-                <span className="font-bold text-slate-800 block truncate">{t.pushNotifications || 'Push-Benachrichtigungen'}</span>
-                <span className="text-xs text-slate-400">{pushEnabled ? (t.pushEnabled || 'Aktiviert') : (t.pushDisabled || 'Deaktiviert')}</span>
-              </div>
-            </div>
-            <div className={`relative w-14 h-8 flex-shrink-0 rounded-full transition-all ${pushEnabled ? 'bg-blue-500' : 'bg-slate-300'}`}>
-              <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ease-in-out ${pushEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
-            </div>
-          </button>
-          {pushError && (
-            <div className="mt-3 p-3 rounded-xl bg-blue-50 border border-blue-100">
-              <p className="text-xs text-blue-700 font-medium">{pushError}</p>
-            </div>
-          )}
-        </div>
-      )}
 
       <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
         <div className="flex items-center gap-3 mb-6">

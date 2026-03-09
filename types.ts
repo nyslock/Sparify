@@ -330,11 +330,6 @@ export const TRANSLATIONS: Record<Language, any> = {
       shopTitles: 'Titel im Shop anzeigen',
       enabled: 'Aktiviert',
       disabled: 'Deaktiviert',
-      notifications: 'Benachrichtigungen',
-      pushNotifications: 'Push-Benachrichtigungen',
-      pushEnabled: 'Aktiviert',
-      pushDisabled: 'Deaktiviert',
-      notificationDisableWarning: 'Um Benachrichtigungen zu deaktivieren, ändere bitte die Einstellungen in deinem Browser.'
     },
     common: { showLess: 'Weniger', showAll: 'Alle', showAllColors: 'Farben', greeting: 'Hallo', next: 'Weiter', prev: 'Zurück', skip: 'Überspringen', finish: 'Fertig' },
     sidebar: { dashboard: 'Übersicht', learn: 'Lernen & Spielen', shop: 'Shop', settings: 'Einstellungen', addAccount: 'Neue Sparbox', streakProtected: 'Streak geschützt' },
@@ -398,11 +393,6 @@ export const TRANSLATIONS: Record<Language, any> = {
       shopTitles: 'Show shop titles',
       enabled: 'Enabled',
       disabled: 'Disabled',
-      notifications: 'Notifications',
-      pushNotifications: 'Push Notifications',
-      pushEnabled: 'Enabled',
-      pushDisabled: 'Disabled',
-      notificationDisableWarning: 'To disable notifications, please change the settings in your browser.'
     },
     common: { showLess: 'Show less', showAll: 'Show all', showAllColors: 'Show colors', greeting: 'Hello', next: 'Next', prev: 'Back', skip: 'Skip', finish: 'Finish' },
     sidebar: { dashboard: 'Dashboard', learn: 'Learn & Play', shop: 'Shop', settings: 'Settings', addAccount: 'Add account', streakProtected: 'Streak protected' },

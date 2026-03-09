@@ -21,7 +21,6 @@ import { supabase } from './lib/supabaseClient';
 import { decryptAmount, encryptAmount } from './lib/crypto';
 import { syncBalance, getTotalBalance } from './lib/piggyBank';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
-import { usePushNotifications } from './lib/usePushNotifications';
 
 export default function App() {
   const [view, setView] = useState<ViewState>('LOGIN');
@@ -57,23 +56,6 @@ export default function App() {
   const isRefreshingRef = useRef(false);
   const lastProfileUpdateRef = useRef<number>(0);
   const userRef = useRef<User | null>(null);
-
-  // Инициализация Push Notifications
-  const { isPermissionGranted, requestPermission } = usePushNotifications({
-    userId,
-    onNotificationReceived: (payload) => {
-      // Обработка foreground уведомлений
-      if (payload.notification) {
-        addNotification({
-          type: 'deposit',
-          title: payload.notification.title || 'Sparify',
-          message: payload.notification.body || '',
-          amount: parseFloat(payload.data?.amount) || 0,
-          pigName: payload.data?.pigName || 'Sparbox',
-        });
-      }
-    },
-  });
 
   useEffect(() => {
     userRef.current = user;
@@ -176,16 +158,6 @@ export default function App() {
       duration: notification.duration || 4000
     };
     setNotifications(prev => [...prev, newNotification]);
-    
-    // Show browser notification if permission granted
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(notification.title, {
-        body: `${notification.message}\n€${notification.amount?.toFixed(2) || '0.00'} • ${notification.pigName || 'Sparbox'}`,
-        tag: 'sparify-transaction',
-        badge: '/images/sparify-logo.png'
-      });
-    }
-
     return id;
   }, []);
 
