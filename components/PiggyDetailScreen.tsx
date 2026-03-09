@@ -51,6 +51,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
 
     const [showAllocationModal, setShowAllocationModal] = useState<{ goal: Goal } | null>(null);
     const [tempAllocation, setTempAllocation] = useState<string>('0');
+    const [visibleTxCount, setVisibleTxCount] = useState(10);
 
     const colors: ThemeColor[] = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
     const t = getTranslations(language).detail;
@@ -326,7 +327,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                                 }`}
                                             >
-                                                {period === 'week' ? 'Woche' : period === 'month' ? 'Monat' : 'Alles'}
+                                                {period === 'week' ? t.week || 'Woche' : period === 'month' ? t.month || 'Monat' : t.all || 'Alles'}
                                             </button>
                                         ))}
                                     </div>
@@ -406,7 +407,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                                             type="button"
                                                             className="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-bold py-2 rounded-lg transition-all active:scale-95 cursor-pointer"
                                                         >
-                                                            ✏️ Bearbeiten
+                                                            ✏️ {t.edit || 'Bearbeiten'}
                                                         </button>
                                                         {goal.currentAmount >= goal.targetAmount && (
                                                             <button
@@ -414,7 +415,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                                                 type="button"
                                                                 className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1 active:scale-95 transition-all cursor-pointer"
                                                             >
-                                                                <Gift size={14} /> Einlösen
+                                                                <Gift size={14} /> {t.redeem || 'Einlösen'}
                                                             </button>
                                                         )}
                                                     </div>
@@ -488,23 +489,31 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                         <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-md border border-white">
                             <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2"><Signal size={18} className="text-emerald-500" /> {t.transactions}</h3>
                             <div className="space-y-2">
-                                {bank.transactions?.length > 0 ? bank.transactions.map((t) => (
-                                    <div key={t.id} className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl transition-colors border-b border-slate-50 last:border-0">
+                                {bank.transactions?.length > 0 ? bank.transactions.slice(0, visibleTxCount).map((tx) => (
+                                    <div key={tx.id} className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl transition-colors border-b border-slate-50 last:border-0">
                                         <div className="flex items-center gap-3 sm:gap-4">
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${t.type === 'deposit' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                                                {t.type === 'deposit' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.type === 'deposit' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                                {tx.type === 'deposit' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-slate-800 text-sm line-clamp-2 leading-tight">{t.title ? (t.title.length > 30 ? t.title.slice(0, 30) + '...' : t.title) : (t.type === 'deposit' ? t.deposit : t.withdrawal)}</h4>
-                                                <p className="text-slate-400 text-sm font-semibold">{t.date}</p>
+                                                <h4 className="font-bold text-slate-800 text-sm line-clamp-2 leading-tight">{tx.title ? (tx.title.length > 30 ? tx.title.slice(0, 30) + '...' : tx.title) : (tx.type === 'deposit' ? t.deposit : t.withdrawal)}</h4>
+                                                <p className="text-slate-400 text-sm font-semibold">{tx.date}</p>
                                             </div>
                                         </div>
-                                        <span className={`font-black text-sm sm:text-base whitespace-nowrap shrink-0 ${t.type === 'deposit' ? 'text-emerald-600' : 'text-slate-900'}`}>
-                                            {t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}
+                                        <span className={`font-black text-sm sm:text-base whitespace-nowrap shrink-0 ${tx.type === 'deposit' ? 'text-emerald-600' : 'text-slate-900'}`}>
+                                            {tx.type === 'deposit' ? '+' : '-'}€{Math.abs(tx.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}
                                         </span>
                                     </div>
                                 )) : <p className="text-slate-400 text-center py-10">{t.noTransactions}</p>}
                             </div>
+                            {(bank.transactions?.length || 0) > visibleTxCount && (
+                                <button
+                                    onClick={() => setVisibleTxCount(c => c + 10)}
+                                    className="w-full mt-4 py-3 text-indigo-500 font-bold text-sm hover:text-indigo-700 transition-colors border border-indigo-100 rounded-2xl hover:bg-indigo-50"
+                                >
+                                    {t.loadMore || 'Weitere 10 laden'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -625,7 +634,7 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                         }`}
                                     >
-                                        {period === 'week' ? 'Woche' : period === 'month' ? 'Monat' : 'Alles'}
+                                        {period === 'week' ? t.week || 'Woche' : period === 'month' ? t.month || 'Monat' : t.all || 'Alles'}
                                     </button>
                                 ))}
                             </div>
@@ -725,19 +734,33 @@ export const PiggyDetailScreen: React.FC<PiggyDetailScreenProps> = ({ bank, user
                         </div>
                     )}
                     
-                    <div id="tutorial-piggy-transactions" className="mb-6 md:mb-0 md:flex-1 px-3 sm:px-4 md:px-0"><h3 className="font-black text-slate-800 mb-5 ml-0 sm:ml-2 md:ml-0 text-lg md:text-xl">{t.transactions}</h3><div className="space-y-3 md:space-y-4">{bank.transactions?.length > 0 ? bank.transactions.map((t) => (
-                        <div key={t.id} className="bg-white p-4 sm:p-5 rounded-[2rem] flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between border border-slate-100 shadow-lg shadow-slate-100">
-                            <div className="flex items-center gap-4 min-w-0">
-                                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 ${t.type === 'deposit' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>
-                                    {t.type === 'deposit' ? <ArrowDownLeft size={24} className="sm:w-7 sm:h-7" /> : <ArrowUpRight size={24} className="sm:w-7 sm:h-7" />}
+                    <div id="tutorial-piggy-transactions" className="mb-6 md:mb-0 md:flex-1 px-3 sm:px-4 md:px-0">
+                        <h3 className="font-black text-slate-800 mb-5 ml-0 sm:ml-2 md:ml-0 text-lg md:text-xl">{t.transactions}</h3>
+                        <div className="space-y-3 md:space-y-4">
+                            {bank.transactions?.length > 0 ? bank.transactions.slice(0, visibleTxCount).map((tx) => (
+                                <div key={tx.id} className="bg-white p-4 sm:p-5 rounded-[2rem] flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between border border-slate-100 shadow-lg shadow-slate-100">
+                                    <div className="flex items-center gap-4 min-w-0">
+                                        <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 ${tx.type === 'deposit' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>
+                                            {tx.type === 'deposit' ? <ArrowDownLeft size={24} className="sm:w-7 sm:h-7" /> : <ArrowUpRight size={24} className="sm:w-7 sm:h-7" />}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <h4 className="font-black text-slate-800 text-sm sm:text-base line-clamp-2 leading-tight">{tx.title ? (tx.title.length > 50 ? tx.title.slice(0, 50) + '...' : tx.title) : (tx.type === 'deposit' ? t.deposit : t.withdrawal)}</h4>
+                                            <p className="text-slate-400 text-xs sm:text-sm font-bold">{tx.date}</p>
+                                        </div>
+                                    </div>
+                                    <span className={`font-black text-lg sm:text-xl whitespace-nowrap shrink-0 ${tx.type === 'deposit' ? 'text-emerald-500' : 'text-slate-800'}`}>{tx.type === 'deposit' ? '+' : '-'}€{Math.abs(tx.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}</span>
                                 </div>
-                                <div className="min-w-0">
-                                    <h4 className="font-black text-slate-800 text-sm sm:text-base line-clamp-2 leading-tight">{t.title ? (t.title.length > 50 ? t.title.slice(0, 50) + '...' : t.title) : (t.type === 'deposit' ? t.deposit : t.withdrawal)}</h4>
-                                    <p className="text-slate-400 text-xs sm:text-sm font-bold">{t.date}</p>
-                                </div>
-                            </div>
-                            <span className={`font-black text-lg sm:text-xl whitespace-nowrap shrink-0 ${t.type === 'deposit' ? 'text-emerald-500' : 'text-slate-800'}`}>{t.type === 'deposit' ? '+' : '-'}€{Math.abs(t.amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}</span>
-                        </div>)) : <div className="text-center py-12 text-slate-400 font-bold bg-white rounded-[2rem] border-2 border-dashed border-slate-200">{t.noTransactions}</div>}</div></div>
+                            )) : <div className="text-center py-12 text-slate-400 font-bold bg-white rounded-[2rem] border-2 border-dashed border-slate-200">{t.noTransactions}</div>}
+                        </div>
+                        {(bank.transactions?.length || 0) > visibleTxCount && (
+                            <button
+                                onClick={() => setVisibleTxCount(c => c + 10)}
+                                className="w-full mt-4 py-4 bg-white text-slate-600 font-black rounded-[2rem] border-2 border-dashed border-slate-200 hover:border-slate-300 hover:bg-slate-50 active:scale-95 transition-all"
+                            >
+                                {t.loadMore || 'Weitere 10 laden'} ↓
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 

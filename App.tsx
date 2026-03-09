@@ -1018,70 +1018,72 @@ export default function App() {
           onClose={() => setView('DASHBOARD')}
           onFound={async (code: string, isGuest: boolean) => {
             try {
-              let result;
+              const trimmedCode = code.trim();
+              if (!trimmedCode) return { success: false, message: 'Bitte einen Code eingeben' };
+
               if (isGuest) {
-                result = await supabase
-                  .from('piggy_bank_guests')
-                  .select('piggy_bank_id')
-                  .eq('access_code', code)
-                  .maybeSingle();
-
-                if (result.data) {
-                  const { data: pig } = await supabase
-                    .from('piggy_banks')
-                    .select('*, transactions(*), goals(*)')
-                    .eq('id', result.data.piggy_bank_id)
-                    .maybeSingle();
-
-                  if (pig) {
-                    await supabase.from('piggy_bank_guests').insert({
-                      piggy_bank_id: pig.id,
-                      user_id: userId,
-                      access_code: code
-                    }).select();
-                    await loadUserData(userId!, user.email, false);
-                    setView('DASHBOARD');
-                    return { success: true };
-                  }
-                }
-                return { success: false, message: 'Gast-Code ungültig' };
-              } else {
-                // Owner mode: Find piggy bank by QR code (without user_id filter)
-                result = await supabase
+                // Guest mode: look up piggy bank by code, then create guest relation
+                const { data: pig, error: pigError } = await supabase
                   .from('piggy_banks')
-                  .select('*, transactions(*), goals(*)')
-                  .eq('qr_code', code)
+                  .select('id, user_id')
+                  .eq('code', trimmedCode)
                   .maybeSingle();
 
-                if (result.data) {
-                  // Check if this piggy already belongs to this user or is unassigned
-                  if (!result.data.user_id) {
-                    // New/unassigned pig -> claim it
-                    const { error: claimError } = await supabase
-                      .from('piggy_banks')
-                      .update({ user_id: userId })
-                      .eq('id', result.data.id);
+                if (pigError) { console.error('Guest pig lookup error:', pigError); throw pigError; }
+                if (!pig) return { success: false, message: 'Code nicht gefunden' };
+                if (pig.user_id === userId) return { success: false, message: 'Das ist deine eigene Sparbox' };
 
-                    if (claimError) throw claimError;
+                // Upsert guest relation (unique constraint: piggy_bank_id + user_id)
+                const { error: guestError } = await supabase
+                  .from('piggy_bank_guests')
+                  .upsert(
+                    { piggy_bank_id: pig.id, user_id: userId },
+                    { onConflict: 'piggy_bank_id,user_id', ignoreDuplicates: true }
+                  );
 
-                    await loadUserData(userId!, user.email, false);
-                    setView('DASHBOARD');
-                    return { success: true };
-                  } else if (result.data.user_id === userId) {
-                    // Already owned, just refresh data
-                    await loadUserData(userId!, user.email, false);
-                    setView('DASHBOARD');
-                    return { success: true };
-                  } else {
-                    // Piggy belongs to someone else
-                    return { success: false, message: 'Diese Sparbox gehört einem anderen Benutzer' };
-                  }
+                if (guestError) {
+                  console.error('Guest upsert error:', guestError);
+                  return { success: false, message: 'Fehler beim Hinzufügen als Gast' };
                 }
-                return { success: false, message: 'Code nicht gefunden' };
+
+                await loadUserData(userId!, user?.email || '', false);
+                setView('DASHBOARD');
+                return { success: true };
+              } else {
+                // Owner mode: find piggy bank by code field
+                const { data: pig, error: pigError } = await supabase
+                  .from('piggy_banks')
+                  .select('id, user_id')
+                  .eq('code', trimmedCode)
+                  .maybeSingle();
+
+                if (pigError) { console.error('Owner pig lookup error:', pigError); throw pigError; }
+                if (!pig) return { success: false, message: 'Code nicht gefunden' };
+
+                if (!pig.user_id) {
+                  // Unassigned pig -> claim it
+                  const { error: claimError } = await supabase
+                    .from('piggy_banks')
+                    .update({ user_id: userId })
+                    .eq('id', pig.id);
+
+                  if (claimError) { console.error('Claim error:', claimError); throw claimError; }
+
+                  await loadUserData(userId!, user?.email || '', false);
+                  setView('DASHBOARD');
+                  return { success: true };
+                } else if (pig.user_id === userId) {
+                  // Already owned by this user
+                  await loadUserData(userId!, user?.email || '', false);
+                  setView('DASHBOARD');
+                  return { success: true };
+                } else {
+                  return { success: false, message: 'Diese Sparbox gehört einem anderen Benutzer' };
+                }
               }
             } catch (err) {
               console.error('Scanner error:', err);
-              return { success: false, message: 'Fehler beim Scannen' };
+              return { success: false, message: 'Verbindungsfehler. Bitte erneut versuchen.' };
             }
           }}
           accentColor={accentColor}

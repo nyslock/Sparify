@@ -91,6 +91,11 @@ export const BoxTutorialScreen: React.FC<BoxTutorialScreenProps> = ({ language, 
           <p className="text-slate-500 text-lg font-medium leading-relaxed">
             {steps[step].bodyText}
           </p>
+          {/* Placeholder marker: shown when step has no image/video yet */}
+          <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-600 text-xs font-bold">
+            <span>🚧</span>
+            <span>{language === 'en' ? 'Content placeholder – final version coming soon' : 'Platzhalter – finaler Inhalt folgt'}</span>
+          </div>
         </div>
       </div>
 

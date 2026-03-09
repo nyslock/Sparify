@@ -304,7 +304,7 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     age: { title: 'Fast fertig!', subtitle: 'Wann hast du Geburtstag?', hint: 'Dies hat keinen Einfluss auf die Funktionen, es passt lediglich das Design der App an dich an.', confirm: 'Los geht\'s', years: 'Jahre', birthdate: 'Geburtsdatum' },
     dashboard: { balance: 'Kontostand', newPig: 'Neue Sparbox', myPigs: 'Meine Sparboxen', praiseMessages: ['Super!', 'Klasse!', 'Spitze!'], adLabel: 'Tipp', adTitle: 'Spar-Experte', adSubtitle: 'Jeder Cent zählt', moreSavings: 'Mehr sparen', noPigs: 'Keine Sparboxen vorhanden', watchedPigs: 'Beobachtete Sparboxen', removeGuestConfirm: 'Beobachtung beenden?', pigs: 'Sparboxen' },
-    detail: { history: 'Verlauf', confirm: 'Bestätigen', cancel: 'Abbrechen', errorNotEnough: 'Guthaben zu niedrig', withdrawal: 'Auszahlung', available: 'Verfügbar', payout: 'Auszahlen', newGoal: 'Neuer Wunsch', share: 'Aufteilung', noGoals: 'Keine Wünsche', transactions: 'Transaktionen', noTransactions: 'Keine Transaktionen', goal: 'Wunsch', achievements: 'Erfolge', achievementsDesc: 'Deine Belohnungen', editGoal: 'Wunsch bearbeiten', settingsTitle: 'Einstellungen', pigName: 'Name', color: 'Farbe', delete: 'Löschen', payoutTitle: 'Auszahlung', successTitle: 'Erfolg!', balanceLabel: 'Kontostand', reasonLabel: 'Wofür ist das?', wishLabel: 'Was wünschst du dir?', costLabel: 'Was kostet das?', save: 'Speichern', deposit: 'Einzahlung' },
+    detail: { history: 'Verlauf', confirm: 'Bestätigen', cancel: 'Abbrechen', errorNotEnough: 'Guthaben zu niedrig', withdrawal: 'Auszahlung', available: 'Verfügbar', payout: 'Auszahlen', newGoal: 'Neuer Wunsch', share: 'Aufteilung', noGoals: 'Keine Wünsche', transactions: 'Transaktionen', noTransactions: 'Keine Transaktionen', loadMore: 'Weitere 10 laden', goal: 'Wunsch', achievements: 'Erfolge', achievementsDesc: 'Deine Belohnungen', editGoal: 'Wunsch bearbeiten', settingsTitle: 'Einstellungen', pigName: 'Name', color: 'Farbe', delete: 'Löschen', payoutTitle: 'Auszahlung', successTitle: 'Erfolg!', balanceLabel: 'Kontostand', reasonLabel: 'Wofür ist das?', wishLabel: 'Was wünschst du dir?', costLabel: 'Was kostet das?', save: 'Speichern', deposit: 'Einzahlung', week: 'Woche', month: 'Monat', all: 'Alles', edit: 'Bearbeiten', redeem: 'Einlösen' },
     scanner: { loading: 'Kamera lädt...', modeGuest: 'Zuschauer', title: 'QR Scan', modeOwner: 'Besitzer', manual: 'Code eingeben' },
     settings: {
       title: 'Einstellungen',
@@ -329,7 +329,12 @@ export const TRANSLATIONS: Record<Language, any> = {
       avatarRings: 'Avatar-Rahmen anzeigen',
       shopTitles: 'Titel im Shop anzeigen',
       enabled: 'Aktiviert',
-      disabled: 'Deaktiviert'
+      disabled: 'Deaktiviert',
+      notifications: 'Benachrichtigungen',
+      pushNotifications: 'Push-Benachrichtigungen',
+      pushEnabled: 'Aktiviert',
+      pushDisabled: 'Deaktiviert',
+      notificationDisableWarning: 'Um Benachrichtigungen zu deaktivieren, ändere bitte die Einstellungen in deinem Browser.'
     },
     common: { showLess: 'Weniger', showAll: 'Alle', showAllColors: 'Farben', greeting: 'Hallo', next: 'Weiter', prev: 'Zurück', skip: 'Überspringen', finish: 'Fertig' },
     sidebar: { dashboard: 'Übersicht', learn: 'Lernen & Spielen', shop: 'Shop', settings: 'Einstellungen', addAccount: 'Neue Sparbox', streakProtected: 'Streak geschützt' },
@@ -367,7 +372,7 @@ export const TRANSLATIONS: Record<Language, any> = {
     login: { slogan: 'Smart saving, big dreams.', title: 'Welcome back', email: 'Email', password: 'Password', button: 'Login', registerBtn: 'Register', forgotPassword: 'Forgot password?', resetTitle: 'Reset password', resetButton: 'Send link', backToLogin: 'Back to login', resetSuccess: 'Email sent!', loginError: 'That didn’t work. Please check your details.', resetError: 'Failed to send email.', registerTitle: 'Create account', alreadyHaveAccount: 'I already have an account', createNewAccount: 'Create new account', verifyTitle: 'Almost done!', verifySentTo: 'We sent an email to:', verifyHint: 'Please click the link in the email to activate your piggy bank!', goToLogin: 'Go to login' },
     age: { title: 'Almost there!', subtitle: 'When is your birthday?', hint: 'This doesn\'t affect features, it only adjusts the app design for you.', confirm: 'Let\'s go', years: 'years', birthdate: 'Birthdate' },
     dashboard: { balance: 'Balance', newPiggy: 'New Pig', myPigs: 'My Piggies', praiseMessages: ['Great!', 'Awesome!', 'Nice!'], adLabel: 'Ad', adTitle: 'Savings Expert', adSubtitle: 'Every cent counts', moreSavings: 'Save more', noPigs: 'No piggies yet', watchedPigs: 'Watched Piggies', removeGuestConfirm: 'Stop watching?', pigs: 'Piggies' },
-    detail: { history: 'History', confirm: 'Confirm', cancel: 'Cancel', errorNotEnough: 'Not enough balance', withdrawal: 'Withdrawal', available: 'Available', payout: 'Withdraw', newGoal: 'New Goal', share: 'Allocation', noGoals: 'No goals', transactions: 'Transactions', noTransactions: 'No transactions', goal: 'Goal', achievements: 'Achievements', achievementsDesc: 'Your rewards', editGoal: 'Edit goal', settingsTitle: 'Settings', pigName: 'Name', color: 'Color', delete: 'Delete', payoutTitle: 'Withdrawal', successTitle: 'Success!', balanceLabel: 'Balance', reasonLabel: 'Reason', wishLabel: 'Wish', costLabel: 'Cost', save: 'Save', deposit: 'Deposit' },
+    detail: { history: 'History', confirm: 'Confirm', cancel: 'Cancel', errorNotEnough: 'Not enough balance', withdrawal: 'Withdrawal', available: 'Available', payout: 'Withdraw', newGoal: 'New Goal', share: 'Allocation', noGoals: 'No goals', transactions: 'Transactions', noTransactions: 'No transactions', loadMore: 'Load 10 more', goal: 'Goal', achievements: 'Achievements', achievementsDesc: 'Your rewards', editGoal: 'Edit goal', settingsTitle: 'Settings', pigName: 'Name', color: 'Color', delete: 'Delete', payoutTitle: 'Withdrawal', successTitle: 'Success!', balanceLabel: 'Balance', reasonLabel: 'Reason', wishLabel: 'Wish', costLabel: 'Cost', save: 'Save', deposit: 'Deposit', week: 'Week', month: 'Month', all: 'All', edit: 'Edit', redeem: 'Redeem' },
     scanner: { loading: 'Loading...', modeGuest: 'Guest', title: 'Scan QR', modeOwner: 'Owner', manual: 'Enter code' },
     settings: {
       title: 'Settings',
@@ -392,7 +397,12 @@ export const TRANSLATIONS: Record<Language, any> = {
       avatarRings: 'Show avatar rings',
       shopTitles: 'Show shop titles',
       enabled: 'Enabled',
-      disabled: 'Disabled'
+      disabled: 'Disabled',
+      notifications: 'Notifications',
+      pushNotifications: 'Push Notifications',
+      pushEnabled: 'Enabled',
+      pushDisabled: 'Disabled',
+      notificationDisableWarning: 'To disable notifications, please change the settings in your browser.'
     },
     common: { showLess: 'Show less', showAll: 'Show all', showAllColors: 'Show colors', greeting: 'Hello', next: 'Next', prev: 'Back', skip: 'Skip', finish: 'Finish' },
     sidebar: { dashboard: 'Dashboard', learn: 'Learn & Play', shop: 'Shop', settings: 'Settings', addAccount: 'Add account', streakProtected: 'Streak protected' },
@@ -419,11 +429,11 @@ export const TRANSLATIONS: Record<Language, any> = {
       frame_wood: { label: 'Wood Frame', description: 'A rustic frame for your profile.' },
       frame_silver: { label: 'Silver Frame', description: 'A sleek silver frame.' },
       frame_gold: { label: 'Gold Frame', description: 'The ultimate status frame.' },
-      tag_coin_master: { label: 'Münz-Meister', description: 'Du kennst jede Münze beim Namen.' },
-      tag_smart_fox: { label: 'Schlau-Fuchs', description: 'Clever sparen wie ein Fuchs.' },
-      tag_dream_catcher: { label: 'Traumfänger', description: 'Du erfüllst dir jeden Wunsch.' },
-      tag_diamond_hands: { label: 'Diamant-Hände', description: 'Du hältst dein Geld eisern fest!' },
-      tag_future_boss: { label: 'Zukunfts-Boss', description: 'Große Träume erfordern große Disziplin.' }
+      tag_coin_master: { label: 'Coin Master', description: 'You know every coin by name.' },
+      tag_smart_fox: { label: 'Smart Fox', description: 'Saving smart, just like a fox.' },
+      tag_dream_catcher: { label: 'Dream Catcher', description: 'You fulfill every wish.' },
+      tag_diamond_hands: { label: 'Diamond Hands', description: 'You hold on to your money tight!' },
+      tag_future_boss: { label: 'Future Boss', description: 'Big dreams require big discipline.' }
     }
   }
 };

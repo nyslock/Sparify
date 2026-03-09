@@ -93,7 +93,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     
     // Если уже включено, показываем warning что нельзя отключить (можно только через браузер)
     if (pushEnabled) {
-      alert(tr.settings?.notificationDisableWarning || 'Чтобы отключить уведомления, измените настройки в вашем браузере.');
+      alert(tr.settings?.notificationDisableWarning || 'Um Benachrichtigungen zu deaktivieren, ändere bitte die Einstellungen in deinem Browser.');
       return;
     }
     
@@ -293,7 +293,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-amber-50 rounded-xl text-amber-700"><Frame size={20} /></div>
-            <h3 className="font-bold text-slate-800">Profilrahmen</h3>
+            <h3 className="font-bold text-slate-800">{t.frames}</h3>
           </div>
           <div className="space-y-3">
             {ownedFrames.map((frame) => {
@@ -331,7 +331,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-purple-50 rounded-xl text-purple-700"><Tag size={20} /></div>
-            <h3 className="font-bold text-slate-800">Profile Titel</h3>
+            <h3 className="font-bold text-slate-800">{t.tags}</h3>
           </div>
           <div className="space-y-3">
             {ownedTitles.map((title) => {
@@ -364,7 +364,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         </div>
       )}
 
-      {/* Help / Box Tutorial Section */}
+      {/* Help Section */}
       <div className="bg-white rounded-[2rem] p-6 mb-6 shadow-xl border border-slate-100">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-amber-50 rounded-xl text-amber-500"><HelpCircle size={20} /></div>
@@ -378,22 +378,19 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform"><Info size={20} /></div>
             <span className="font-bold text-slate-800">{tHelp.appTutorial}</span>
           </div>
-          {/* Fix: Added missing ChevronRight component */}
           <ChevronRight size={18} className="text-slate-300" />
         </button>
 
-        {onOpenAppHelp && (
-          <button
-            onClick={onOpenAppHelp}
-            className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between group active:scale-95 transition-all mt-3"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform"><HelpCircle size={20} /></div>
-              <span className="font-bold text-slate-800">{tHelp.appTutorial}</span>
-            </div>
-            <ChevronRight size={18} className="text-slate-300" />
-          </button>
-        )}
+        <button
+          onClick={() => onChangeView?.('BOX_TUTORIAL')}
+          className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between group active:scale-95 transition-all mt-3"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform"><HelpCircle size={20} /></div>
+            <span className="font-bold text-slate-800">{tHelp.boxTutorial}</span>
+          </div>
+          <ChevronRight size={18} className="text-slate-300" />
+        </button>
       </div>
 
       {/* Security / Password Section */}
@@ -516,8 +513,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <div className="bg-white w-full max-sm rounded-[2.5rem] p-8 text-center shadow-2xl relative animate-in zoom-in-95">
             <h3 className="text-xl font-black text-slate-800 mb-2">{t.logoutConfirm}</h3>
             <div className="flex flex-col gap-3 mt-8">
-              <button onClick={(e) => { e.preventDefault(); onLogout(); }} className="w-full bg-red-500 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-red-600 active:scale-95 transition-all">Abmelden</button>
-              <button onClick={() => setShowLogoutConfirm(false)} className="w-full bg-slate-100 text-slate-500 font-bold py-4 rounded-2xl hover:bg-slate-200 transition-all">Abbrechen</button>
+              <button onClick={(e) => { e.preventDefault(); onLogout(); }} className="w-full bg-red-500 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-red-600 active:scale-95 transition-all">{t.logout}</button>
+              <button onClick={() => setShowLogoutConfirm(false)} className="w-full bg-slate-100 text-slate-500 font-bold py-4 rounded-2xl hover:bg-slate-200 transition-all">{t.cancel}</button>
             </div>
           </div>
         </div>
